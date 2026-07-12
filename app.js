@@ -47,7 +47,7 @@ const TOOL_CONFIG = {
     icon: 'fa-utensils',
     label: 'Generate Recipe',
     sfpName: 'Recipe',
-    color: '#d4af37',
+    color: '#22e6ff',
     placeholder: 'Enter ingredients like: tomatoes, onions, garlic, pasta...',
     sfpLabel: 'Cooking up your delicious recipe…',
     description: 'Turn your ingredients into a mouth-watering recipe with AI.',
@@ -133,6 +133,7 @@ class RouxMindApp {
     this.history = this._load('rm_history', []);
     this.saved = this._load('rm_saved', []);
     this.prefs = this._load('rm_prefs', {});
+    if (this.prefs.theme === 'golden') { this.prefs.theme = 'dark'; this._save('rm_prefs', this.prefs); }
     this.userName = localStorage.getItem('rm_user') || '';
 
     this.pdfTheme = this.prefs.pdfTheme || 'dark';
@@ -157,7 +158,7 @@ class RouxMindApp {
     this._initDemoSystem();
     this._warmupAndTrack();
 
-    console.log(`%c🍽️ ${ROUXMIND.BRAND} — ${ROUXMIND.TAGLINE}`, 'color:#d4af37;font-size:16px;font-weight:bold');
+    console.log(`%c🍽️ ${ROUXMIND.BRAND} — ${ROUXMIND.TAGLINE}`, 'color:#22e6ff;font-size:16px;font-weight:bold');
     console.log(`%c🔧 Built by ${ROUXMIND.DEVELOPER} | ${ROUXMIND.DEVSITE}`, 'color:#00d4ff;font-size:12px');
   }
 
@@ -352,7 +353,7 @@ class RouxMindApp {
     const resize = () => { canvas.width = window.innerWidth; canvas.height = window.innerHeight; };
     window.addEventListener('resize', resize);
     resize();
-    const COLORS = ['#d4af37', '#ffae00', '#bf00ff', '#00d4ff', '#00ff88'];
+    const COLORS = ['#22e6ff', '#ffae00', '#bf00ff', '#00d4ff', '#00ff88'];
     const pts = Array.from({ length: 80 }, () => ({
       x: Math.random() * canvas.width,
       y: Math.random() * canvas.height,
@@ -1298,7 +1299,7 @@ Examples:
     const header = `
       <div class="result-hdr">
         <div class="rh-left">
-          <div class="rh-tool-badge" style="color:#d4af37">
+          <div class="rh-tool-badge" style="color:#22e6ff">
             <i class="fas fa-utensils"></i> Recipe
           </div>
           <div class="rh-topic">🍽️ ${dish}</div>
@@ -1658,7 +1659,7 @@ Examples:
     }
     this.el.lpHistList.innerHTML = this.history.slice(0, 6).map(h => `
       <div class="lp-hist-item" onclick="window._app._loadHistory('${h.id}')">
-        <i class="fas fa-utensils lp-hist-icon" style="color:#d4af37"></i>
+        <i class="fas fa-utensils lp-hist-icon" style="color:#22e6ff"></i>
         <div class="lp-hist-topic">${this._esc((h.dish || h.topic || '').slice(0, 28))}</div>
         <div class="lp-hist-time">${this._relTime(h.ts)}</div>
         <button class="lp-hist-delete" onclick="event.stopPropagation();window._app._delHistory('${h.id}')">
@@ -1675,7 +1676,7 @@ Examples:
     }
     this.el.lpSavedList.innerHTML = this.saved.slice(0, 5).map(s => `
       <div class="lp-hist-item" onclick="window._app._loadSaved('${s.id}')">
-        <i class="fas fa-star lp-hist-icon" style="color:#d4af37"></i>
+        <i class="fas fa-star lp-hist-icon" style="color:#22e6ff"></i>
         <div class="lp-hist-topic">${this._esc((s.dish || s.topic || '').slice(0, 28))}</div>
         <div class="lp-hist-time">${this._relTime(s.savedAt)}</div>
         <button class="lp-hist-delete" onclick="event.stopPropagation();window._app._delSaved('${s.id}')">
@@ -1706,7 +1707,7 @@ Examples:
       `<div class="hist-group-lbl">${g}</div>
        ${items.map(h => `
          <div class="hist-item" onclick="window._app._loadHistory('${h.id}')">
-           <div class="hist-tool-av" style="color:#d4af37;background:rgba(212,175,55,.1)">
+           <div class="hist-tool-av" style="color:#22e6ff;background:rgba(34,230,255,.1)">
              <i class="fas fa-utensils"></i>
            </div>
            <div class="hist-info">
@@ -1740,7 +1741,7 @@ Examples:
     if (this.el.savedEmpty) this.el.savedEmpty.style.display = 'none';
     this.el.savedList.innerHTML = this.saved.map(s => `
       <div class="hist-item" onclick="window._app._loadSaved('${s.id}')">
-        <div class="hist-tool-av" style="color:#d4af37;background:rgba(212,175,55,.1)">
+        <div class="hist-tool-av" style="color:#22e6ff;background:rgba(34,230,255,.1)">
           <i class="fas fa-star"></i>
         </div>
         <div class="hist-info">
@@ -1798,10 +1799,10 @@ Examples:
     const container = this._el('avatarPickerSettings');
     if (!container) return;
     container.innerHTML = `
-      <div style="margin-bottom:8px;font-size:.75rem;color:#d4af37;text-transform:uppercase;letter-spacing:.06em">Choose Emoji</div>
+      <div style="margin-bottom:8px;font-size:.75rem;color:#22e6ff;text-transform:uppercase;letter-spacing:.06em">Choose Emoji</div>
       <div style="display:grid;grid-template-columns:repeat(8,1fr);gap:6px;margin-bottom:12px">
         ${AVATAR_EMOJIS.map((emoji, i) => `
-          <button style="width:36px;height:36px;border-radius:50%;border:2px solid ${i === this.avatarEmojiIdx ? '#d4af37' : 'rgba(255,255,255,.1)'};background:rgba(255,255,255,.05);font-size:1.1rem;cursor:pointer;transition:all .2s"
+          <button style="width:36px;height:36px;border-radius:50%;border:2px solid ${i === this.avatarEmojiIdx ? '#22e6ff' : 'rgba(255,255,255,.1)'};background:rgba(255,255,255,.05);font-size:1.1rem;cursor:pointer;transition:all .2s"
                   onclick="window._app._setAvatarEmoji(${i})">${emoji}</button>
         `).join('')}
       </div>`;
@@ -2013,7 +2014,7 @@ Examples:
     Object.assign(this.demoTooltip.style, {
       display: 'none', position: 'fixed', zIndex: '9999',
       background: 'rgba(5,10,30,.97)',
-      border: '1.5px solid rgba(212,175,55,.5)',
+      border: '1.5px solid rgba(34,230,255,.5)',
       borderRadius: '18px',
       boxShadow: '0 24px 64px rgba(0,0,0,.7)',
       padding: '20px', maxWidth: '360px', minWidth: '260px',
@@ -2051,9 +2052,9 @@ Examples:
       ctx.closePath(); ctx.fill();
 
       ctx.globalCompositeOperation = 'source-over';
-      ctx.strokeStyle = 'rgba(212,175,55,0.9)';
+      ctx.strokeStyle = 'rgba(34,230,255,0.9)';
       ctx.lineWidth = 2.5;
-      ctx.shadowColor = '#d4af37';
+      ctx.shadowColor = '#22e6ff';
       ctx.shadowBlur = 18;
       ctx.beginPath();
       ctx.moveTo(x + r, y); ctx.lineTo(x + w - r, y);
@@ -2101,12 +2102,12 @@ Examples:
 
   _renderDemoStep() {
     const steps = [
-      { title: 'Welcome to RouxMind 🍳', desc: 'Generate delicious recipes from your ingredients using AI. Just enter what you have!', icon: 'fa-utensils', color: '#d4af37' },
+      { title: 'Welcome to RouxMind 🍳', desc: 'Generate delicious recipes from your ingredients using AI. Just enter what you have!', icon: 'fa-utensils', color: '#22e6ff' },
       { title: 'Enter Ingredients 📝', desc: 'Type your ingredients or upload a photo. AI will detect everything!', icon: 'fa-pencil-alt', color: '#00d4ff', targetId: 'emptyWizardBtn' },
       { title: 'Choose Your Spice 🌶️', desc: 'Select your preferred spice level from Mild to Indian hot!', icon: 'fa-pepper-hot', color: '#ffae00' },
       { title: 'Set Servings 👥', desc: 'How many people are you cooking for? Adjust servings easily.', icon: 'fa-users', color: '#00ff88' },
       { title: 'Watch AI Cook 🔥', desc: 'Recipe streams live to your screen — see it being written in real-time!', icon: 'fa-stream', color: '#bf00ff' },
-      { title: 'Get Your Recipe 📄', desc: 'Beautiful formatted recipe with ingredients, instructions, and nutrition.', icon: 'fa-file-alt', color: '#d4af37' },
+      { title: 'Get Your Recipe 📄', desc: 'Beautiful formatted recipe with ingredients, instructions, and nutrition.', icon: 'fa-file-alt', color: '#22e6ff' },
       { title: 'Save & Share 💾', desc: 'Save to your library, download PDF, or share with friends!', icon: 'fa-share-alt', color: '#00d4ff' },
       { title: 'Keep Cooking! 🎯', desc: 'Track your cooking streak, earn XP, and become a Culinary Legend!', icon: 'fa-fire', color: '#ff4444', isLast: true },
     ];
@@ -2434,6 +2435,6 @@ Examples:
 window.addEventListener('DOMContentLoaded', () => {
   window._app = new RouxMindApp();
   window._app._renderAvatarPicker();
-  console.log('%c✅ RouxMind v2.0 — All Systems Online', 'color:#d4af37;font-size:13px;font-weight:bold');
+  console.log('%c✅ RouxMind v2.0 — All Systems Online', 'color:#22e6ff;font-size:13px;font-weight:bold');
   console.log('%c🍳 Where Every Plate Tells Your Story', 'color:#00d4ff;font-size:11px');
 });

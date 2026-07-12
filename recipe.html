@@ -6,10 +6,11 @@
     <title>RouxMind — Generate Recipes</title>
     <meta name="description" content="Generate delicious recipes with AI. Enter ingredients, set preferences, and get instant recipes.">
     <link rel="icon" href="clogo.png">
+    <meta name="theme-color" content="#050310">
     
     <!-- Fonts & Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,500;1,600&family=Inter:wght@300;400;500;600;700;800;900&family=Orbitron:wght@600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600;700;800;900&family=Orbitron:wght@600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     
     <!-- Libraries -->
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
@@ -163,7 +164,7 @@
                     <i class="fas fa-code"></i> Built by <strong>Sooban Talha Tech</strong><br>
                     <i class="fas fa-globe"></i> <a href="https://soobantalhatech.xyz" target="_blank">soobantalhatech.xyz</a>
                 </div>
-                <div class="about-text" style="color:#d4af37;font-style:italic;">
+                <div class="about-text" style="color:var(--cyan-2);font-style:italic;">
                     "Where Every Plate Tells Your Story" — Sooban Talha
                 </div>
                 <div class="about-text">
@@ -619,6 +620,10 @@
     (function(){
         try {
             const p = JSON.parse(localStorage.getItem('rm_prefs') || '{}');
+            // One-time migration: the old flat-gold "golden" theme is retired in favor
+            // of the new neon dark palette. If a returning user still has it stored,
+            // move them to "dark" so they see the redesigned UI immediately.
+            if (p.theme === 'golden') { p.theme = 'dark'; localStorage.setItem('rm_prefs', JSON.stringify(p)); }
             if (p.theme) document.documentElement.setAttribute('data-theme', p.theme);
             if (p.fontSize) document.documentElement.setAttribute('data-font', p.fontSize);
         } catch(e) {}
