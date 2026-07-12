@@ -1,855 +1,534 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="RouxMind Dashboard - Generate AI recipes with ultra-premium cinematic UI">
-    <meta name="theme-color" content="#050508">
-    <title>RouxMind Dashboard - AI Recipe Generator | Sooban Talha Tech</title>
-    
-    <!-- Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-    
-    <!-- Favicon -->
-    <link rel="icon" type="image/png" href="logo.png">
-    
-    <!-- Styles -->
-    <link rel="stylesheet" href="style.css">
-    
-    <!-- Marked.js for markdown rendering -->
-    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-    
-    <!-- Inline critical CSS -->
-    <style>
-        :root {
-            --primary: #00d4ff;
-            --secondary: #0099cc;
-            --dark-void: #050508;
-            --dark-card: #0a0a12;
-            --text-primary: #e8f0f8;
-            --text-secondary: #8899aa;
-            --accent: #00ff88;
-            --danger: #ff4466;
-            --warning: #ffaa00;
-            --glass: rgba(0, 212, 255, 0.06);
-            --glass-strong: rgba(5, 5, 8, 0.95);
-            --neon-glow: rgba(0, 212, 255, 0.15);
-            --border-glow: rgba(0, 212, 255, 0.12);
-        }
-        
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        
-        body {
-            font-family: 'Inter', sans-serif;
-            background: var(--dark-void);
-            color: var(--text-primary);
-            min-height: 100vh;
-        }
-        
-        /* Dashboard loading */
-        .dashboard-loading {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: var(--dark-void);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 9999;
-        }
-        
-        .dashboard-loading.hidden {
-            display: none;
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="description" content="RouxMind — World's Most Advanced AI Recipe Generator. Where Every Plate Tells Your Story.">
+<meta name="theme-color" content="#0a0a08">
+<title>RouxMind — AI Recipe Studio</title>
+<link rel="icon" type="image/png" href="logo.png">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Playfair+Display:wght@500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<link rel="stylesheet" href="style.css">
+
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
 </head>
 <body>
-    <!-- Dashboard Loading -->
-    <div class="dashboard-loading" id="dashboardLoading">
-        <div class="loader">
-            <img src="logo.png" alt="RouxMind" style="width: 60px; height: 60px; animation: pulse 2s ease-in-out infinite;">
-            <p style="margin-top: 15px; color: var(--text-secondary);">Loading Dashboard...</p>
-        </div>
+
+<!-- LOADING OVERLAY -->
+<div class="dashboard-loading" id="dashboardLoading">
+  <div class="dl-inner">
+    <img src="logo.png" alt="RouxMind" class="dl-logo">
+    <div class="dl-ring"></div>
+    <div class="dl-text">Preheating the kitchen…</div>
+  </div>
+</div>
+
+<div class="particles" id="particles"></div>
+<div class="toast-container" id="toastContainer"></div>
+
+<div class="dash-body">
+
+  <!-- LEFT SIDEBAR -->
+  <aside class="left-panel" id="leftPanel">
+
+    <div class="lp-brand">
+      <img src="logowithname.png" alt="RouxMind — Where Every Plate Tells Your Story" class="lp-brand-img">
     </div>
 
-    <!-- Top Navigation -->
-    <nav class="dashboard-nav">
-        <div class="nav-left">
-            <a href="/" class="nav-logo">
-                <img src="logo.png" alt="RouxMind" class="nav-logo-img small">
-                <span class="nav-logo-text small">
-                    <span>Roux</span><span class="accent">Mind</span>
-                </span>
-            </a>
-            <div class="nav-stats">
-                <div class="stat-item" id="streakStat">
-                    <span class="stat-icon">🔥</span>
-                    <span class="stat-value">0</span>
-                    <span class="stat-label">Streak</span>
-                </div>
-                <div class="stat-item" id="recipesStat">
-                    <span class="stat-icon">📋</span>
-                    <span class="stat-value">0</span>
-                    <span class="stat-label">Recipes</span>
-                </div>
-                <div class="stat-item" id="xpStat">
-                    <span class="stat-icon">⭐</span>
-                    <span class="stat-value">0</span>
-                    <span class="stat-label">XP</span>
-                </div>
-            </div>
-        </div>
-        <div class="nav-right">
-            <div class="nav-actions">
-                <button class="nav-action" id="themeToggle" title="Toggle Theme">
-                    <span class="action-icon">🌓</span>
-                </button>
-                <button class="nav-action" id="newRecipeBtn" title="New Recipe">
-                    <span class="action-icon">➕</span>
-                </button>
-                <button class="nav-action" id="historyBtn" title="History">
-                    <span class="action-icon">🕒</span>
-                </button>
-                <button class="nav-action" id="analyticsBtn" title="Analytics">
-                    <span class="action-icon">📊</span>
-                </button>
-                <button class="nav-action" id="settingsBtn" title="Settings">
-                    <span class="action-icon">⚙️</span>
-                </button>
-            </div>
-            <div class="user-avatar" id="userAvatar">
-                <span class="avatar-icon">👤</span>
-                <span class="avatar-name" id="userNameDisplay">Guest</span>
-            </div>
-        </div>
+    <div class="lp-profile">
+      <div class="lp-avatar" id="userAvatar" title="Open Settings">
+        <span class="avatar-icon">🥄</span>
+      </div>
+      <div class="lp-profile-info">
+        <div class="lp-profile-name" id="userNameDisplay">Chef Guest</div>
+        <div class="lp-profile-rank" id="sidebarRank">🥄 Kitchen Apprentice</div>
+      </div>
+    </div>
+
+    <div class="lp-stats-grid">
+      <div class="lp-stat">
+        <div class="lp-stat-val" id="sidebarStreak">0</div>
+        <div class="lp-stat-lbl"><i class="fas fa-fire"></i> Streak</div>
+      </div>
+      <div class="lp-stat">
+        <div class="lp-stat-val" id="sidebarTotalRecipes">0</div>
+        <div class="lp-stat-lbl"><i class="fas fa-utensils"></i> Recipes</div>
+      </div>
+    </div>
+
+    <nav class="lp-nav">
+      <button class="lp-nav-item lp-nav-cta" onclick="openModal('wizardModal')">
+        <i class="fas fa-wand-magic-sparkles lp-nav-icon"></i>
+        <span>Generate Recipe</span>
+        <span class="lp-nav-badge">New</span>
+      </button>
+      <button class="lp-nav-item" onclick="document.getElementById('randomRecipe').click()">
+        <i class="fas fa-dice lp-nav-icon"></i>
+        <span>Surprise Me</span>
+      </button>
+      <div class="lp-nav-divider"></div>
+      <button class="lp-nav-item" onclick="renderHistory(); openModal('historyModal')">
+        <i class="fas fa-clock-rotate-left lp-nav-icon"></i>
+        <span>Recipe History</span>
+      </button>
+      <button class="lp-nav-item" onclick="renderSavedRecipes(); document.getElementById('savedRecipesList').scrollIntoView({behavior:'smooth',block:'center'}); document.getElementById('savedRecipesList').classList.add('flash'); setTimeout(()=>document.getElementById('savedRecipesList').classList.remove('flash'),900)">
+        <i class="fas fa-star lp-nav-icon"></i>
+        <span>Saved Recipes</span>
+      </button>
+      <button class="lp-nav-item" onclick="renderAnalytics(); document.getElementById('analyticsPanel').classList.add('active')">
+        <i class="fas fa-chart-simple lp-nav-icon"></i>
+        <span>Analytics</span>
+      </button>
+      <button class="lp-nav-item" onclick="initSettings(); openModal('settingsModal')">
+        <i class="fas fa-gear lp-nav-icon"></i>
+        <span>Settings</span>
+      </button>
     </nav>
 
-    <!-- Main Dashboard -->
-    <main class="dashboard-main">
-        <!-- Wizard Modal -->
-        <div class="modal" id="wizardModal">
-            <div class="modal-overlay"></div>
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h2>🍳 Generate Recipe</h2>
-                    <button class="modal-close" id="wizardClose">&times;</button>
-                </div>
-                <div class="modal-body">
-                    <div class="wizard" id="recipeWizard">
-                        <!-- Step 1: Input Type -->
-                        <div class="wizard-step active" data-step="1">
-                            <div class="step-header">
-                                <h3>Step 1: Choose Input Method</h3>
-                                <p>How would you like to provide your ingredients?</p>
-                            </div>
-                            <div class="input-tabs" id="inputTabs">
-                                <button class="input-tab active" data-tab="camera">
-                                    <span class="tab-icon">📸</span>
-                                    <span class="tab-text">Camera</span>
-                                </button>
-                                <button class="input-tab" data-tab="voice">
-                                    <span class="tab-icon">🎤</span>
-                                    <span class="tab-text">Voice</span>
-                                </button>
-                                <button class="input-tab" data-tab="text">
-                                    <span class="tab-icon">📝</span>
-                                    <span class="tab-text">Text</span>
-                                </button>
-                                <button class="input-tab" data-tab="upload">
-                                    <span class="tab-icon">📂</span>
-                                    <span class="tab-text">Upload</span>
-                                </button>
-                                <button class="input-tab" data-tab="smart">
-                                    <span class="tab-icon">🎯</span>
-                                    <span class="tab-text">Smart</span>
-                                </button>
-                            </div>
-                            <div class="input-area" id="inputArea">
-                                <!-- Camera Tab -->
-                                <div class="input-panel active" data-panel="camera">
-                                    <div class="camera-preview" id="cameraPreview">
-                                        <video id="cameraVideo" autoplay playsinline muted></video>
-                                        <canvas id="cameraCanvas"></canvas>
-                                        <div class="camera-overlay" id="cameraOverlay">
-                                            <button class="camera-btn" id="startCamera">
-                                                <span>📸 Open Camera</span>
-                                            </button>
-                                            <p class="camera-hint">Click to open camera and capture photo</p>
-                                        </div>
-                                        <div class="camera-controls" id="cameraControls" style="display: none;">
-                                            <button class="camera-btn" id="captureBtn">
-                                                <span>📷 Capture</span>
-                                            </button>
-                                            <button class="camera-btn secondary" id="retakeBtn">
-                                                <span>🔄 Retake</span>
-                                            </button>
-                                            <button class="camera-btn" id="usePhotoBtn">
-                                                <span>✅ Use Photo</span>
-                                            </button>
-                                        </div>
-                                    </div>
-                                    <div class="camera-thumbnail" id="cameraThumbnail" style="display: none;">
-                                        <img id="capturedImage" alt="Captured">
-                                        <button class="remove-thumbnail" id="removeThumbnail">&times;</button>
-                                    </div>
-                                </div>
-                                
-                                <!-- Voice Tab -->
-                                <div class="input-panel" data-panel="voice">
-                                    <div class="voice-area">
-                                        <div class="voice-visualizer" id="voiceVisualizer">
-                                            <div class="wave" id="voiceWave"></div>
-                                        </div>
-                                        <button class="voice-btn" id="startVoice">
-                                            <span class="btn-icon">🎤</span>
-                                            <span class="btn-text">Start Recording</span>
-                                        </button>
-                                        <button class="voice-btn stop" id="stopVoice" style="display: none;">
-                                            <span class="btn-icon">⏹️</span>
-                                            <span class="btn-text">Stop Recording</span>
-                                        </button>
-                                        <div class="voice-transcript" id="voiceTranscript">
-                                            <p>Your voice input will appear here...</p>
-                                        </div>
-                                    </div>
-                                </div>
-                                
-                                <!-- Text Tab -->
-                                <div class="input-panel" data-panel="text">
-                                    <div class="text-area">
-                                        <textarea 
-                                            id="textInput" 
-                                            placeholder="Enter your ingredients... (e.g., chicken, onions, garlic, tomatoes, spices)"
-                                            rows="4"
-                                        ></textarea>
-                                        <div class="text-suggestions" id="textSuggestions"></div>
-                                        <div class="quick-ingredients" id="quickIngredients">
-                                            <h4>Quick Ingredients:</h4>
-                                            <div class="ingredient-chips" id="ingredientChips">
-                                                <!-- Populated by JS -->
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                
-                                <!-- Upload Tab -->
-                                <div class="input-panel" data-panel="upload">
-                                    <div class="upload-area" id="uploadArea">
-                                        <input type="file" id="fileInput" accept="image/*" style="display: none;">
-                                        <div class="upload-zone" id="uploadZone">
-                                            <span class="upload-icon">📁</span>
-                                            <h4>Drag & Drop Image</h4>
-                                            <p>or click to browse</p>
-                                            <button class="btn btn-ghost" id="browseBtn">Browse Files</button>
-                                        </div>
-                                        <div class="upload-preview" id="uploadPreview" style="display: none;">
-                                            <img id="uploadedImage" alt="Uploaded">
-                                            <button class="remove-upload" id="removeUpload">&times;</button>
-                                        </div>
-                                    </div>
-                                </div>
-                                
-                                <!-- Smart Tab -->
-                                <div class="input-panel" data-panel="smart">
-                                    <div class="smart-area">
-                                        <input 
-                                            type="text" 
-                                            id="smartInput" 
-                                            placeholder="Start typing... (e.g., 'chicken' or 'vegetables')"
-                                            autocomplete="off"
-                                        >
-                                        <button class="btn btn-primary" id="smartSuggestBtn">
-                                            <span>🎯 Suggest Ingredients</span>
-                                        </button>
-                                        <div class="smart-suggestions" id="smartSuggestions"></div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <!-- Step 2: Preferences -->
-                        <div class="wizard-step" data-step="2">
-                            <div class="step-header">
-                                <h3>Step 2: Set Your Preferences</h3>
-                                <p>Customize your recipe to perfection</p>
-                            </div>
-                            <div class="preferences-grid">
-                                <div class="pref-group">
-                                    <label>🌶️ Spice Level</label>
-                                    <div class="slider-container">
-                                        <input type="range" id="spiceSlider" min="1" max="5" value="3" class="slider">
-                                        <div class="slider-labels">
-                                            <span>1</span>
-                                            <span>2</span>
-                                            <span>3</span>
-                                            <span>4</span>
-                                            <span>5</span>
-                                        </div>
-                                        <div class="slider-icons">
-                                            <span>🌶️</span>
-                                            <span>🌶️🌶️</span>
-                                            <span>🌶️🌶️🌶️</span>
-                                            <span>🌶️🌶️🌶️🌶️</span>
-                                            <span>🌶️🌶️🌶️🌶️🌶️</span>
-                                        </div>
-                                    </div>
-                                    <span class="pref-value" id="spiceValue">Medium - Gentle warmth</span>
-                                </div>
-                                
-                                <div class="pref-group">
-                                    <label>👥 Servings</label>
-                                    <div class="servings-grid" id="servingsGrid">
-                                        <button class="serving-btn" data-servings="1">1</button>
-                                        <button class="serving-btn" data-servings="2">2</button>
-                                        <button class="serving-btn active" data-servings="4">4</button>
-                                        <button class="serving-btn" data-servings="6">6</button>
-                                        <button class="serving-btn" data-servings="8">8</button>
-                                        <button class="serving-btn" data-servings="10">10</button>
-                                    </div>
-                                </div>
-                                
-                                <div class="pref-group">
-                                    <label>⏱️ Time Preference</label>
-                                    <div class="time-buttons" id="timeButtons">
-                                        <button class="time-btn" data-time="1">Quick (under 30 min)</button>
-                                        <button class="time-btn active" data-time="2">Medium (30-60 min)</button>
-                                        <button class="time-btn" data-time="3">Slow (1-2 hours)</button>
-                                        <button class="time-btn" data-time="4">Gourmet (2+ hours)</button>
-                                    </div>
-                                </div>
-                                
-                                <div class="pref-group">
-                                    <label>🌐 Language</label>
-                                    <select id="languageSelect" class="select-input">
-                                        <option value="English">English</option>
-                                        <option value="Spanish">Español</option>
-                                        <option value="French">Français</option>
-                                        <option value="German">Deutsch</option>
-                                        <option value="Italian">Italiano</option>
-                                        <option value="Portuguese">Português</option>
-                                        <option value="Russian">Русский</option>
-                                        <option value="Chinese">中文</option>
-                                        <option value="Japanese">日本語</option>
-                                        <option value="Arabic">العربية</option>
-                                        <option value="Hindi">हिन्दी</option>
-                                        <option value="Bengali">বাংলা</option>
-                                        <option value="Punjabi">ਪੰਜਾਬੀ</option>
-                                        <option value="Turkish">Türkçe</option>
-                                        <option value="Dutch">Nederlands</option>
-                                        <option value="Swedish">Svenska</option>
-                                        <option value="Finnish">Suomi</option>
-                                        <option value="Danish">Dansk</option>
-                                        <option value="Norwegian">Norsk</option>
-                                        <option value="Polish">Polski</option>
-                                        <option value="Thai">ไทย</option>
-                                        <option value="Vietnamese">Tiếng Việt</option>
-                                    </select>
-                                </div>
-                                
-                                <div class="pref-group">
-                                    <label>📖 Depth</label>
-                                    <select id="depthSelect" class="select-input">
-                                        <option value="quick">Quick (200-400 words)</option>
-                                        <option value="standard" selected>Standard (400-600 words)</option>
-                                        <option value="detailed">Detailed (600-1000 words)</option>
-                                        <option value="gourmet">Gourmet (1000-1500 words)</option>
-                                    </select>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <!-- Step 3: Review -->
-                        <div class="wizard-step" data-step="3">
-                            <div class="step-header">
-                                <h3>Step 3: Review & Generate</h3>
-                                <p>Review your recipe settings before generating</p>
-                            </div>
-                            <div class="review-card" id="reviewCard">
-                                <div class="review-section">
-                                    <h4>📋 Ingredients</h4>
-                                    <p id="reviewIngredients">Not set</p>
-                                </div>
-                                <div class="review-section">
-                                    <h4>⚙️ Preferences</h4>
-                                    <div class="review-prefs">
-                                        <span class="review-pref" id="reviewSpice">Spice: Medium</span>
-                                        <span class="review-pref" id="reviewServings">Servings: 4</span>
-                                        <span class="review-pref" id="reviewTime">Time: Medium</span>
-                                        <span class="review-pref" id="reviewLanguage">Language: English</span>
-                                        <span class="review-pref" id="reviewDepth">Depth: Standard</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <!-- Progress Bar -->
-                        <div class="wizard-progress">
-                            <div class="progress-steps">
-                                <div class="progress-step active" data-step="1">
-                                    <span class="step-number">1</span>
-                                    <span class="step-label">Input</span>
-                                </div>
-                                <div class="progress-line"></div>
-                                <div class="progress-step" data-step="2">
-                                    <span class="step-number">2</span>
-                                    <span class="step-label">Preferences</span>
-                                </div>
-                                <div class="progress-line"></div>
-                                <div class="progress-step" data-step="3">
-                                    <span class="step-number">3</span>
-                                    <span class="step-label">Review</span>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <!-- Navigation Buttons -->
-                        <div class="wizard-nav">
-                            <button class="btn btn-ghost" id="prevBtn" style="display: none;">
-                                <span>← Previous</span>
-                            </button>
-                            <button class="btn btn-primary" id="nextBtn">
-                                <span>Next</span>
-                                <span class="btn-arrow">→</span>
-                            </button>
-                            <button class="btn btn-primary btn-glow" id="generateBtn" style="display: none;">
-                                <span class="btn-icon">🚀</span>
-                                <span>Generate Recipe</span>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Main Dashboard Content -->
-        <div class="dashboard-content">
-            <!-- Left Sidebar -->
-            <aside class="sidebar">
-                <div class="sidebar-header">
-                    <h3>📋 Quick Actions</h3>
-                </div>
-                <div class="sidebar-actions">
-                    <button class="sidebar-action" id="quickGenerate">
-                        <span class="action-icon">⚡</span>
-                        <span class="action-text">Quick Generate</span>
-                    </button>
-                    <button class="sidebar-action" id="randomRecipe">
-                        <span class="action-icon">🎲</span>
-                        <span class="action-text">Random Recipe</span>
-                    </button>
-                    <button class="sidebar-action" id="savedRecipes">
-                        <span class="action-icon">⭐</span>
-                        <span class="action-text">Saved Recipes</span>
-                    </button>
-                </div>
-                
-                <div class="sidebar-section">
-                    <h3>🔥 Recent Recipes</h3>
-                    <div class="recent-list" id="recentRecipes">
-                        <p class="empty-state">No recent recipes yet</p>
-                    </div>
-                </div>
-                
-                <div class="sidebar-section">
-                    <h3>⭐ Saved Favorites</h3>
-                    <div class="saved-list" id="savedRecipesList">
-                        <p class="empty-state">No saved recipes yet</p>
-                    </div>
-                </div>
-                
-                <div class="sidebar-footer">
-                    <div class="user-stats">
-                        <div class="user-stat">
-                            <span class="stat-label">Total Recipes</span>
-                            <span class="stat-value" id="sidebarTotalRecipes">0</span>
-                        </div>
-                        <div class="user-stat">
-                            <span class="stat-label">Current Streak</span>
-                            <span class="stat-value" id="sidebarStreak">0</span>
-                        </div>
-                        <div class="user-stat">
-                            <span class="stat-label">Your Rank</span>
-                            <span class="stat-value" id="sidebarRank">🥄 Kitchen Apprentice</span>
-                        </div>
-                    </div>
-                </div>
-            </aside>
-
-            <!-- Main Content Area -->
-            <div class="main-area">
-                <!-- Welcome Section -->
-                <div class="welcome-section" id="welcomeSection">
-                    <div class="welcome-card">
-                        <div class="welcome-icon">👨‍🍳</div>
-                        <h2>Welcome to RouxMind Dashboard</h2>
-                        <p>Generate your first recipe to get started!</p>
-                        <button class="btn btn-primary btn-large btn-glow" id="welcomeGenerateBtn">
-                            <span class="btn-icon">🍳</span>
-                            <span class="btn-text">Generate Your First Recipe</span>
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Recipe Display Area -->
-                <div class="recipe-area" id="recipeArea" style="display: none;">
-                    <!-- Generation Progress -->
-                    <div class="generation-progress" id="generationProgress">
-                        <div class="progress-stages" id="progressStages">
-                            <div class="stage active" data-stage="0">
-                                <span class="stage-icon">📸</span>
-                                <span class="stage-label">Analyzing...</span>
-                            </div>
-                            <div class="stage" data-stage="1">
-                                <span class="stage-icon">🔍</span>
-                                <span class="stage-label">Detecting...</span>
-                            </div>
-                            <div class="stage" data-stage="2">
-                                <span class="stage-icon">👨‍🍳</span>
-                                <span class="stage-label">Cooking...</span>
-                            </div>
-                            <div class="stage" data-stage="3">
-                                <span class="stage-icon">✨</span>
-                                <span class="stage-label">Finalizing...</span>
-                            </div>
-                            <div class="stage" data-stage="4">
-                                <span class="stage-icon">✅</span>
-                                <span class="stage-label">Complete!</span>
-                            </div>
-                        </div>
-                        <div class="progress-bar">
-                            <div class="progress-fill" id="progressFill"></div>
-                        </div>
-                        <button class="btn btn-ghost" id="cancelGeneration" style="display: none;">
-                            <span>Cancel</span>
-                        </button>
-                    </div>
-
-                    <!-- Recipe Output -->
-                    <div class="recipe-output" id="recipeOutput">
-                        <div class="recipe-header">
-                            <div class="recipe-meta">
-                                <h2 id="recipeTitle">Your Recipe</h2>
-                                <div class="recipe-badges" id="recipeBadges">
-                                    <span class="badge">🌶️ Medium</span>
-                                    <span class="badge">👥 4 Servings</span>
-                                    <span class="badge">⏱️ 45 min</span>
-                                </div>
-                            </div>
-                            <div class="recipe-actions">
-                                <button class="recipe-action" id="saveRecipeBtn" title="Save Recipe">
-                                    <span>⭐</span>
-                                </button>
-                                <button class="recipe-action" id="pdfRecipeBtn" title="Download PDF">
-                                    <span>📄</span>
-                                </button>
-                                <button class="recipe-action" id="shareRecipeBtn" title="Share">
-                                    <span>📤</span>
-                                </button>
-                                <button class="recipe-action danger" id="deleteRecipeBtn" title="Delete">
-                                    <span>🗑️</span>
-                                </button>
-                            </div>
-                        </div>
-                        <div class="recipe-content" id="recipeContent">
-                            <p class="loading-text">Your generated recipe will appear here...</p>
-                        </div>
-                    </div>
-
-                    <!-- Streaming Output -->
-                    <div class="streaming-output" id="streamingOutput" style="display: none;">
-                        <div class="streaming-header">
-                            <span class="streaming-icon">📜</span>
-                            <span>Generating your recipe...</span>
-                        </div>
-                        <div class="streaming-content" id="streamingContent"></div>
-                    </div>
-                </div>
-
-                <!-- Input Method Tabs (for direct access) -->
-                <div class="input-methods" id="inputMethods">
-                    <h3>Or Start with:</h3>
-                    <div class="method-buttons">
-                        <button class="method-btn" data-method="camera" id="directCamera">
-                            <span class="method-icon">📸</span>
-                            <span>Camera</span>
-                        </button>
-                        <button class="method-btn" data-method="voice" id="directVoice">
-                            <span class="method-icon">🎤</span>
-                            <span>Voice</span>
-                        </button>
-                        <button class="method-btn" data-method="text" id="directText">
-                            <span class="method-icon">📝</span>
-                            <span>Text</span>
-                        </button>
-                        <button class="method-btn" data-method="upload" id="directUpload">
-                            <span class="method-icon">📂</span>
-                            <span>Upload</span>
-                        </button>
-                        <button class="method-btn" data-method="smart" id="directSmart">
-                            <span class="method-icon">🎯</span>
-                            <span>Smart</span>
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Right Panel (Analytics) -->
-            <aside class="analytics-panel" id="analyticsPanel">
-                <div class="analytics-header">
-                    <h3>📊 Analytics</h3>
-                    <button class="close-panel" id="closeAnalytics">&times;</button>
-                </div>
-                <div class="analytics-content">
-                    <div class="analytics-stat">
-                        <div class="stat-icon">📈</div>
-                        <div class="stat-info">
-                            <span class="stat-number" id="analyticsTotal">0</span>
-                            <span class="stat-label">Total Recipes</span>
-                        </div>
-                    </div>
-                    <div class="analytics-stat">
-                        <div class="stat-icon">✅</div>
-                        <div class="stat-info">
-                            <span class="stat-number" id="analyticsSuccess">0%</span>
-                            <span class="stat-label">Success Rate</span>
-                        </div>
-                    </div>
-                    <div class="analytics-stat">
-                        <div class="stat-icon">💰</div>
-                        <div class="stat-info">
-                            <span class="stat-number" id="analyticsCost">$0.00</span>
-                            <span class="stat-label">Avg Cost</span>
-                        </div>
-                    </div>
-                    <div class="analytics-stat">
-                        <div class="stat-icon">⏱️</div>
-                        <div class="stat-info">
-                            <span class="stat-number" id="analyticsTime">0ms</span>
-                            <span class="stat-label">Avg Response Time</span>
-                        </div>
-                    </div>
-                    <div class="analytics-chart">
-                        <h4>Model Usage</h4>
-                        <div class="chart-bars" id="modelUsageChart">
-                            <!-- Populated by JS -->
-                        </div>
-                    </div>
-                    <div class="analytics-chart">
-                        <h4>Top Dishes</h4>
-                        <div class="top-dishes" id="topDishes">
-                            <!-- Populated by JS -->
-                        </div>
-                    </div>
-                </div>
-            </aside>
-        </div>
-    </main>
-
-    <!-- History Modal -->
-    <div class="modal" id="historyModal">
-        <div class="modal-overlay"></div>
-        <div class="modal-content large">
-            <div class="modal-header">
-                <h2>🕒 Recipe History</h2>
-                <button class="modal-close" id="historyClose">&times;</button>
-            </div>
-            <div class="modal-body">
-                <div class="history-controls">
-                    <input type="text" id="historySearch" placeholder="🔍 Search recipes...">
-                    <select id="historyFilter">
-                        <option value="all">All Time</option>
-                        <option value="today">Today</option>
-                        <option value="week">This Week</option>
-                        <option value="month">This Month</option>
-                    </select>
-                    <button class="btn btn-ghost" id="clearHistory">
-                        <span>🗑️ Clear History</span>
-                    </button>
-                </div>
-                <div class="history-list" id="historyList">
-                    <p class="empty-state">No history yet. Generate your first recipe!</p>
-                </div>
-            </div>
-        </div>
+    <div class="lp-recent">
+      <div class="lp-recent-hdr"><span>Saved Recipes</span></div>
+      <div class="lp-recent-list" id="savedRecipesList">
+        <p class="empty-state">No saved recipes yet</p>
+      </div>
     </div>
 
-    <!-- Settings Modal -->
-    <div class="modal" id="settingsModal">
-        <div class="modal-overlay"></div>
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2>⚙️ Settings</h2>
-                <button class="modal-close" id="settingsClose">&times;</button>
-            </div>
-            <div class="modal-body">
-                <div class="settings-section">
-                    <h3>Profile</h3>
-                    <div class="setting-item">
-                        <label>Username</label>
-                        <input type="text" id="usernameSetting" placeholder="Enter your name">
-                    </div>
-                    <div class="setting-item">
-                        <label>Avatar</label>
-                        <div class="avatar-options" id="avatarOptions">
-                            <button class="avatar-option" data-avatar="👤">👤</button>
-                            <button class="avatar-option" data-avatar="👨‍🍳">👨‍🍳</button>
-                            <button class="avatar-option" data-avatar="👩‍🍳">👩‍🍳</button>
-                            <button class="avatar-option" data-avatar="🥄">🥄</button>
-                            <button class="avatar-option" data-avatar="🍳">🍳</button>
-                            <button class="avatar-option" data-avatar="👑">👑</button>
-                        </div>
-                    </div>
-                </div>
-                <div class="settings-section">
-                    <h3>Preferences</h3>
-                    <div class="setting-item">
-                        <label>Theme</label>
-                        <select id="themeSetting">
-                            <option value="system">System</option>
-                            <option value="dark">Dark</option>
-                            <option value="light">Light</option>
-                        </select>
-                    </div>
-                    <div class="setting-item">
-                        <label>Default Language</label>
-                        <select id="defaultLanguageSetting">
-                            <option value="English">English</option>
-                            <option value="Spanish">Español</option>
-                            <option value="French">Français</option>
-                            <option value="German">Deutsch</option>
-                            <option value="Hindi">हिन्दी</option>
-                        </select>
-                    </div>
-                    <div class="setting-item">
-                        <label>Default Servings</label>
-                        <select id="defaultServingsSetting">
-                            <option value="1">1</option>
-                            <option value="2">2</option>
-                            <option value="4" selected>4</option>
-                            <option value="6">6</option>
-                            <option value="8">8</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="settings-section">
-                    <h3>Data</h3>
-                    <div class="setting-item">
-                        <label>Export Data</label>
-                        <button class="btn btn-ghost" id="exportData">
-                            <span>📥 Export to JSON</span>
-                        </button>
-                    </div>
-                    <div class="setting-item">
-                        <label>Import Data</label>
-                        <input type="file" id="importData" accept=".json" style="display: none;">
-                        <button class="btn btn-ghost" id="importDataBtn">
-                            <span>📤 Import from JSON</span>
-                        </button>
-                    </div>
-                    <div class="setting-item">
-                        <label>Reset Data</label>
-                        <button class="btn btn-danger" id="resetData">
-                            <span>🔄 Reset All Data</span>
-                        </button>
-                        <p class="warning-text">This will delete all your recipes, history, and settings.</p>
-                    </div>
-                </div>
-                <div class="settings-footer">
-                    <p>© 2026 Sooban Talha Technologies</p>
-                    <p>v3.0.0 | Built with ❤️ by Sooban Talha</p>
-                </div>
-            </div>
-        </div>
+    <div class="lp-about">
+      <p><strong>RouxMind</strong> v3.0 — Where Every Plate Tells Your Story.</p>
+      <p>Built by <a href="https://soobantalhatech.xyz" target="_blank" rel="noopener">Sooban Talha Tech</a></p>
     </div>
 
-    <!-- PDF Modal -->
-    <div class="modal" id="pdfModal">
-        <div class="modal-overlay"></div>
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2>📄 Download PDF</h2>
-                <button class="modal-close" id="pdfClose">&times;</button>
-            </div>
-            <div class="modal-body">
-                <div class="pdf-options">
-                    <div class="pdf-option">
-                        <label>Theme</label>
-                        <select id="pdfTheme">
-                            <option value="dark">Dark (Neon Blue)</option>
-                            <option value="light">Light</option>
-                        </select>
-                    </div>
-                    <div class="pdf-option">
-                        <label>Include Nutrition</label>
-                        <select id="pdfNutrition">
-                            <option value="yes">Yes</option>
-                            <option value="no">No</option>
-                        </select>
-                    </div>
-                    <div class="pdf-option">
-                        <label>Include Tips</label>
-                        <select id="pdfTips">
-                            <option value="yes">Yes</option>
-                            <option value="no">No</option>
-                        </select>
-                    </div>
-                </div>
-                <button class="btn btn-primary btn-large" id="downloadPdfBtn">
-                    <span class="btn-icon">📥</span>
-                    <span>Download PDF</span>
-                </button>
-            </div>
-        </div>
+  </aside>
+
+  <!-- RIGHT / MAIN -->
+  <main class="right-panel">
+
+    <header class="dash-hdr">
+      <button class="hdr-icon-btn" id="sbToggle" aria-label="Toggle sidebar"><i class="fas fa-bars"></i></button>
+
+      <div class="hdr-search">
+        <i class="fas fa-magnifying-glass"></i>
+        <input type="text" id="headerSearchInput" placeholder="Search recipes, ingredients…" onkeydown="if(event.key==='Enter'){var t=document.getElementById('textInput'); openModal('wizardModal'); if(t){t.value=this.value; t.dispatchEvent(new Event('input'));} this.value='';}">
+        <kbd>⌘K</kbd>
+      </div>
+
+      <div class="hdr-stats">
+        <div class="hdr-stat" id="streakStat"><i class="fas fa-fire"></i> <span class="stat-value">0</span> <small>Streak</small></div>
+        <div class="hdr-stat" id="recipesStat"><i class="fas fa-utensils"></i> <span class="stat-value">0</span> <small>Recipes</small></div>
+        <div class="hdr-stat" id="xpStat"><i class="fas fa-star"></i> <span class="stat-value">0</span> <small>XP</small></div>
+      </div>
+
+      <div class="hdr-actions">
+        <button class="hdr-icon-btn" id="historyBtn" title="History"><i class="fas fa-clock-rotate-left"></i></button>
+        <button class="hdr-icon-btn" id="analyticsBtn" title="Analytics"><i class="fas fa-chart-simple"></i></button>
+        <button class="hdr-icon-btn" id="themeToggle" title="Toggle theme"><i class="fas fa-moon action-icon"></i></button>
+        <button class="hdr-icon-btn" id="settingsBtn" title="Settings"><i class="fas fa-gear"></i></button>
+        <button class="hdr-btn-primary" id="newRecipeBtn"><i class="fas fa-wand-magic-sparkles"></i> New Recipe</button>
+      </div>
+    </header>
+
+    <div class="analytics-panel" id="analyticsPanel">
+      <div class="ap-hdr">
+        <span><i class="fas fa-chart-simple"></i> Analytics</span>
+        <button class="modal-x" id="closeAnalytics"><i class="fas fa-xmark"></i></button>
+      </div>
+      <div class="ap-grid">
+        <div class="ap-card"><div class="ap-card-val" id="analyticsTotal">0</div><div class="ap-card-lbl">Total Recipes</div></div>
+        <div class="ap-card"><div class="ap-card-val" id="analyticsSuccess">0%</div><div class="ap-card-lbl">Success Rate</div></div>
+        <div class="ap-card"><div class="ap-card-val" id="analyticsCost">$0.00</div><div class="ap-card-lbl">Avg Cost</div></div>
+        <div class="ap-card"><div class="ap-card-val" id="analyticsTime">0ms</div><div class="ap-card-lbl">Avg Time</div></div>
+      </div>
+      <div class="ap-section">
+        <h4>Model Usage</h4>
+        <div class="chart-bars" id="modelUsageChart"></div>
+      </div>
+      <div class="ap-section">
+        <h4>Top Dishes</h4>
+        <div class="top-dishes" id="topDishes"></div>
+      </div>
     </div>
 
-    <!-- Confirmation Modal -->
-    <div class="modal" id="confirmModal">
-        <div class="modal-overlay"></div>
-        <div class="modal-content small">
-            <div class="modal-header">
-                <h2 id="confirmTitle">Confirm</h2>
-                <button class="modal-close" id="confirmClose">&times;</button>
-            </div>
-            <div class="modal-body">
-                <p id="confirmMessage">Are you sure?</p>
-            </div>
-            <div class="modal-footer">
-                <button class="btn btn-ghost" id="confirmCancel">Cancel</button>
-                <button class="btn btn-danger" id="confirmOk">Confirm</button>
-            </div>
+    <div class="out-area" id="outArea">
+
+      <section class="welcome-section" id="welcomeSection">
+        <div class="ws-mark">👨‍🍳</div>
+        <h1 class="ws-title">What's cooking today?</h1>
+        <p class="ws-sub">Give RouxMind your ingredients — by text, photo, voice, upload, or smart search — and get a full AI-crafted recipe in seconds.</p>
+        <button class="ws-cta" id="welcomeGenerateBtn"><i class="fas fa-wand-magic-sparkles"></i> Generate a Recipe</button>
+
+        <div class="ws-features">
+          <span class="ws-feat"><i class="fas fa-book-open"></i> Full Instructions</span>
+          <span class="ws-feat"><i class="fas fa-layer-group"></i> Ingredients List</span>
+          <span class="ws-feat"><i class="fas fa-clock"></i> Prep &amp; Cook Time</span>
+          <span class="ws-feat"><i class="fas fa-file-pdf"></i> Export PDF</span>
         </div>
+      </section>
+
+      <section class="input-methods" id="inputMethods">
+        <button class="im-tile" id="directText"><span class="im-icon"><i class="fas fa-keyboard"></i></span><span>Text</span></button>
+        <button class="im-tile" id="directCamera"><span class="im-icon"><i class="fas fa-camera"></i></span><span>Camera</span></button>
+        <button class="im-tile" id="directVoice"><span class="im-icon"><i class="fas fa-microphone"></i></span><span>Voice</span></button>
+        <button class="im-tile" id="directUpload"><span class="im-icon"><i class="fas fa-upload"></i></span><span>Upload</span></button>
+        <button class="im-tile" id="directSmart"><span class="im-icon"><i class="fas fa-bullseye"></i></span><span>Smart</span></button>
+        <button class="im-tile im-tile-accent" id="quickGenerate"><span class="im-icon"><i class="fas fa-rocket"></i></span><span>Quick Generate</span></button>
+        <button class="im-tile im-tile-accent" id="randomRecipe"><span class="im-icon"><i class="fas fa-dice"></i></span><span>Surprise Me</span></button>
+      </section>
+
+      <section class="generation-progress" id="generationProgress">
+        <div class="gp-stages" id="progressStages">
+          <div class="stage" data-stage="0"><span class="stage-icon">🎯</span><span class="stage-label">Detecting</span></div>
+          <div class="stage" data-stage="1"><span class="stage-icon">📝</span><span class="stage-label">Planning</span></div>
+          <div class="stage" data-stage="2"><span class="stage-icon">👨‍🍳</span><span class="stage-label">Cooking</span></div>
+          <div class="stage" data-stage="3"><span class="stage-icon">✨</span><span class="stage-label">Perfecting</span></div>
+          <div class="stage" data-stage="4"><span class="stage-icon">✅</span><span class="stage-label">Ready</span></div>
+        </div>
+        <div class="gp-bar"><div class="gp-fill" id="progressFill"></div></div>
+        <button class="gp-cancel" id="cancelGeneration"><i class="fas fa-xmark"></i> Cancel</button>
+      </section>
+
+      <section class="streaming-output" id="streamingOutput">
+        <div class="so-hdr"><i class="fas fa-fire"></i> RouxMind is cooking up your recipe…</div>
+        <pre class="so-content" id="streamingContent"></pre>
+      </section>
+
+      <section class="recipe-area" id="recipeArea">
+        <div class="recipe-card">
+          <div class="recipe-card-hdr">
+            <div>
+              <h2 class="recipe-title" id="recipeTitle">Your Recipe</h2>
+              <div class="recipe-badges" id="recipeBadges"></div>
+            </div>
+            <div class="recipe-actions">
+              <button class="ra-btn" id="saveRecipeBtn" title="Save"><i class="fas fa-star"></i></button>
+              <button class="ra-btn" id="pdfRecipeBtn" title="Download PDF"><i class="fas fa-file-pdf"></i></button>
+              <button class="ra-btn" id="shareRecipeBtn" title="Copy / Share"><i class="fas fa-share-nodes"></i></button>
+              <button class="ra-btn ra-danger" id="deleteRecipeBtn" title="Delete"><i class="fas fa-trash"></i></button>
+            </div>
+          </div>
+          <div class="recipe-content" id="recipeContent"></div>
+        </div>
+      </section>
+
+    </div>
+  </main>
+</div>
+
+<!-- WIZARD MODAL -->
+<div class="modal-overlay" id="wizardModal" onclick="if(event.target===this) closeModal('wizardModal')">
+  <div class="modal modal-lg" id="recipeWizard">
+    <div class="modal-hdr">
+      <h2><i class="fas fa-wand-magic-sparkles"></i> Generate Recipe</h2>
+      <button class="modal-x" onclick="closeModal('wizardModal')"><i class="fas fa-xmark"></i></button>
     </div>
 
-    <!-- Toast Notifications -->
-    <div class="toast-container" id="toastContainer"></div>
+    <div class="wizard-progress">
+      <div class="progress-step active" data-step="0"><span>1</span> Ingredients</div>
+      <div class="progress-line"></div>
+      <div class="progress-step" data-step="1"><span>2</span> Preferences</div>
+      <div class="progress-line"></div>
+      <div class="progress-step" data-step="2"><span>3</span> Review</div>
+    </div>
 
-    <!-- Footer -->
-    <footer class="dashboard-footer">
-        <div class="footer-left">
-            <p>© 2026 <a href="https://soobantalhatech.xyz" target="_blank">Sooban Talha Technologies</a></p>
-        </div>
-        <div class="footer-center">
-            <p>⚡ Powered by <a href="https://meshapi.ai" target="_blank">Mesh API</a></p>
-        </div>
-        <div class="footer-right">
-            <p>Built by Sooban Talha | <a href="mailto:soobantalhatechnologies@gmail.com">Contact</a></p>
-        </div>
-    </footer>
+    <div class="modal-body wizard-body">
 
-    <!-- Scripts -->
-    <script src="app.js"></script>
-    <script>
-        // Initialize dashboard when DOM is ready
-        document.addEventListener('DOMContentLoaded', () => {
-            // Hide loading after a short delay
-            setTimeout(() => {
-                document.getElementById('dashboardLoading').classList.add('hidden');
-            }, 1000);
-        });
-    </script>
+      <div class="wizard-step active" data-step="0">
+        <div class="input-tabs">
+          <button class="input-tab active" data-tab="text"><i class="fas fa-keyboard"></i> Text</button>
+          <button class="input-tab" data-tab="camera"><i class="fas fa-camera"></i> Camera</button>
+          <button class="input-tab" data-tab="voice"><i class="fas fa-microphone"></i> Voice</button>
+          <button class="input-tab" data-tab="upload"><i class="fas fa-upload"></i> Upload</button>
+          <button class="input-tab" data-tab="smart"><i class="fas fa-bullseye"></i> Smart</button>
+        </div>
+
+        <div class="input-panel active" data-panel="text">
+          <textarea id="textInput" rows="4" placeholder="Enter ingredients (e.g., chicken, onions, garlic, tomatoes…)"></textarea>
+          <div class="suggestion-tags" id="textSuggestions"></div>
+          <div class="quick-ingredients">
+            <h4>Quick Picks</h4>
+            <div class="ingredient-chips" id="ingredientChips"></div>
+          </div>
+        </div>
+
+        <div class="input-panel" data-panel="camera">
+          <div class="camera-box">
+            <video id="cameraVideo" autoplay playsinline muted></video>
+            <canvas id="cameraCanvas" style="display:none"></canvas>
+            <div class="camera-overlay" id="cameraOverlay">
+              <i class="fas fa-camera"></i>
+              <p>Open your camera to snap your ingredients</p>
+            </div>
+            <div class="camera-thumb" id="cameraThumbnail" style="display:none">
+              <img id="capturedImage" alt="Captured ingredients">
+              <button class="thumb-remove" id="removeThumbnail"><i class="fas fa-xmark"></i></button>
+            </div>
+          </div>
+          <div class="camera-controls" id="cameraControls" style="display:none">
+            <button class="btn-secondary" id="captureBtn"><i class="fas fa-camera"></i> Capture</button>
+          </div>
+          <div class="camera-actions">
+            <button class="btn-primary" id="startCamera"><i class="fas fa-video"></i> Open Camera</button>
+            <button class="btn-secondary" id="retakeBtn"><i class="fas fa-rotate-left"></i> Retake</button>
+            <button class="btn-primary" id="usePhotoBtn"><i class="fas fa-check"></i> Use Photo</button>
+          </div>
+        </div>
+
+        <div class="input-panel" data-panel="voice">
+          <div class="voice-box" id="voiceVisualizer">
+            <div class="voice-wave" id="voiceWave">
+              <span></span><span></span><span></span><span></span><span></span>
+            </div>
+          </div>
+          <div class="voice-controls">
+            <button class="btn-primary" id="startVoice"><i class="fas fa-microphone"></i> Start Recording</button>
+            <button class="btn-secondary" id="stopVoice" style="display:none"><i class="fas fa-stop"></i> Stop</button>
+          </div>
+          <div class="voice-transcript" id="voiceTranscript"><p>Your voice input will appear here...</p></div>
+        </div>
+
+        <div class="input-panel" data-panel="upload">
+          <div class="upload-zone" id="uploadZone">
+            <i class="fas fa-cloud-arrow-up"></i>
+            <h4>Drag &amp; Drop an Image</h4>
+            <p>or</p>
+            <button class="btn-primary" id="browseBtn" type="button">Browse Files</button>
+            <input type="file" id="fileInput" accept="image/*" style="display:none">
+          </div>
+          <div class="upload-preview" id="uploadPreview" style="display:none">
+            <img id="uploadedImage" alt="Uploaded ingredients">
+            <button class="thumb-remove" id="removeUpload"><i class="fas fa-xmark"></i></button>
+          </div>
+        </div>
+
+        <div class="input-panel" data-panel="smart">
+          <input type="text" id="smartInput" class="smart-input" placeholder="Start typing (e.g., 'chicken')…">
+          <button class="btn-primary" id="smartSuggestBtn"><i class="fas fa-bullseye"></i> Suggest Ingredients</button>
+          <div id="smartSuggestions" class="smart-suggestions"></div>
+        </div>
+      </div>
+
+      <div class="wizard-step" data-step="1">
+        <div class="pref-block">
+          <h4><i class="fas fa-pepper-hot"></i> Spice Level</h4>
+          <input type="range" min="1" max="5" value="3" id="spiceSlider" class="pref-slider">
+          <div class="pref-slider-val" id="spiceValue">Spicy - Noticeable kick</div>
+        </div>
+
+        <div class="pref-block">
+          <h4><i class="fas fa-users"></i> Servings</h4>
+          <div class="servings-grid" id="servingsGrid">
+            <button class="serving-btn" data-servings="1">1</button>
+            <button class="serving-btn active" data-servings="2">2</button>
+            <button class="serving-btn" data-servings="4">4</button>
+            <button class="serving-btn" data-servings="6">6</button>
+            <button class="serving-btn" data-servings="8">8</button>
+            <button class="serving-btn" data-servings="10">10</button>
+          </div>
+        </div>
+
+        <div class="pref-block">
+          <h4><i class="fas fa-clock"></i> Time Preference</h4>
+          <div class="time-buttons" id="timeButtons">
+            <button class="time-btn" data-time="1"><i class="fas fa-bolt"></i> Quick</button>
+            <button class="time-btn active" data-time="2"><i class="fas fa-fire"></i> Medium</button>
+            <button class="time-btn" data-time="3"><i class="fas fa-snail"></i> Slow</button>
+            <button class="time-btn" data-time="4"><i class="fas fa-crown"></i> Gourmet</button>
+          </div>
+        </div>
+
+        <div class="pref-row">
+          <div class="pref-block pref-half">
+            <h4><i class="fas fa-globe"></i> Language</h4>
+            <select id="languageSelect" class="pref-select">
+              <option value="English" selected>English</option>
+              <option value="Hindi">Hindi</option>
+              <option value="Spanish">Spanish</option>
+              <option value="French">French</option>
+              <option value="Arabic">Arabic</option>
+              <option value="Urdu">Urdu</option>
+            </select>
+          </div>
+          <div class="pref-block pref-half">
+            <h4><i class="fas fa-book"></i> Depth</h4>
+            <select id="depthSelect" class="pref-select">
+              <option value="quick">Quick</option>
+              <option value="standard" selected>Standard</option>
+              <option value="detailed">Detailed</option>
+              <option value="gourmet">Gourmet</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="wizard-step" data-step="2">
+        <h4 class="review-title"><i class="fas fa-clipboard-check"></i> Review your recipe request</h4>
+        <div class="review-grid">
+          <div class="review-item"><i class="fas fa-carrot"></i> <span id="reviewIngredients">Not set</span></div>
+          <div class="review-item"><i class="fas fa-pepper-hot"></i> <span id="reviewSpice">Spice: Medium</span></div>
+          <div class="review-item"><i class="fas fa-users"></i> <span id="reviewServings">Servings: 2</span></div>
+          <div class="review-item"><i class="fas fa-clock"></i> <span id="reviewTime">Time: Medium</span></div>
+          <div class="review-item"><i class="fas fa-globe"></i> <span id="reviewLanguage">Language: English</span></div>
+          <div class="review-item"><i class="fas fa-book"></i> <span id="reviewDepth">Depth: Standard</span></div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="modal-footer wizard-footer">
+      <button class="btn-secondary" id="prevBtn" style="display:none"><i class="fas fa-arrow-left"></i> Back</button>
+      <button class="btn-primary" id="nextBtn">Next <i class="fas fa-arrow-right"></i></button>
+      <button class="btn-generate" id="generateBtn" style="display:none"><span class="btn-icon">🚀</span><span>Generate Recipe</span></button>
+    </div>
+  </div>
+</div>
+
+<!-- HISTORY MODAL -->
+<div class="modal-overlay" id="historyModal" onclick="if(event.target===this) closeModal('historyModal')">
+  <div class="modal modal-md">
+    <div class="modal-hdr">
+      <h2><i class="fas fa-clock-rotate-left"></i> Recipe History</h2>
+      <button class="modal-x" id="historyClose"><i class="fas fa-xmark"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="history-toolbar">
+        <div class="hdr-search hdr-search-modal">
+          <i class="fas fa-magnifying-glass"></i>
+          <input type="text" id="historySearch" placeholder="Search history…">
+        </div>
+        <select id="historyFilter" class="pref-select">
+          <option value="all">All Time</option>
+          <option value="today">Today</option>
+          <option value="week">This Week</option>
+          <option value="month">This Month</option>
+        </select>
+        <button class="btn-secondary" id="clearHistory"><i class="fas fa-trash"></i> Clear</button>
+      </div>
+      <div class="history-list" id="historyList">
+        <p class="empty-state">No recipes yet</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SETTINGS MODAL -->
+<div class="modal-overlay" id="settingsModal" onclick="if(event.target===this) closeModal('settingsModal')">
+  <div class="modal modal-md">
+    <div class="modal-hdr">
+      <h2><i class="fas fa-gear"></i> Settings</h2>
+      <button class="modal-x" id="settingsClose"><i class="fas fa-xmark"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="settings-block">
+        <label>Your Name</label>
+        <input type="text" id="usernameSetting" class="pref-select" placeholder="Chef Guest">
+      </div>
+
+      <div class="settings-block">
+        <label>Avatar</label>
+        <div class="avatar-options" id="avatarOptions">
+          <button class="avatar-option active" data-avatar="🥄">🥄</button>
+          <button class="avatar-option" data-avatar="🍳">🍳</button>
+          <button class="avatar-option" data-avatar="👨‍🍳">👨‍🍳</button>
+          <button class="avatar-option" data-avatar="👩‍🍳">👩‍🍳</button>
+          <button class="avatar-option" data-avatar="🧑‍🍳">🧑‍🍳</button>
+          <button class="avatar-option" data-avatar="👑">👑</button>
+        </div>
+      </div>
+
+      <div class="settings-block">
+        <label>Theme</label>
+        <select id="themeSetting" class="pref-select">
+          <option value="dark">Dark</option>
+          <option value="light">Light</option>
+          <option value="system">System</option>
+        </select>
+      </div>
+
+      <div class="pref-row">
+        <div class="settings-block pref-half">
+          <label>Default Language</label>
+          <select id="defaultLanguageSetting" class="pref-select">
+            <option value="English">English</option>
+            <option value="Hindi">Hindi</option>
+            <option value="Spanish">Spanish</option>
+          </select>
+        </div>
+        <div class="settings-block pref-half">
+          <label>Default Servings</label>
+          <select id="defaultServingsSetting" class="pref-select">
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="4" selected>4</option>
+            <option value="6">6</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="settings-block">
+        <label>Your Data</label>
+        <div class="settings-actions">
+          <button class="btn-secondary" id="exportData"><i class="fas fa-download"></i> Export</button>
+          <button class="btn-secondary" id="importDataBtn"><i class="fas fa-upload"></i> Import</button>
+          <input type="file" id="importData" accept="application/json" style="display:none">
+          <button class="btn-secondary ra-danger" id="resetData"><i class="fas fa-trash"></i> Reset All</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PDF MODAL -->
+<div class="modal-overlay" id="pdfModal" onclick="if(event.target===this) closeModal('pdfModal')">
+  <div class="modal modal-sm">
+    <div class="modal-hdr">
+      <h2><i class="fas fa-file-pdf"></i> Download PDF</h2>
+      <button class="modal-x" id="pdfClose"><i class="fas fa-xmark"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="settings-block">
+        <label>Theme</label>
+        <select id="pdfTheme" class="pref-select">
+          <option value="dark" selected>Dark</option>
+          <option value="light">Light</option>
+        </select>
+      </div>
+      <button class="btn-generate" id="downloadPdfBtn" style="width:100%">
+        <i class="fas fa-file-pdf"></i> Download PDF
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- CONFIRM MODAL -->
+<div class="modal-overlay" id="confirmModal">
+  <div class="modal modal-sm">
+    <div class="modal-hdr">
+      <h2 id="confirmTitle">Confirm Action</h2>
+      <button class="modal-x" id="confirmClose"><i class="fas fa-xmark"></i></button>
+    </div>
+    <div class="modal-body">
+      <p id="confirmMessage">Are you sure?</p>
+      <div class="confirm-buttons">
+        <button class="btn-generate" id="confirmOk">Yes, Confirm</button>
+        <button class="btn-secondary" id="confirmCancel">Cancel</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<button class="back-to-top" id="backToTop"><i class="fas fa-arrow-up"></i></button>
+
+<script src="app.js"></script>
+<script>
+  document.getElementById('sbToggle').addEventListener('click', () => {
+    document.getElementById('leftPanel').classList.toggle('collapsed');
+  });
+  window.addEventListener('load', () => {
+    setTimeout(() => document.getElementById('dashboardLoading')?.classList.add('hidden'), 400);
+  });
+</script>
 </body>
 </html>
