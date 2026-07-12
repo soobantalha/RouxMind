@@ -1,0 +1,18 @@
+# Create .gitignore file
+echo "node_modules/
+.env
+*.log
+.DS_Store
+.vercel
+*.pem
+*.key
+*.crt
+dist/
+build/
+coverage/
+.vscode/
+.idea/
+Thumbs.db
+*.tmp
+*.swp
+*.swo" > .gitignore

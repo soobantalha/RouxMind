@@ -1,0 +1,29 @@
+{
+  "name": "rouxmind",
+  "version": "2.0.0-pro-max-7d",
+  "description": "RouxMind — Where Every Plate Tells Your Story. Ultra premium AI recipe generator. Built by Sooban Talha Technologies × Mesh API.",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "dev": "vercel dev",
+    "start": "vercel dev",
+    "build": "echo 'RouxMind static build — no compilation needed, pure luxury'"
+  },
+  "dependencies": {
+    "googleapis": "^144.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "keywords": [
+    "rouxmind",
+    "ai-chef",
+    "mesh-api",
+    "gemini-2.5-flash-lite",
+    "luxury-ui",
+    "glass-morphism",
+    "vercel"
+  ],
+  "author": "Sooban Talha Technologies <sooban@rouxmind.ai>",
+  "license": "Proprietary"
+}
