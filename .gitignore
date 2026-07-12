@@ -15,4 +15,4 @@ coverage/
 Thumbs.db
 *.tmp
 *.swp
-*.swo" > .gitignore
+*.swo" > .gitignoretr

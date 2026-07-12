@@ -1,262 +1,342 @@
-/* RouxMind — ULTRA RICH PRO MAX 7D LUXURY JS
-   Layers: grain, aurora, gold dust, mouse glow, cursor, magnetic, spotlight, tilt
-   Built by Sooban Talha Technologies × Mesh API
-*/
-(() => {
-  'use strict';
+/* ============================================================================
+   RouxMind — app.js
+   Handles: onboarding, localStorage stats/history, sidebar, generation,
+   mouse glow / particles, PDF export
+   ============================================================================ */
 
-  const $ = (s, sc=document) => sc.querySelector(s);
-  const $$ = (s, sc=document) => [...sc.querySelectorAll(s)];
+const RM = {
+  KEYS: {
+    username: "rouxmind_username",
+    total: "rouxmind_total",
+    streak: "rouxmind_streak",
+    lastVisit: "rouxmind_last_visit",
+    rank: "rouxmind_rank",
+    xp: "rouxmind_xp",
+    history: "rouxmind_history",
+    saved: "rouxmind_saved"
+  },
 
-  /* ---------- Scroll Progress ---------- */
-  const progress = $('#scrollProgress');
-  const onScrollProgress = () => {
-    if (!progress) return;
-    const h = document.documentElement;
-    const scrolled = (h.scrollTop / (h.scrollHeight - h.clientHeight)) * 100;
-    progress.style.width = `${scrolled}%`;
-  };
-  window.addEventListener('scroll', onScrollProgress, {passive:true});
-  onScrollProgress();
+  RANKS: [
+    { min: 0,    name: "Kitchen Newbie", icon: "🍳" },
+    { min: 100,  name: "Sous Chef",      icon: "🥈" },
+    { min: 300,  name: "Head Chef",      icon: "🥇" },
+    { min: 700,  name: "Master Chef",    icon: "👨‍🍳" },
+    { min: 1500, name: "Culinary Legend",icon: "🏆" }
+  ],
 
-  /* ---------- Preloader Pro Max with Counter ---------- */
-  const preloader = $('#preloader');
-  const preBar = $('.preloader-bar-fill');
-  const preCounter = $('.preloader-counter');
-  if (preloader) {
-    let p = 0;
-    document.body.style.overflow = 'hidden';
-    const int = setInterval(() => {
-      p += Math.random()*11 + 4;
-      if (p >= 100) p = 100;
-      if (preBar) preBar.style.width = `${p}%`;
-      if (preCounter) preCounter.textContent = `${Math.floor(p).toString().padStart(2,'0')}% — RouxMind Atelier`;
-      if (p >= 100) clearInterval(int);
-    }, 55);
+  // ---- Storage helpers ----
+  get(key, fallback = null) {
+    const v = localStorage.getItem(key);
+    if (v === null) return fallback;
+    try { return JSON.parse(v); } catch { return v; }
+  },
+  set(key, value) {
+    localStorage.setItem(key, typeof value === "string" ? value : JSON.stringify(value));
+  },
 
-    const hide = () => {
-      const elapsed = performance.now();
-      const min = 1200;
-      const wait = Math.max(0, min - elapsed);
-      setTimeout(() => {
-        preloader.classList.add('hidden');
-        document.body.style.overflow = '';
-        // reveal initial
-        $$('.reveal').forEach(el => {
-          const r = el.getBoundingClientRect();
-          if (r.top < innerHeight * 0.92) el.classList.add('active');
-        });
-      }, wait);
+  // ---- User state ----
+  getUsername() { return this.get(this.KEYS.username, null); },
+  setUsername(name) { this.set(this.KEYS.username, name); },
+
+  getStats() {
+    return {
+      total: Number(this.get(this.KEYS.total, 0)),
+      streak: Number(this.get(this.KEYS.streak, 0)),
+      xp: Number(this.get(this.KEYS.xp, 0)),
+      rank: this.get(this.KEYS.rank, this.RANKS[0].name)
     };
-    if (document.readyState === 'complete') setTimeout(hide, 600);
-    else window.addEventListener('load', () => setTimeout(hide, 400));
-    setTimeout(hide, 2600);
-  }
+  },
 
-  /* ---------- Custom Cursor 7D ---------- */
-  const dot = $('#cursorDot');
-  const ring = $('#cursorRing');
-  if (dot && ring && !matchMedia('(pointer: coarse)').matches) {
-    let mx = -100, my = -100, rx = -100, ry = -100;
-    let raf = null;
-    const lerp = (a,b,n) => (1-n)*a + n*b;
-    const animate = () => {
-      rx = lerp(rx, mx, 0.16); ry = lerp(ry, my, 0.16);
-      dot.style.left = `${mx}px`; dot.style.top = `${my}px`;
-      ring.style.left = `${rx}px`; ring.style.top = `${ry}px`;
-      raf = requestAnimationFrame(animate);
-    };
-    animate();
-    window.addEventListener('mousemove', e => { mx = e.clientX; my = e.clientY; }, {passive:true});
-    $$('a, button, .glass-card, .btn-gold, .btn-outline, .drop-zone').forEach(el => {
-      el.addEventListener('mouseenter', () => { dot.classList.add('hover'); ring.classList.add('hover'); });
-      el.addEventListener('mouseleave', () => { dot.classList.remove('hover'); ring.classList.remove('hover'); });
-    });
-  }
+  rankFor(xp) {
+    let r = this.RANKS[0];
+    for (const rank of this.RANKS) if (xp >= rank.min) r = rank;
+    return r;
+  },
 
-  /* ---------- Gold Dust Canvas — 7D Particle Luxury ---------- */
-  const canvas = $('#goldDust');
-  if (canvas && canvas.getContext && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
-    const ctx = canvas.getContext('2d', {alpha:true});
-    let w, h, particles = [], rafId;
-    const count = Math.min(72, Math.floor((innerWidth * innerHeight) / 18000));
-    const resize = () => {
-      w = canvas.width = innerWidth * devicePixelRatio;
-      h = canvas.height = innerHeight * devicePixelRatio;
-      canvas.style.width = innerWidth + 'px';
-      canvas.style.height = innerHeight + 'px';
-      ctx.scale(devicePixelRatio, devicePixelRatio);
-    };
-    class P {
-      constructor(){ this.reset(true); }
-      reset(initial=false){
-        this.x = Math.random()*innerWidth;
-        this.y = initial ? Math.random()*innerHeight : innerHeight + Math.random()*40;
-        this.vx = (Math.random()-0.5)*0.22;
-        this.vy = -0.18 - Math.random()*0.55;
-        this.r = 0.6 + Math.random()*1.8;
-        this.alpha = 0.12 + Math.random()*0.5;
-        this.tw = Math.random()*Math.PI*2;
-        this.tws = 0.006 + Math.random()*0.012;
-      }
-      update(){
-        this.x += this.vx + Math.sin(this.tw)*0.08;
-        this.y += this.vy;
-        this.tw += this.tws;
-        if (this.y < -10 || this.x < -20 || this.x > innerWidth+20) this.reset(false);
-      }
-      draw(){
-        const g = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, this.r*3);
-        g.addColorStop(0, `rgba(249,217,118,${this.alpha})`);
-        g.addColorStop(0.3, `rgba(212,175,55,${this.alpha*0.6})`);
-        g.addColorStop(1, `rgba(212,175,55,0)`);
-        ctx.fillStyle = g;
-        ctx.beginPath(); ctx.arc(this.x, this.y, this.r*3, 0, Math.PI*2); ctx.fill();
-      }
+  updateStreak() {
+    const today = new Date().toDateString();
+    const last = this.get(this.KEYS.lastVisit, null);
+    let streak = Number(this.get(this.KEYS.streak, 0));
+
+    if (last === today) {
+      // already counted today
+    } else if (last === new Date(Date.now() - 86400000).toDateString()) {
+      streak += 1; // consecutive day
+    } else {
+      streak = 1; // streak broken or first visit
     }
-    const init = () => {
-      particles = []; for(let i=0;i<count;i++) particles.push(new P());
-    };
-    const loop = () => {
-      ctx.clearRect(0,0,innerWidth, innerHeight);
-      particles.forEach(p=>{ p.update(); p.draw(); });
-      rafId = requestAnimationFrame(loop);
-    };
-    resize(); init(); loop();
-    window.addEventListener('resize', () => { resize(); init(); }, {passive:true});
-    document.addEventListener('visibilitychange', () => {
-      if (document.hidden) cancelAnimationFrame(rafId);
-      else loop();
+    this.set(this.KEYS.streak, streak);
+    this.set(this.KEYS.lastVisit, today);
+    return streak;
+  },
+
+  recordGeneration(dishTitle) {
+    const total = Number(this.get(this.KEYS.total, 0)) + 1;
+    const xp = Number(this.get(this.KEYS.xp, 0)) + 25;
+    const rank = this.rankFor(xp);
+
+    this.set(this.KEYS.total, total);
+    this.set(this.KEYS.xp, xp);
+    this.set(this.KEYS.rank, rank.name);
+
+    const history = this.get(this.KEYS.history, []);
+    history.unshift({ title: dishTitle, date: new Date().toISOString() });
+    this.set(this.KEYS.history, history.slice(0, 50)); // cap history
+
+    return { total, xp, rank };
+  },
+
+  getHistory() { return this.get(this.KEYS.history, []); },
+
+  saveRecipe(recipe) {
+    const saved = this.get(this.KEYS.saved, []);
+    saved.unshift({ ...recipe, savedAt: new Date().toISOString() });
+    this.set(this.KEYS.saved, saved);
+  },
+  getSaved() { return this.get(this.KEYS.saved, []); },
+  removeSaved(index) {
+    const saved = this.get(this.KEYS.saved, []);
+    saved.splice(index, 1);
+    this.set(this.KEYS.saved, saved);
+  }
+};
+
+// ============================================================================
+// ONBOARDING
+// ============================================================================
+function initOnboarding() {
+  const modalRoot = document.getElementById("onboarding-root");
+  if (!modalRoot) return;
+
+  const username = RM.getUsername();
+
+  if (!username) {
+    modalRoot.innerHTML = `
+      <div class="modal-backdrop">
+        <div class="glass-card modal-card" style="padding:2.5rem; max-width:420px; width:90%; text-align:center;">
+          <div style="font-size:2.5rem; margin-bottom:0.5rem;">🧠</div>
+          <h2 class="display" style="font-size:1.6rem; margin-bottom:0.4rem;">Welcome to RouxMind!</h2>
+          <p style="margin-bottom:1.5rem;">Where every plate tells your story.</p>
+          <input id="onboard-name" class="input-field" placeholder="Enter your name" style="margin-bottom:0.75rem;" />
+          <p class="text-muted" style="font-size:0.8rem; margin-bottom:1.5rem;">🔒 Anonymous stats only — stored on this device</p>
+          <button id="onboard-start" class="btn btn-primary" style="width:100%;">🚀 Start Cooking →</button>
+        </div>
+      </div>`;
+
+    document.getElementById("onboard-start").addEventListener("click", () => {
+      const val = document.getElementById("onboard-name").value.trim();
+      if (!val) return;
+      RM.setUsername(val);
+      RM.updateStreak();
+      modalRoot.innerHTML = "";
+      renderSidebarStats();
+    });
+  } else {
+    const streak = RM.updateStreak();
+    const stats = RM.getStats();
+    const rank = RM.rankFor(stats.xp);
+
+    modalRoot.innerHTML = `
+      <div class="modal-backdrop">
+        <div class="glass-card modal-card" style="padding:2.5rem; max-width:420px; width:90%; text-align:center;">
+          <div style="font-size:2.5rem; margin-bottom:0.5rem;">🔥</div>
+          <h2 class="display" style="font-size:1.6rem; margin-bottom:1.25rem;">Welcome back, ${escapeHtml(username)}!</h2>
+          <div style="display:flex; flex-direction:column; gap:0.6rem; text-align:left; margin-bottom:1.5rem;">
+            <div class="stat-pill">📋 Total Recipes: ${stats.total}</div>
+            <div class="stat-pill">🔥 Streak: ${streak} day${streak === 1 ? "" : "s"}</div>
+            <div class="stat-pill">${rank.icon} Rank: ${rank.name}</div>
+            <div class="stat-pill">⭐ XP: ${stats.xp}</div>
+          </div>
+          <button id="onboard-continue" class="btn btn-primary" style="width:100%;">Continue Cooking →</button>
+        </div>
+      </div>`;
+
+    document.getElementById("onboard-continue").addEventListener("click", () => {
+      modalRoot.innerHTML = "";
+    });
+  }
+}
+
+function escapeHtml(str) {
+  const div = document.createElement("div");
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+// ============================================================================
+// SIDEBAR STATS + HISTORY
+// ============================================================================
+function renderSidebarStats() {
+  const el = document.getElementById("sidebar-stats");
+  if (!el) return;
+  const stats = RM.getStats();
+  const rank = RM.rankFor(stats.xp);
+
+  el.innerHTML = `
+    <div style="padding:1rem 1.1rem;">
+      <div class="eyebrow" style="margin-bottom:0.5rem;">Signed in as</div>
+      <div style="font-weight:600; margin-bottom:1rem;">${escapeHtml(RM.getUsername() || "Guest")}</div>
+      <div style="display:flex; flex-direction:column; gap:0.5rem;">
+        <div class="stat-pill">📋 ${stats.total} recipes</div>
+        <div class="stat-pill">🔥 ${stats.streak}-day streak</div>
+        <div class="stat-pill">${rank.icon} ${rank.name}</div>
+        <div class="stat-pill">⭐ ${stats.xp} XP</div>
+      </div>
+    </div>`;
+
+  renderHistory();
+  renderSaved();
+}
+
+function renderHistory() {
+  const el = document.getElementById("sidebar-history");
+  if (!el) return;
+  const history = RM.getHistory();
+  el.innerHTML = history.length
+    ? history.slice(0, 12).map(h => `
+        <div class="sidebar-item" style="font-size:0.85rem;">
+          <span>🕘</span><span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${escapeHtml(h.title)}</span>
+        </div>`).join("")
+    : `<div class="text-muted" style="padding:0.5rem 1.1rem; font-size:0.85rem;">No recipes yet</div>`;
+}
+
+function renderSaved() {
+  const el = document.getElementById("sidebar-saved");
+  if (!el) return;
+  const saved = RM.getSaved();
+  el.innerHTML = saved.length
+    ? saved.map((r, i) => `
+        <div class="sidebar-item" style="font-size:0.85rem; justify-content:space-between;">
+          <span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">⭐ ${escapeHtml(r.title || "Untitled")}</span>
+          <span data-remove="${i}" style="cursor:pointer; opacity:0.5;">✕</span>
+        </div>`).join("")
+    : `<div class="text-muted" style="padding:0.5rem 1.1rem; font-size:0.85rem;">No saved recipes</div>`;
+
+  el.querySelectorAll("[data-remove]").forEach(node => {
+    node.addEventListener("click", () => {
+      RM.removeSaved(Number(node.dataset.remove));
+      renderSaved();
+    });
+  });
+}
+
+// ============================================================================
+// RECIPE GENERATION
+// ============================================================================
+async function generateRecipe({ dishText, imageBase64, servings, spice, time }) {
+  const res = await fetch("/api/recipe", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      user: RM.getUsername() || "Anonymous",
+      dishText,
+      imageBase64,
+      servings,
+      spice,
+      time
+    })
+  });
+
+  const data = await res.json();
+  if (!data.success) throw new Error(data.error || "Generation failed");
+
+  RM.recordGeneration(data.recipe.title || dishText);
+  renderSidebarStats();
+
+  return data.recipe;
+}
+
+// ============================================================================
+// PDF EXPORT (uses jsPDF — loaded via CDN in recipe.html)
+// ============================================================================
+function downloadRecipePDF(recipe) {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ unit: "pt", format: "a4" });
+  const margin = 48;
+  let y = margin;
+  const lineHeight = 16;
+  const pageWidth = doc.internal.pageSize.getWidth();
+
+  function addText(text, size, weight = "normal", color = "#1a1a1a") {
+    doc.setFont("helvetica", weight);
+    doc.setFontSize(size);
+    doc.setTextColor(color);
+    const lines = doc.splitTextToSize(text, pageWidth - margin * 2);
+    lines.forEach(line => {
+      if (y > 780) { doc.addPage(); y = margin; }
+      doc.text(line, margin, y);
+      y += lineHeight;
     });
   }
 
-  /* ---------- Mouse Glow Pro Max ---------- */
-  const glow = $('#mouse-glow');
+  addText(recipe.title || "Recipe", 22, "bold", "#8B93FF");
+  addText(recipe.description || "", 11, "italic", "#555");
+  y += 6;
+  addText(`Servings: ${recipe.servings || "-"}   Prep: ${recipe.prepTime || "-"}   Cook: ${recipe.cookTime || "-"}   Difficulty: ${recipe.difficulty || "-"}`, 10);
+  y += 12;
+
+  addText("Ingredients", 15, "bold");
+  (recipe.ingredients || []).forEach(ing => addText(`• ${ing.amount} ${ing.item}`, 11));
+  y += 8;
+
+  addText("Steps", 15, "bold");
+  (recipe.steps || []).forEach(s => addText(`${s.step}. ${s.instruction}${s.duration ? ` (${s.duration})` : ""}`, 11));
+  y += 8;
+
+  if (recipe.tips?.length) {
+    addText("Chef's Tips", 15, "bold");
+    recipe.tips.forEach(t => addText(`💡 ${t}`, 11));
+  }
+
+  y += 10;
+  addText("Generated by RouxMind — by Sooban Talha Technologies · soobantalhatech.xyz", 9, "normal", "#999");
+
+  doc.save(`${(recipe.title || "recipe").replace(/[^a-z0-9]/gi, "_")}.pdf`);
+}
+
+// ============================================================================
+// AMBIENT FX — mouse glow + floating particles
+// ============================================================================
+function initAmbientFX() {
+  const glow = document.getElementById("mouse-glow");
   if (glow) {
-    let mx=-600, my=-600, cx=-600, cy=-600, vis=false;
-    const lerp=(a,b,n)=>(1-n)*a+n*b;
-    (function tick(){ cx=lerp(cx,mx,0.07); cy=lerp(cy,my,0.07); glow.style.left=cx+'px'; glow.style.top=cy+'px'; requestAnimationFrame(tick);})();
-    window.addEventListener('mousemove', e=>{ mx=e.clientX; my=e.clientY; if(!vis){vis=true; glow.classList.add('visible');}}, {passive:true});
-    window.addEventListener('mouseleave', ()=>{vis=false; glow.classList.remove('visible');});
-    if (matchMedia('(pointer: coarse)').matches) glow.style.display='none';
-  }
-
-  /* ---------- Header Scroll ---------- */
-  const header = $('#header');
-  if (header) {
-    let tick=false;
-    const upd=()=>{ if(!tick){ requestAnimationFrame(()=>{ if(scrollY>54) header.classList.add('scrolled'); else header.classList.remove('scrolled'); tick=false;}); tick=true; }};
-    window.addEventListener('scroll', upd, {passive:true}); upd();
-  }
-
-  /* ---------- Mobile Menu ---------- */
-  const toggle = $('#navToggle'), menu = $('#mobileMenu');
-  if (toggle && menu) {
-    const close=()=>{ toggle.classList.remove('active'); toggle.setAttribute('aria-expanded','false'); menu.classList.remove('open'); menu.setAttribute('aria-hidden','true'); document.body.style.overflow=''; };
-    const open=()=>{ toggle.classList.add('active'); toggle.setAttribute('aria-expanded','true'); menu.classList.add('open'); menu.setAttribute('aria-hidden','false'); document.body.style.overflow='hidden'; };
-    toggle.addEventListener('click', ()=> menu.classList.contains('open')?close():open());
-    $$('a', menu).forEach(a=>a.addEventListener('click',close));
-    document.addEventListener('keydown', e=>{ if(e.key==='Escape' && menu.classList.contains('open')) close();});
-    document.addEventListener('click', e=>{ if(!menu.contains(e.target) && !toggle.contains(e.target) && menu.classList.contains('open')) close();});
-    window.addEventListener('resize', ()=>{ if(innerWidth>1024 && menu.classList.contains('open')) close();});
-  }
-
-  /* ---------- Spotlight + Magnetic ---------- */
-  const spotlightCards = $$('.glass-card, .btn-outline, .drop-zone');
-  spotlightCards.forEach(card=>{
-    card.addEventListener('mousemove', e=>{
-      const r=card.getBoundingClientRect();
-      const x=e.clientX - r.left, y=e.clientY - r.top;
-      card.style.setProperty('--spot-x', `${(x/r.width)*100}%`);
-      card.style.setProperty('--spot-y', `${(y/r.height)*100}%`);
-      card.style.setProperty('--mx', `${x}px`);
-      card.style.setProperty('--my', `${y}px`);
-    });
-  });
-
-  const magneticBtns = $$('.magnetic');
-  if (!matchMedia('(pointer: coarse)').matches) {
-    magneticBtns.forEach(btn=>{
-      btn.addEventListener('mousemove', e=>{
-        const r=btn.getBoundingClientRect();
-        const x=e.clientX - r.left - r.width/2, y=e.clientY - r.top - r.height/2;
-        btn.style.transform = `translate(${x*0.18}px, ${y*0.28}px)`;
-      });
-      btn.addEventListener('mouseleave', ()=>{ btn.style.transform='translate(0,0)'; });
+    window.addEventListener("mousemove", e => {
+      glow.style.transform = `translate(${e.clientX}px, ${e.clientY}px) translate(-50%, -50%)`;
     });
   }
 
-  /* ---------- 3D Tilt Hero ---------- */
-  const heroWrap = $('.hero-logo-wrap'), heroVisual = $('.hero-visual');
-  if (heroWrap && heroVisual && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
-    heroVisual.addEventListener('mousemove', e=>{
-      const r=heroVisual.getBoundingClientRect();
-      const cx=r.left+r.width/2, cy=r.top+r.height/2;
-      const dx=(e.clientX-cx)/r.width, dy=(e.clientY-cy)/r.height;
-      heroWrap.style.transform = `perspective(1000px) rotateY(${dx*10}deg) rotateX(${-dy*10}deg) translateZ(0)`;
-    });
-    heroVisual.addEventListener('mouseleave', ()=>{ heroWrap.style.transform='perspective(1000px) rotateY(0) rotateX(0)'; });
+  const particleHost = document.body;
+  const count = window.innerWidth < 768 ? 8 : 18;
+  for (let i = 0; i < count; i++) {
+    const p = document.createElement("div");
+    p.className = "particle";
+    const size = 4 + Math.random() * 8;
+    p.style.width = `${size}px`;
+    p.style.height = `${size}px`;
+    p.style.left = `${Math.random() * 100}vw`;
+    p.style.bottom = `-20px`;
+    p.style.animationDuration = `${14 + Math.random() * 12}s`;
+    p.style.animationDelay = `${Math.random() * 10}s`;
+    particleHost.appendChild(p);
   }
+}
 
-  /* ---------- Scroll Reveal Pro Max (with blur) ---------- */
-  const reveals = $$('.reveal');
-  if ('IntersectionObserver' in window && reveals.length) {
-    const io = new IntersectionObserver((entries)=>{
-      entries.forEach(ent=>{
-        if (ent.isIntersecting){
-          ent.target.classList.add('active');
-          io.unobserve(ent.target);
-        }
-      });
-    }, {rootMargin:'0px 0px -10% 0px', threshold:0.08});
-    reveals.forEach(el=>io.observe(el));
-  } else reveals.forEach(el=>el.classList.add('active'));
+// ============================================================================
+// SIDEBAR TOGGLE (mobile)
+// ============================================================================
+function initSidebarToggle() {
+  const toggle = document.getElementById("sidebar-toggle");
+  const sidebar = document.getElementById("sidebar");
+  if (!toggle || !sidebar) return;
+  toggle.addEventListener("click", () => sidebar.classList.toggle("open"));
+}
 
-  /* ---------- FAQ Accordion ---------- */
-  const faqs = $$('[data-faq]');
-  faqs.forEach(item=>{
-    const btn=$('.faq-question', item), icon=$('.faq-toggle', item);
-    if(!btn) return;
-    btn.addEventListener('click', ()=>{
-      const open=item.classList.contains('open');
-      faqs.forEach(o=>{ if(o!==item){ o.classList.remove('open'); const ic=$('.faq-toggle',o); if(ic) ic.textContent='+'; }});
-      if(open){ item.classList.remove('open'); if(icon) icon.textContent='+';}
-      else { item.classList.add('open'); if(icon) icon.textContent='−'; }
-    });
-  });
-  if (faqs[0]) { faqs[0].classList.add('open'); const ic=$('.faq-toggle', faqs[0]); if(ic) ic.textContent='−'; }
-
-  /* ---------- Smooth Anchor with header offset ---------- */
-  $$('a[href^="#"]').forEach(a=>{
-    a.addEventListener('click', e=>{
-      const href=a.getAttribute('href');
-      if(!href || href==='#') return;
-      const t=$(href);
-      if(t){ e.preventDefault(); const off=82; const top=t.getBoundingClientRect().top + scrollY - off; scrollTo({top, behavior:'smooth'}); }
-    });
-  });
-
-  /* ---------- Global Stats Live Fetch (Sheets) ---------- */
-  const statNums = $$('.stat-num');
-  if (statNums.length && location.hostname !== 'localhost') {
-    // try fetch real stats, fallback to static
-    (async ()=>{
-      try {
-        const r = await fetch('/api/recipe?action=global-stats');
-        if (!r.ok) return;
-        const data = await r.json();
-        if (data.total) {
-          // mutate first stat if exists
-          if (statNums[0]) statNums[0].textContent = (data.total > 1000 ? Math.floor(data.total/1000)+'K+' : data.total+'+');
-          if (statNums[1]) statNums[1].textContent = '99%'; // keep
-        }
-      } catch{}
-    })();
-  }
-
-  /* ---------- Perf: Reduce motion respect ---------- */
-  if (matchMedia('(prefers-reduced-motion: reduce)').matches) {
-    $$('*').forEach(el=>{ el.style.animationDuration='0.01ms'; el.style.transitionDuration='0.12s'; });
-  }
-
-})();
+// ============================================================================
+// INIT
+// ============================================================================
+document.addEventListener("DOMContentLoaded", () => {
+  initAmbientFX();
+  initSidebarToggle();
+  initOnboarding();
+  renderSidebarStats();
+});

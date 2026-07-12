@@ -1,404 +1,301 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>RouxMind Kitchen — Pro Max 7D Generator | Mesh API × Sheets</title>
-  <meta name="description" content="RouxMind Kitchen Pro Max: Upload photo → Gemini 2.5 Vision → Gemma-3 Recipe → Google Sheets Gamification + PDF. Dark premium luxury 7D.">
-  <link rel="icon" type="image/png" href="./logo.png">
-  <link rel="stylesheet" href="./style.css">
-  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>RouxMind — Generate a Recipe</title>
+<link rel="icon" href="logo.png" />
+<link rel="stylesheet" href="style.css" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 </head>
 <body>
-  <div id="scrollProgress" aria-hidden="true"></div>
-  <div id="grain" aria-hidden="true"></div>
-  <div class="aurora" aria-hidden="true"><div class="orb orb1"></div><div class="orb orb2"></div><div class="orb orb3"></div></div>
-  <canvas id="goldDust" aria-hidden="true"></canvas>
-  <div id="mouse-glow" aria-hidden="true"></div>
-  <div id="cursorDot" aria-hidden="true"></div>
-  <div id="cursorRing" aria-hidden="true"></div>
+<div id="mouse-glow"></div>
+<div id="onboarding-root"></div>
 
-  <header class="header scrolled" id="header">
-    <div class="container header-inner">
-      <a href="./index.html" class="logo magnetic" aria-label="Home"><img src="./logo.png" alt="" class="logo-icon"><span class="logo-text">RouxMind</span></a>
-      <nav class="nav" aria-label="Main">
-        <div class="nav-links">
-          <a href="./index.html#story" class="nav-link">Story</a>
-          <a href="./index.html#features" class="nav-link">Features</a>
-          <a href="./index.html#how" class="nav-link">Ritual</a>
-          <a href="./index.html#faq" class="nav-link">Protocol</a>
-        </div>
-        <a href="./index.html" class="btn-outline magnetic" style="padding:0.52rem 1.35rem; font-size:0.8rem;">← Atelier</a>
-        <button class="nav-toggle" id="navToggle" aria-label="Menu" aria-expanded="false"><span></span><span></span><span></span></button>
-      </nav>
-    </div>
-    <div class="mobile-menu" id="mobileMenu" aria-hidden="true">
-      <a href="./index.html#story">Story</a><a href="./index.html#features">Features</a><a href="./index.html#how">Ritual</a><a href="./index.html#faq">Protocol</a><a href="./index.html">← Back to Atelier</a>
-    </div>
-  </header>
+<div style="display:flex; min-height:100vh; position:relative; z-index:2;">
 
-  <main class="recipe-page">
-    <div class="container">
-      <div class="recipe-hero">
-        <div class="badge" style="margin:0 auto 1.2rem;"><span class="badge-dot"></span> Kitchen Live • Gemini 2.5 + Gemma 3 + Ling Flash • Sheets Gamified</div>
-        <h1 class="recipe-title">The <span class="gold-italic">Kitchen</span> — Pro Max 7D</h1>
-        <p class="recipe-subtitle">Enter your name, drop a dish photo or craving. RouxMind will vision-identify via Mesh API, craft scaled recipe, log to <b>Logs!A:I</b>, update <b>Users!A:F</b> streak/XP/rank, rollup <b>Global!A:D</b>. PDF in gold on #07090B.</p>
+  <!-- ============ SIDEBAR ============ -->
+  <aside class="sidebar" id="sidebar" style="width:280px; flex-shrink:0; padding:1.25rem 0.75rem; display:flex; flex-direction:column; gap:1.25rem;">
+    <a href="index.html" style="display:flex; align-items:center; gap:0.6rem; text-decoration:none; padding:0 0.5rem;">
+      <img src="logo.png" alt="RouxMind" style="width:30px; height:30px; border-radius:8px;" />
+      <span class="wordmark" style="font-size:1.2rem;">RouxMind</span>
+    </a>
+
+    <div id="sidebar-stats" class="glass-card"></div>
+
+    <div>
+      <div class="eyebrow" style="padding:0 1.1rem; margin-bottom:0.5rem;">Recent</div>
+      <div id="sidebar-history" style="display:flex; flex-direction:column; gap:0.15rem; max-height:220px; overflow-y:auto;"></div>
+    </div>
+
+    <div>
+      <div class="eyebrow" style="padding:0 1.1rem; margin-bottom:0.5rem;">⭐ Saved</div>
+      <div id="sidebar-saved" style="display:flex; flex-direction:column; gap:0.15rem; max-height:220px; overflow-y:auto;"></div>
+    </div>
+
+    <div style="margin-top:auto; padding:0.75rem 1.1rem; border-top:1px solid var(--border-glass);">
+      <a href="https://soobantalhatech.xyz" target="_blank" rel="noopener" style="display:flex; align-items:center; gap:0.5rem; text-decoration:none;">
+        <img src="clogo.png" alt="" style="width:20px; height:20px; border-radius:5px;" />
+        <span class="text-muted" style="font-size:0.75rem;">Sooban Talha Technologies</span>
+      </a>
+    </div>
+  </aside>
+
+  <!-- ============ MAIN ============ -->
+  <main style="flex:1; padding:1.5rem 2rem 4rem; max-width:820px; margin:0 auto; width:100%;">
+    <div style="display:flex; align-items:center; gap:1rem; margin-bottom:2rem;">
+      <button id="sidebar-toggle" class="btn btn-ghost" style="display:none; padding:0.6rem;">☰</button>
+      <div>
+        <h1 class="display" style="font-size:1.8rem;">What are we cooking?</h1>
+        <p style="font-size:0.9rem;">Type a dish, describe your ingredients, or snap a photo.</p>
+      </div>
+    </div>
+
+    <!-- ---- Input mode tabs ---- -->
+    <div class="glass-card" style="padding:1.75rem; margin-bottom:1.5rem;">
+      <div style="display:flex; gap:0.5rem; margin-bottom:1.25rem;">
+        <button class="btn btn-ghost mode-tab active" data-mode="text" style="flex:1; padding:0.7rem;">✏️ Text</button>
+        <button class="btn btn-ghost mode-tab" data-mode="camera" style="flex:1; padding:0.7rem;">📷 Camera</button>
+        <button class="btn btn-ghost mode-tab" data-mode="upload" style="flex:1; padding:0.7rem;">🖼️ Upload</button>
       </div>
 
-      <div id="liveStatsBar" style="display:flex; gap:0.8rem; flex-wrap:wrap; justify-content:center; margin-bottom:2rem;">
-        <span class="chip" id="globalTotalChip">🌍 Loading global...</span>
-        <span class="chip" id="globalUsersChip">👥 Users: —</span>
-        <span class="chip" id="globalTopChip">⭐ Top: —</span>
-        <span class="chip" id="apiHealthChip" style="background:rgba(255,255,255,0.03); color:var(--text-3);">⚡ API: checking</span>
+      <div id="mode-text">
+        <input id="dish-input" class="input-field" placeholder="e.g. Butter chicken, or 'leftover rice, eggs, spring onion'" />
       </div>
 
-      <div class="generator-grid">
-        <!-- Controls -->
-        <div class="glass-card gen-card magnetic" style="position:sticky; top:90px;">
-          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
-            <span style="font-size:0.72rem; font-weight:900; letter-spacing:1.4px; text-transform:uppercase; color:var(--gold);">Chef Identity • Gamification</span>
-            <span style="font-size:0.6rem; color:var(--text-3); letter-spacing:0.8px;">USERS!A:F</span>
-          </div>
-          <label class="gen-label">Your Name (for streaks & leaderboard) *</label>
-          <input id="userNameInput" class="gen-input" type="text" placeholder="e.g., SoobanTalha" maxlength="32" autocomplete="nickname">
-
-          <div id="userStatsLive" style="display:none; margin:0.9rem 0 1.2rem; padding:0.9rem; background:linear-gradient(180deg, rgba(212,175,55,0.08), rgba(212,175,55,0.02)); border:1px solid rgba(212,175,55,0.12); border-radius:12px;">
-            <div style="display:flex; gap:0.8rem; flex-wrap:wrap;">
-              <span class="meta-chip gold" id="uTotal">0 recipes</span>
-              <span class="meta-chip gold" id="uStreak">0 streak</span>
-              <span class="meta-chip gold" id="uRank">👶 Beginner</span>
-              <span class="meta-chip gold" id="uXp">0 XP</span>
-            </div>
-            <div style="font-size:0.68rem; color:var(--text-3); margin-top:0.5rem;" id="uLastActive"></div>
-          </div>
-
-          <label class="gen-label">Dish Name or Craving</label>
-          <input id="dishInput" class="gen-input" type="text" placeholder="e.g., Butter Chicken, fridge leftovers, that green curry">
-
-          <div style="height:1.1rem;"></div>
-          <label class="gen-label">Photo — Gemini 2.5 Flash Lite Vision</label>
-          <div id="dropZone" class="drop-zone" role="button" tabindex="0" aria-label="Upload dish photo">
-            <div class="drop-icon">📸</div>
-            <div class="drop-text">Drop image — data:image/base64</div>
-            <div class="drop-hint">JPG PNG • 8MB max • never stored, only name logged</div>
-            <input id="imageInput" type="file" accept="image/*" hidden>
-          </div>
-          <img id="previewImg" class="preview-img" alt="Preview">
-
-          <div style="height:1.3rem;"></div>
-          <div class="gen-row">
-            <div><label class="gen-label">Servings 1-12</label><select id="servingsInput" class="gen-select"><option value="1">1 eater</option><option value="2" selected>2 eaters</option><option value="4">4 eaters</option><option value="6">6 eaters</option><option value="8">8 eaters</option><option value="12">12 feast</option></select></div>
-            <div><label class="gen-label">Spice 1-5</label><select id="spiceInput" class="gen-select"><option value="1">1 Mild 🌶️</option><option value="2">2 Medium 🌶️🌶️</option><option value="3" selected>3 Hot 🌶️🌶️🌶️</option><option value="4">4 Very Hot 🔥</option><option value="5">5 Wild Fire 🔥🔥</option></select></div>
-          </div>
-          <div class="gen-row" style="margin-top:1rem;">
-            <div><label class="gen-label">Time 1-4</label><select id="timeInput" class="gen-select"><option value="1">1 Quick 15m</option><option value="2" selected>2 Standard 30m</option><option value="3">3 Relaxed 1h</option><option value="4">4 Slow 2h+</option></select></div>
-            <div><label class="gen-label">Model</label><select id="modelInput" class="gen-select"><option value="cheap">⚡ Cheapest — Ling Flash $0.01</option><option value="quality" selected>💎 Quality — Gemma-3 $0.04</option></select></div>
-          </div>
-
-          <div style="height:1rem;"></div>
-          <label class="gen-label">Leaderboard</label>
-          <div id="leaderboardBox" style="padding:0.9rem; background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.04); border-radius:12px; max-height:160px; overflow:auto;">
-            <div style="font-size:0.78rem; color:var(--text-3);">Loading leaderboard — /api/recipe?action=leaderboard</div>
-          </div>
-
-          <div style="height:1.2rem;"></div>
-          <button id="generateBtn" class="btn-gold magnetic" style="width:100%; justify-content:center; padding:1.05rem; font-size:0.95rem;"><span id="genBtnText">✨ Generate Recipe — Mesh API</span></button>
-
-          <div class="confidence-bar" id="confidenceBarWrap" style="display:none;"><div id="confidenceFill" class="confidence-fill"></div></div>
-          <div id="confidenceText" style="font-size:0.7rem; color:var(--text-3); margin-top:0.55rem; letter-spacing:0.5px; display:none; line-height:1.6;"></div>
-
-          <div style="margin-top:1.2rem; padding:0.95rem 1rem; background:linear-gradient(180deg, rgba(212,175,55,0.06), rgba(212,175,55,0.01)); border:1px solid rgba(212,175,55,0.10); border-radius:12px;">
-            <div style="font-size:0.68rem; font-weight:900; letter-spacing:1.2px; text-transform:uppercase; color:var(--gold); margin-bottom:0.45rem;">⚡ Mesh API • Sheets Contract</div>
-            <div style="font-size:0.74rem; color:var(--text-3); line-height:1.68;">POST /api/recipe → { image: dataURL, dishName, servings, spice, time, userName, useFastModel }<br>GET ?action=global-stats | user-stats?username= | leaderboard?type=total&limit=10 | health<br>Tabs: <b>Logs!A:I, Users!A:F, Global!A:D</b></div>
-          </div>
+      <div id="mode-camera" style="display:none;">
+        <video id="camera-feed" autoplay playsinline style="width:100%; border-radius:var(--radius-md); background:#000; max-height:320px;"></video>
+        <canvas id="camera-canvas" style="display:none;"></canvas>
+        <div style="display:flex; gap:0.75rem; margin-top:0.75rem;">
+          <button id="camera-start" class="btn btn-ghost" style="flex:1;">Open Camera</button>
+          <button id="camera-capture" class="btn btn-primary" style="flex:1; display:none;">📸 Capture</button>
         </div>
+        <img id="camera-preview" style="display:none; width:100%; border-radius:var(--radius-md); margin-top:0.75rem;" />
+      </div>
 
-        <!-- Output -->
-        <div class="glass-card recipe-output magnetic">
-          <div id="recipeEmpty" class="recipe-empty">
-            <div>
-              <div class="recipe-empty-icon">🍳</div>
-              <div style="font-family:'Playfair Display',serif; font-style:italic; font-size:1.3rem; color:var(--text-2); margin-bottom:0.6rem; font-weight:700;">Your legacy awaits, Chef</div>
-              <div style="font-size:0.86rem; color:var(--text-3); max-width:360px; line-height:1.75; margin:0 auto;">Enter name, type dish or drop photo. RouxMind logs to Sheets, updates streak, awards XP, crafts Michelin story. Try examples — they hit real API.</div>
-              <div style="margin-top:1.6rem; display:flex; gap:0.6rem; justify-content:center; flex-wrap:wrap;">
-                <button class="chip" data-example="Butter Chicken">Butter Chicken</button>
-                <button class="chip" data-example="Shakshuka">Shakshuka</button>
-                <button class="chip" data-example="Miso Ramen">Miso Ramen</button>
-                <button class="chip" data-example="Tiramisu">Tiramisu</button>
-                <button class="chip" data-example="Hyderabadi Biryani">Biryani</button>
-              </div>
-            </div>
+      <div id="mode-upload" style="display:none;">
+        <label for="file-input" class="glass-card" style="display:flex; flex-direction:column; align-items:center; justify-content:center; padding:2.5rem; cursor:pointer; border-style:dashed;">
+          <span style="font-size:1.8rem; margin-bottom:0.5rem;">🖼️</span>
+          <span class="text-muted" style="font-size:0.9rem;">Click to upload an image</span>
+        </label>
+        <input id="file-input" type="file" accept="image/*" style="display:none;" />
+        <img id="upload-preview" style="display:none; width:100%; border-radius:var(--radius-md); margin-top:0.75rem;" />
+      </div>
+
+      <!-- ---- Sliders ---- -->
+      <div style="display:grid; grid-template-columns:1fr; gap:1.25rem; margin-top:1.75rem;">
+        <div>
+          <div style="display:flex; justify-content:space-between; margin-bottom:0.4rem; font-size:0.88rem;">
+            <span>Servings</span><span id="servings-val" class="text-glow">2</span>
           </div>
-
-          <div id="recipeContent" class="recipe-content">
-            <div id="recipe-print-area">
-              <div class="recipe-header-row">
-                <div style="flex:1;">
-                  <h2 id="rTitle" class="recipe-name">—</h2>
-                  <div class="recipe-meta" id="rMeta"></div>
-                  <div id="rMetrics" style="margin-top:0.8rem; font-size:0.7rem; color:var(--text-3); letter-spacing:0.4px; line-height:1.6;"></div>
-                </div>
-                <img id="rLogo" src="./logo.png" alt="" style="width:44px; height:44px; border-radius:11px; border:1px solid rgba(212,175,55,0.16); box-shadow:0 0 22px rgba(212,175,55,0.14);">
-              </div>
-              <div style="height:1px; background:linear-gradient(90deg, rgba(212,175,55,0.20), transparent); margin-bottom:1.7rem;"></div>
-
-              <div style="margin-bottom:2.2rem;">
-                <div style="display:flex; align-items:center; gap:0.6rem; margin-bottom:1rem;"><span style="font-size:0.72rem; font-weight:900; letter-spacing:1.4px; text-transform:uppercase; color:var(--gold);">Ingredients — Scaled</span><span style="flex:1; height:1px; background:rgba(255,255,255,0.05);"></span><span id="rServingsLabel" style="font-size:0.7rem; color:var(--text-3); letter-spacing:0.6px;"></span></div>
-                <ul id="rIngredients" class="ingredients-list"></ul>
-              </div>
-
-              <div style="margin-bottom:2.2rem;">
-                <div style="display:flex; align-items:center; gap:0.6rem; margin-bottom:1rem;"><span style="font-size:0.72rem; font-weight:900; letter-spacing:1.4px; text-transform:uppercase; color:var(--gold);">Method — Story + Science</span><span style="flex:1; height:1px; background:rgba(255,255,255,0.05);"></span></div>
-                <div id="rStepsRaw" style="white-space:pre-wrap; font-size:0.92rem; color:var(--text-2); line-height:1.82; display:none;"></div>
-                <ol id="rSteps" class="steps-list"></ol>
-              </div>
-
-              <div class="chef-tip" id="chefTipWrap"><div class="chef-tip-label">Chef's Tip — RouxMind Pro Max</div><div id="rTip" class="chef-tip-text"></div></div>
-
-              <div style="margin-top:2.3rem; padding-top:1.2rem; border-top:1px solid rgba(255,255,255,0.05); display:flex; justify-content:space-between; gap:1rem; flex-wrap:wrap; align-items:center;">
-                <div style="font-size:0.68rem; color:var(--text-3); letter-spacing:0.6px; line-height:1.6;">Generated by RouxMind Pro Max 7D • Sooban Talha Technologies • Powered by Mesh API meshapi.ai<br>Logs!A:I • Users!A:F • Global!A:D • Where Every Plate Tells Your Story • Gold on #07090B</div>
-                <div style="font-size:0.68rem; color:var(--gold); font-weight:900; letter-spacing:1px; text-transform:uppercase;">✦ Authentic • Scaled • Logged • Ranked</div>
-              </div>
-            </div>
+          <input id="servings-slider" type="range" min="1" max="10" value="2" class="slider" />
+        </div>
+        <div>
+          <div style="display:flex; justify-content:space-between; margin-bottom:0.4rem; font-size:0.88rem;">
+            <span>Spice level</span><span id="spice-val" class="text-glow">Medium</span>
           </div>
-
-          <div class="recipe-actions" id="recipeActions" style="display:none;">
-            <button id="downloadPdfBtn" class="btn-gold magnetic"><span>⬇ Download PDF — Gold/Black Premium</span></button>
-            <button id="copyBtn" class="btn-outline magnetic">Copy Text</button>
-            <button id="shareBtn" class="btn-outline magnetic">Share</button>
+          <input id="spice-slider" type="range" min="1" max="5" value="3" class="slider" />
+        </div>
+        <div>
+          <div style="display:flex; justify-content:space-between; margin-bottom:0.4rem; font-size:0.88rem;">
+            <span>Time available</span><span id="time-val" class="text-glow">Fast</span>
           </div>
+          <input id="time-slider" type="range" min="1" max="4" value="2" class="slider" />
         </div>
       </div>
 
-      <div style="height:5rem;"></div>
+      <button id="generate-btn" class="btn btn-ember" style="width:100%; margin-top:1.75rem; padding:1.05rem;">
+        🍳 Generate Recipe
+      </button>
     </div>
+
+    <!-- ---- Loading state ---- -->
+    <div id="loading-state" style="display:none; flex-direction:column; align-items:center; padding:3rem; gap:1rem;">
+      <div class="loader-ring"></div>
+      <p id="loading-msg" class="text-muted">Whisking up your recipe…</p>
+    </div>
+
+    <!-- ---- Error state ---- -->
+    <div id="error-state" class="glass-card" style="display:none; padding:1.25rem; border-color:var(--accent-error); margin-bottom:1.5rem;">
+      <p id="error-msg" style="color:var(--accent-error);"></p>
+    </div>
+
+    <!-- ---- Result ---- -->
+    <div id="result-root"></div>
   </main>
+</div>
 
-  <footer class="footer" style="margin-top:0;">
-    <div class="container">
-      <div class="footer-bottom" style="border-top:none; padding-top:0;">
-        <p class="footer-copy">© 2026 Sooban Talha Technologies — Kitchen Pro Max 7D • Mesh API • Sheets API • Vercel</p>
-        <span class="mesh-badge">⚡ Powered by Mesh API • Gemini 2.5 Lite</span>
-      </div>
-    </div>
-  </footer>
+<script src="app.js"></script>
+<script>
+(function () {
+  let currentMode = "text";
+  let currentImageBase64 = null;
+  let cameraStream = null;
+  let lastRecipe = null;
 
-  <script>
-  // 7D Layers + Kitchen Pro Max Logic
-  (() => {
-    const $ = (s, sc=document) => sc.querySelector(s);
-    const $$ = (s, sc=document) => [...sc.querySelectorAll(s)];
-    // Cursor + grain etc
-    const glow=$('#mouse-glow'), dot=$('#cursorDot'), ring=$('#cursorRing'), progress=$('#scrollProgress'), dust=$('#goldDust');
-    if (progress){ const onP=()=>{ const h=document.documentElement; const pct=(h.scrollTop/(h.scrollHeight-h.clientHeight))*100; progress.style.width=pct+'%'; }; window.addEventListener('scroll', onP, {passive:true}); onP(); }
-    if (dot && ring && !matchMedia('(pointer: coarse)').matches){ let mx=-100,my=-100,rx=-100,ry=-100; const lerp=(a,b,n)=>(1-n)*a+n*b; (function loop(){ rx=lerp(rx,mx,0.16); ry=lerp(ry,my,0.16); dot.style.left=mx+'px'; dot.style.top=my+'px'; ring.style.left=rx+'px'; ring.style.top=ry+'px'; requestAnimationFrame(loop);})(); window.addEventListener('mousemove', e=>{mx=e.clientX; my=e.clientY;}); $$('a,button,.glass-card,.btn-gold,.btn-outline,.drop-zone').forEach(el=>{ el.addEventListener('mouseenter',()=>{dot.classList.add('hover'); ring.classList.add('hover');}); el.addEventListener('mouseleave',()=>{dot.classList.remove('hover'); ring.classList.remove('hover');}); }); }
-    if (glow){ let mx=-600,my=-600,cx=-600,cy=-600,vis=false; const lerp=(a,b,n)=>(1-n)*a+n*b; (function t(){ cx=lerp(cx,mx,0.07); cy=lerp(cy,my,0.07); glow.style.left=cx+'px'; glow.style.top=cy+'px'; requestAnimationFrame(t);})(); window.addEventListener('mousemove', e=>{mx=e.clientX; my=e.clientY; if(!vis){vis=true; glow.classList.add('visible');}}, {passive:true}); if(matchMedia('(pointer: coarse)').matches) glow.style.display='none'; }
-    if (dust && dust.getContext && !matchMedia('(prefers-reduced-motion: reduce)').matches){ const ctx=dust.getContext('2d',{alpha:true}); let w,h,parts=[],raf; const cnt=Math.min(78, Math.floor((innerWidth*innerHeight)/17000)); const resize=()=>{ w=dust.width=innerWidth*devicePixelRatio; h=dust.height=innerHeight*devicePixelRatio; dust.style.width=innerWidth+'px'; dust.style.height=innerHeight+'px'; ctx.scale(devicePixelRatio, devicePixelRatio); }; class P{ constructor(){this.reset(true);} reset(i){this.x=Math.random()*innerWidth; this.y=i?Math.random()*innerHeight:innerHeight+Math.random()*38; this.vx=(Math.random()-0.5)*0.22; this.vy=-0.16-Math.random()*0.52; this.r=0.6+Math.random()*1.9; this.a=0.12+Math.random()*0.52; this.tw=Math.random()*Math.PI*2; this.tws=0.006+Math.random()*0.012;} update(){this.x+=this.vx+Math.sin(this.tw)*0.08; this.y+=this.vy; this.tw+=this.tws; if(this.y<-10||this.x<-20||this.x>innerWidth+20) this.reset(false);} draw(){ const g=ctx.createRadialGradient(this.x,this.y,0,this.x,this.y,this.r*3); g.addColorStop(0,`rgba(249,217,118,${this.a})`); g.addColorStop(0.3,`rgba(212,175,55,${this.a*0.6})`); g.addColorStop(1,`rgba(212,175,55,0)`); ctx.fillStyle=g; ctx.beginPath(); ctx.arc(this.x,this.y,this.r*3,0,Math.PI*2); ctx.fill(); } } const init=()=>{parts=[]; for(let i=0;i<cnt;i++) parts.push(new P());}; const loop=()=>{ ctx.clearRect(0,0,innerWidth,innerHeight); parts.forEach(p=>{p.update(); p.draw();}); raf=requestAnimationFrame(loop); }; resize(); init(); loop(); window.addEventListener('resize',()=>{resize(); init();},{passive:true}); }
-    // Mobile nav
-    const toggle=$('#navToggle'), menu=$('#mobileMenu'); if(toggle&&menu){ const close=()=>{toggle.classList.remove('active'); toggle.setAttribute('aria-expanded','false'); menu.classList.remove('open'); document.body.style.overflow='';}; const open=()=>{toggle.classList.add('active'); toggle.setAttribute('aria-expanded','true'); menu.classList.add('open'); document.body.style.overflow='hidden';}; toggle.addEventListener('click',()=>menu.classList.contains('open')?close():open()); $$('a',menu).forEach(a=>a.addEventListener('click',close)); }
-    // Spotlight
-    $$('.glass-card, .btn-outline, .drop-zone').forEach(card=>{ card.addEventListener('mousemove', e=>{ const r=card.getBoundingClientRect(); const x=e.clientX-r.left, y=e.clientY-r.top; card.style.setProperty('--spot-x',`${(x/r.width)*100}%`); card.style.setProperty('--spot-y',`${(y/r.height)*100}%`); card.style.setProperty('--mx',`${x}px`); card.style.setProperty('--my',`${y}px`); }); });
-    // Magnetic
-    if(!matchMedia('(pointer: coarse)').matches){ $$('.magnetic').forEach(btn=>{ btn.addEventListener('mousemove', e=>{ const r=btn.getBoundingClientRect(); const x=e.clientX-r.left-r.width/2, y=e.clientY-r.top-r.height/2; btn.style.transform=`translate(${x*0.16}px, ${y*0.24}px)`; }); btn.addEventListener('mouseleave',()=>{btn.style.transform='translate(0,0)';}); }); }
-
-    // Elements
-    const userNameInput=$('#userNameInput'), dishInput=$('#dishInput'), imageInput=$('#imageInput'), dropZone=$('#dropZone'), previewImg=$('#previewImg');
-    const servingsInput=$('#servingsInput'), spiceInput=$('#spiceInput'), timeInput=$('#timeInput'), modelInput=$('#modelInput');
-    const generateBtn=$('#generateBtn'), genBtnText=$('#genBtnText'), barWrap=$('#confidenceBarWrap'), fill=$('#confidenceFill'), confText=$('#confidenceText');
-    const recipeEmpty=$('#recipeEmpty'), recipeContent=$('#recipeContent'), recipeActions=$('#recipeActions');
-    const rTitle=$('#rTitle'), rMeta=$('#rMeta'), rIng=$('#rIngredients'), rSteps=$('#rSteps'), rStepsRaw=$('#rStepsRaw'), rTip=$('#rTip'), rServ=$('#rServingsLabel'), rMetrics=$('#rMetrics');
-    const globalTotalChip=$('#globalTotalChip'), globalUsersChip=$('#globalUsersChip'), globalTopChip=$('#globalTopChip'), apiHealthChip=$('#apiHealthChip');
-    const uBox=$('#userStatsLive'), uTotal=$('#uTotal'), uStreak=$('#uStreak'), uRank=$('#uRank'), uXp=$('#uXp'), uLast=$('#uLastActive');
-    const lbBox=$('#leaderboardBox');
-
-    let lastRecipe=null, lastApiResponse=null, base64Image=null, uploadedName=null;
-
-    // API Health + Global Stats + Leaderboard loaders
-    (async ()=>{
-      try { const h=await fetch('/api/recipe?action=health'); const d=await h.json(); if(h.ok){ apiHealthChip.textContent=`⚡ ${d.models?.vision?.split('/')[1] || 'Gemini'} • OK`; apiHealthChip.style.background='rgba(212,175,55,0.12)'; apiHealthChip.style.color='#D4AF37'; apiHealthChip.style.border='1px solid rgba(212,175,55,0.18)'; } } catch{ apiHealthChip.textContent='⚡ Mock mode — no API key'; }
-      try { const g=await fetch('/api/recipe?action=global-stats'); const gd=await g.json(); if(g.ok){ globalTotalChip.textContent=`🌍 ${gd.total||0} recipes generated`; globalUsersChip.textContent=`👥 ${gd.users||0} chefs`; globalTopChip.textContent=`⭐ Top: ${gd.topDish||'—'}`; } } catch{ globalTotalChip.textContent='🌍 10K+ recipes (static)'; }
-      try { const l=await fetch('/api/recipe?action=leaderboard&limit=8&type=total'); const ld=await l.json(); if(ld.leaderboard?.length){ lbBox.innerHTML = ld.leaderboard.map((u,i)=>`<div style="display:flex; justify-content:space-between; padding:0.45rem 0; border-bottom:1px solid rgba(255,255,255,0.04); font-size:0.82rem;"><span style="color:var(--text-2);">${i+1}. ${u.name} <span style="color:var(--text-3); font-size:0.7rem;">${u.rank}</span></span><span style="color:var(--gold); font-weight:700;">${u.total} • ${u.streak}🔥</span></div>`).join(''); } else { lbBox.innerHTML='<div style="font-size:0.8rem; color:var(--text-3);">No chefs yet — be first to log to Users!A:F</div>'; } } catch{ lbBox.innerHTML='<div style="font-size:0.8rem; color:var(--text-3);">Mock leaderboard: SoobanTalha — 128 • 42🔥</div>'; }
-    })();
-
-    // User stats live on blur
-    userNameInput.addEventListener('blur', async ()=>{
-      const name=userNameInput.value.trim(); if(!name) { uBox.style.display='none'; return; }
-      try { const r=await fetch(`/api/recipe?action=user-stats&username=${encodeURIComponent(name)}`); const d=await r.json(); if(r.ok){ uBox.style.display='block'; if(d.exists){ uTotal.textContent=`${d.total} recipes`; uStreak.textContent=`${d.streak} streak`; uRank.textContent=d.rank; uXp.textContent=`${d.xp} XP`; uLast.textContent=`Last active: ${d.lastActive? new Date(d.lastActive).toLocaleDateString(): 'new chef'}`; } else { uTotal.textContent='0 recipes — new'; uStreak.textContent='0 streak'; uRank.textContent='👶 Beginner'; uXp.textContent='0 XP'; uLast.textContent='First recipe will create Users!A:F row'; } } } catch{ uBox.style.display='none'; }
+  // ---- Mode tabs ----
+  document.querySelectorAll(".mode-tab").forEach(tab => {
+    tab.addEventListener("click", () => {
+      document.querySelectorAll(".mode-tab").forEach(t => t.classList.remove("active"));
+      tab.classList.add("active");
+      currentMode = tab.dataset.mode;
+      ["text", "camera", "upload"].forEach(m => {
+        document.getElementById(`mode-${m}`).style.display = m === currentMode ? "block" : "none";
+      });
     });
+  });
 
-    // Image handling
-    const handleFile = (file)=>{
-      if(!file.type.startsWith('image/')) return;
-      if(file.size>8*1024*1024){ alert('Image >8MB — compress please'); return; }
-      uploadedName=file.name;
-      const reader=new FileReader();
-      reader.onload=e=>{
-        base64Image=e.target.result; // data URL
-        previewImg.src=base64Image; previewImg.classList.add('show');
-        dropZone.querySelector('.drop-text').textContent=file.name;
-        dropZone.querySelector('.drop-hint').textContent=`${(file.size/1024).toFixed(0)}KB • base64 ready • will not be stored`;
-        if(!dishInput.value) dishInput.value=file.name.split('.')[0].replace(/[-_]/g,' ');
-      };
-      reader.readAsDataURL(file);
+  // ---- Sliders ----
+  const spiceLabels = ["Mild", "Light", "Medium", "Hot", "Extra Hot"];
+  const timeLabels = ["Quick", "Fast", "Standard", "Slow"];
+
+  document.getElementById("servings-slider").addEventListener("input", e => {
+    document.getElementById("servings-val").textContent = e.target.value;
+  });
+  document.getElementById("spice-slider").addEventListener("input", e => {
+    document.getElementById("spice-val").textContent = spiceLabels[e.target.value - 1];
+  });
+  document.getElementById("time-slider").addEventListener("input", e => {
+    document.getElementById("time-val").textContent = timeLabels[e.target.value - 1];
+  });
+
+  // ---- Camera ----
+  document.getElementById("camera-start").addEventListener("click", async () => {
+    try {
+      cameraStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
+      const video = document.getElementById("camera-feed");
+      video.srcObject = cameraStream;
+      document.getElementById("camera-start").style.display = "none";
+      document.getElementById("camera-capture").style.display = "block";
+    } catch (err) {
+      alert("Couldn't access camera: " + err.message);
+    }
+  });
+
+  document.getElementById("camera-capture").addEventListener("click", () => {
+    const video = document.getElementById("camera-feed");
+    const canvas = document.getElementById("camera-canvas");
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    canvas.getContext("2d").drawImage(video, 0, 0);
+    const dataUrl = canvas.toDataURL("image/jpeg", 0.85);
+    currentImageBase64 = dataUrl.split(",")[1];
+
+    const preview = document.getElementById("camera-preview");
+    preview.src = dataUrl;
+    preview.style.display = "block";
+    video.style.display = "none";
+
+    if (cameraStream) cameraStream.getTracks().forEach(t => t.stop());
+  });
+
+  // ---- Upload ----
+  document.getElementById("file-input").addEventListener("change", e => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      currentImageBase64 = reader.result.split(",")[1];
+      const preview = document.getElementById("upload-preview");
+      preview.src = reader.result;
+      preview.style.display = "block";
     };
-    dropZone.addEventListener('click',()=>imageInput.click());
-    dropZone.addEventListener('dragover', e=>{ e.preventDefault(); dropZone.classList.add('dragover'); });
-    dropZone.addEventListener('dragleave',()=>dropZone.classList.remove('dragover'));
-    dropZone.addEventListener('drop', e=>{ e.preventDefault(); dropZone.classList.remove('dragover'); const f=e.dataTransfer.files[0]; if(f) handleFile(f); });
-    imageInput.addEventListener('change',()=>{ if(imageInput.files[0]) handleFile(imageInput.files[0]); });
-    dropZone.addEventListener('keydown', e=>{ if(e.key==='Enter'||e.key===' ') { e.preventDefault(); imageInput.click(); } });
+    reader.readAsDataURL(file);
+  });
 
-    // Examples
-    $$('[data-example]').forEach(b=> b.addEventListener('click', ()=>{ dishInput.value=b.dataset.example; }));
+  // ---- Generate ----
+  document.getElementById("generate-btn").addEventListener("click", async () => {
+    const dishText = document.getElementById("dish-input").value.trim();
+    const servings = document.getElementById("servings-slider").value;
+    const spice = document.getElementById("spice-slider").value;
+    const time = document.getElementById("time-slider").value;
 
-    // Generate — REAL API CALL
-    async function generate(){
-      const userName=userNameInput.value.trim();
-      const dish=dishInput.value.trim();
-      if(!userName){ userNameInput.focus(); userNameInput.style.borderColor='rgba(212,175,55,0.6)'; setTimeout(()=>userNameInput.style.borderColor='',1200); alert('Enter your chef name — required for streaks & leaderboard (Users!A:F)'); return; }
-      if(!dish && !base64Image){ dishInput.focus(); alert('Provide dish name or photo'); return; }
+    const usingImage = (currentMode === "camera" || currentMode === "upload") && currentImageBase64;
 
-      generateBtn.disabled=true; genBtnText.textContent='🧠 Mesh API inferencing — vision + text...';
-      barWrap.style.display='block'; confText.style.display='block'; confText.textContent='Calling /api/recipe → google/gemini-2.5-flash-lite vision + gemma-3 text...'; fill.style.width='8%';
-      let prog=8; const it=setInterval(()=>{ prog+=Math.random()*14; if(prog>88) prog=88; fill.style.width=prog+'%'; }, 180);
-
-      const payload={
-        image: base64Image || null,
-        dishName: dish || null,
-        servings: parseInt(servingsInput.value)||2,
-        spice: parseInt(spiceInput.value)||3,
-        time: parseInt(timeInput.value)||2,
-        userName,
-        useFastModel: modelInput.value==='cheap'
-      };
-
-      try {
-        const res=await fetch('/api/recipe', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload) });
-        const data=await res.json();
-        clearInterval(it);
-        if(!res.ok || !data.success) throw new Error(data.error || 'Generation failed');
-
-        lastApiResponse=data;
-        fill.style.width='100%';
-        const m=data.metrics||{};
-        confText.innerHTML=`✅ Identified: <b style="color:var(--text-2);">${data.dish}</b> • ${data.cuisine} • ${m.confidence||92}% • ${m.modelUsed||'gemma'} • ${m.responseTimeMs||'~'}ms • ${m.totalTokens||0} tokens • $${m.cost||0}`;
-        // user stats update
-        if(data.stats){ uBox.style.display='block'; uTotal.textContent=`${data.stats.total} recipes`; uStreak.textContent=`${data.stats.streak} streak`; uRank.textContent=data.stats.rank; uXp.textContent=`${data.stats.xp} XP`; uLast.textContent='Logged to Users!A:F now'; }
-
-        // Parse recipe string — it comes formatted
-        const recipeObj=parseRecipeText(data.recipe, data.dish, payload.servings, payload.spice, data.cuisine, data.recipe);
-        displayRecipe(recipeObj, data);
-
-        // Refresh leaderboard & global after
-        try { const g=await fetch('/api/recipe?action=global-stats'); const gd=await g.json(); if(gd.total) { globalTotalChip.textContent=`🌍 ${gd.total} recipes`; globalUsersChip.textContent=`👥 ${gd.users} chefs`; globalTopChip.textContent=`⭐ Top: ${gd.topDish}`; } } catch{}
-        try { const l=await fetch('/api/recipe?action=leaderboard&limit=8&type=total'); const ld=await l.json(); if(ld.leaderboard?.length){ lbBox.innerHTML = ld.leaderboard.map((u,i)=>`<div style="display:flex; justify-content:space-between; padding:0.45rem 0; border-bottom:1px solid rgba(255,255,255,0.04); font-size:0.82rem;"><span style="color:var(--text-2);">${i+1}. ${u.name} <span style="color:var(--text-3); font-size:0.7rem;">${u.rank}</span></span><span style="color:var(--gold); font-weight:700;">${u.total} • ${u.streak}🔥</span></div>`).join(''); } } catch{}
-
-      } catch (err){
-        clearInterval(it);
-        fill.style.width='100%'; fill.style.background='linear-gradient(90deg, #ff6b6b, #ee5253)';
-        confText.textContent='❌ '+err.message+' — falling back to local mock (if API keys missing, this is expected).';
-
-        // Local mock fallback (preserves demo if env not set)
-        const servings=parseInt(servingsInput.value)||2;
-        const fallback=createLocalMock(dish||uploadedName||'Chef Improvisation', servings, parseInt(spiceInput.value));
-        displayRecipe(fallback, { dish: fallback.title, cuisine: fallback.cuisine, metrics:{ confidence:92, modelUsed:'local-mock', responseTimeMs:1200, totalTokens:0, cost:0 } });
-      } finally {
-        generateBtn.disabled=false; genBtnText.textContent='✨ Generate Again — Log to Sheets';
-      }
+    if (!dishText && !usingImage) {
+      alert("Please enter a dish name or provide an image.");
+      return;
     }
 
-    function parseRecipeText(text, title, servings, spice, cuisine, raw){
-      // Try to extract ingredients (•) and steps (numbered)
-      const ingredients=[]; const steps=[]; let chefTip='Trust your palate — taste often, finish with acid and gold.';
-      const lines=text.split('\n');
-      let mode=null;
-      for(const line of lines){
-        const t=line.trim();
-        if(!t) continue;
-        if(t.includes('INGREDIENTS')) { mode='ing'; continue; }
-        if(t.includes('PREPARATION') || t.includes('METHOD') || t.match(/STEPS/)) { mode='steps'; continue; }
-        if(t.includes("CHEF'S TIP") || t.includes('CHEF')) { mode='tip'; continue; }
-        if(t.includes('━━')) { continue; }
-        if(mode==='ing' && t.startsWith('•')) ingredients.push(t.replace(/^•\s*/,'').trim());
-        else if(mode==='steps' && /^\d+\./.test(t)) steps.push(t.replace(/^\d+\.\s*/,'').trim());
-        else if(mode==='tip' && t.length>10) { chefTip = t; }
-      }
-      if(!ingredients.length){ // fallback regex
-        const matches = [...text.matchAll(/•(.+)/g)].map(m=>m[1].trim());
-        if(matches.length) ingredients.push(...matches);
-      }
-      if(!steps.length){
-        const ms = [...text.matchAll(/^\d+\.\s*(.+)$/gm)].map(m=>m[1].trim());
-        if(ms.length) steps.push(...ms);
-      }
-      if(ingredients.length===0) ingredients.push(...['Olive oil, salt, pepper — foundation', `${120*servings/2}g main, diced with intention`, `Aromatics, herbs, acid to finish`, `Serve with: grain or bread that makes you happy`]);
-      if(steps.length===0) steps.push(...['Warm pan, olive oil, patience. Sweat aromatics.', 'Add main, sear for color.', 'Season — salt early, taste often.', 'Deglaze, cover, simmer till tender.', 'Finish with acid, herb, gold.']);
-      return { title: title || 'RouxMind Creation', cuisine: cuisine||'International', ingredients, steps, tip: chefTip, servings, spice, raw: text };
+    document.getElementById("loading-state").style.display = "flex";
+    document.getElementById("error-state").style.display = "none";
+    document.getElementById("result-root").innerHTML = "";
+
+    try {
+      const recipe = await generateRecipe({
+        dishText: usingImage ? null : dishText,
+        imageBase64: usingImage ? currentImageBase64 : null,
+        servings, spice, time
+      });
+      lastRecipe = recipe;
+      renderResult(recipe);
+    } catch (err) {
+      document.getElementById("error-msg").textContent = err.message;
+      document.getElementById("error-state").style.display = "block";
+    } finally {
+      document.getElementById("loading-state").style.display = "none";
     }
+  });
 
-    function createLocalMock(name, servings, spice){
-      const s=servings;
-      return { title: name.split(' ').map(w=>w.charAt(0).toUpperCase()+w.slice(1)).join(' ') || "Chef's Improvisation", cuisine:'International', servings: s, spice: spice, ingredients:[`Olive oil, salt, pepper`, `${Math.round(120*s/2)}g base protein/veg, diced`, `${Math.round(80*s/2)}g onion/garlic`, `${Math.round(150*s/2)}g seasonal veg`, `Spice level ${spice}/5 calibrated`, `Acid: lemon/vinegar`, `Herb: fresh`], steps:[`Warm pan, olive oil, patience. Sweat aromatics low.`, `Add main, sear for color — don't rush.`, `Season early, taste often. Build heat ${spice}/5.`, `Deglaze with splash water, cover 5 min.`, `Finish with acid, herb, olive oil. Plate like story.`], tip:`Scaled for ${s} eater(s) at heat ${spice}/5. Trust nose over timer — when it smells like dinner, it is dinner.`, raw: '' };
-    }
+  function renderResult(recipe) {
+    const root = document.getElementById("result-root");
+    root.innerHTML = `
+      <div class="glass-card reveal" style="padding:2rem;">
+        <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:1rem; flex-wrap:wrap;">
+          <div>
+            <div class="eyebrow" style="margin-bottom:0.5rem;">${escapeAttr(recipe.cuisine || "")} · ${escapeAttr(recipe.difficulty || "")}</div>
+            <h2 class="display" style="font-size:1.6rem;">${escapeAttr(recipe.title || "")}</h2>
+            <p style="font-size:0.92rem; margin-top:0.4rem;">${escapeAttr(recipe.description || "")}</p>
+          </div>
+          <div style="display:flex; gap:0.5rem;">
+            <button id="save-recipe" class="btn btn-ghost" style="padding:0.6rem 1rem;">⭐ Save</button>
+            <button id="download-pdf" class="btn btn-primary" style="padding:0.6rem 1rem;">📄 PDF</button>
+          </div>
+        </div>
 
-    function displayRecipe(recipe, apiData){
-      lastRecipe=recipe;
-      recipeEmpty.style.display='none'; recipeContent.classList.add('show'); recipeActions.style.display='flex';
-      rTitle.textContent=recipe.title;
-      rServ.textContent=`${recipe.servings} eaters • ${recipe.spice||3}/5 spice`;
-      const m=apiData.metrics||{};
-      rMeta.innerHTML=`<span class="meta-chip gold">${recipe.cuisine}</span><span class="meta-chip">${apiData.cuisine||recipe.cuisine}</span><span class="meta-chip">${recipe.servings} eaters</span><span class="meta-chip">${m.confidence||92}% conf</span><span class="meta-chip" style="border-color:rgba(212,175,55,0.14); color:var(--gold);">${m.modelUsed||'gemma'} • ${m.responseTimeMs||''}ms</span>${recipe.raw?``:''}`;
-      rMetrics.innerHTML= apiData.dish ? `Dish: <b style="color:var(--text-2);">${apiData.dish}</b> ${apiData.identifiedFromImage? '• Vision Identified 📸':''} • Tokens: ${m.totalTokens||0} • Cost: $${m.cost||0} • Logs!A:I logged` : '';
-      rIng.innerHTML=recipe.ingredients.map(i=>`<li><span class="checkbox">☐</span><span>${i}</span></li>`).join('');
-      rSteps.innerHTML=recipe.steps.map(s=>`<li><span class="step-text">${s}</span></li>`).join('');
-      if(recipe.raw){ rStepsRaw.style.display='block'; rStepsRaw.textContent=recipe.raw; } else { rStepsRaw.style.display='none'; }
-      rTip.textContent=recipe.tip;
-      if(innerWidth<960){ setTimeout(()=>{ $('.recipe-output').scrollIntoView({behavior:'smooth', block:'start'}); }, 180); }
-    }
+        <div style="display:flex; gap:0.75rem; flex-wrap:wrap; margin:1.25rem 0;">
+          <span class="stat-pill">👥 ${recipe.servings || "-"} servings</span>
+          <span class="stat-pill">⏱️ ${escapeAttr(recipe.prepTime || "-")} prep</span>
+          <span class="stat-pill">🔥 ${escapeAttr(recipe.cookTime || "-")} cook</span>
+        </div>
 
-    generateBtn.addEventListener('click', generate);
-    dishInput.addEventListener('keydown', e=>{ if(e.key==='Enter') generate(); });
-    userNameInput.addEventListener('keydown', e=>{ if(e.key==='Enter') dishInput.focus(); });
+        <h3 style="font-size:1.1rem; margin-bottom:0.75rem;">Ingredients</h3>
+        <ul style="list-style:none; display:flex; flex-direction:column; gap:0.4rem; margin-bottom:1.5rem;">
+          ${(recipe.ingredients || []).map(i => `<li style="font-size:0.92rem;">• <strong>${escapeAttr(i.amount)}</strong> ${escapeAttr(i.item)}</li>`).join("")}
+        </ul>
 
-    // Copy
-    $('#copyBtn').addEventListener('click', async ()=>{
-      if(!lastRecipe) return;
-      const txt=`${lastRecipe.title}\n${lastRecipe.servings} eaters • ${lastRecipe.cuisine}\n\nINGREDIENTS:\n${lastRecipe.ingredients.map(i=>'- '+i).join('\n')}\n\nSTEPS:\n${lastRecipe.steps.map((s,i)=>`${i+1}. ${s}`).join('\n')}\n\nChef Tip: ${lastRecipe.tip}\n\nRaw:\n${(lastRecipe.raw||'')}\n\nGenerated by RouxMind Pro Max 7D • Mesh API`;
-      try{ await navigator.clipboard.writeText(txt); alert('Copied — gold on clipboard.'); }catch{ alert('Copy failed'); }
+        <h3 style="font-size:1.1rem; margin-bottom:0.75rem;">Steps</h3>
+        <ol style="display:flex; flex-direction:column; gap:0.75rem; margin-bottom:1.5rem; padding-left:1.2rem;">
+          ${(recipe.steps || []).map(s => `<li style="font-size:0.92rem;">${escapeAttr(s.instruction)}${s.duration ? ` <span class="text-muted">(${escapeAttr(s.duration)})</span>` : ""}</li>`).join("")}
+        </ol>
+
+        ${recipe.tips?.length ? `
+          <h3 style="font-size:1.1rem; margin-bottom:0.75rem;">Chef's Tips</h3>
+          <ul style="list-style:none; display:flex; flex-direction:column; gap:0.4rem;">
+            ${recipe.tips.map(t => `<li style="font-size:0.92rem;">💡 ${escapeAttr(t)}</li>`).join("")}
+          </ul>` : ""}
+      </div>`;
+
+    document.getElementById("download-pdf").addEventListener("click", () => downloadRecipePDF(lastRecipe));
+    document.getElementById("save-recipe").addEventListener("click", () => {
+      RM.saveRecipe(lastRecipe);
+      renderSaved();
     });
-    $('#shareBtn').addEventListener('click', async ()=>{
-      if(!lastRecipe) return;
-      const data={ title:lastRecipe.title, text:`Recipe for ${lastRecipe.title} — ${lastRecipe.servings} eaters via RouxMind Pro Max 7D`, url: location.href };
-      if(navigator.share){ try{ await navigator.share(data); }catch{} } else alert('Share URL: '+location.href);
-    });
+  }
 
-    // PDF — Premium Gold/Black
-    $('#downloadPdfBtn').addEventListener('click', ()=>{
-      if(!lastRecipe) return;
-      const { jsPDF } = window.jspdf;
-      const doc=new jsPDF({orientation:'portrait', unit:'mm', format:'a4'}); const W=doc.internal.pageSize.getWidth(), H=doc.internal.pageSize.getHeight(), M=18;
-      doc.setFillColor(7,9,11); doc.rect(0,0,W,H,'F');
-      doc.setFillColor(212,175,55); doc.setGState(new doc.GState({opacity:0.055})); doc.ellipse(W/2,-10,110,55,'F'); doc.setGState(new doc.GState({opacity:1}));
-      doc.setDrawColor(212,175,55); doc.setLineWidth(0.6); doc.line(M,16,W-M,16);
-      doc.setFont('helvetica','bold'); doc.setFontSize(13.5); doc.setTextColor(249,217,118); doc.text('RouxMind', M,12);
-      doc.setFont('helvetica','normal'); doc.setFontSize(6.8); doc.setTextColor(138,134,126); doc.text('WHERE EVERY PLATE TELLS YOUR STORY • PRO MAX 7D', M,15);
-      doc.setFillColor(212,175,55); doc.setGState(new doc.GState({opacity:0.11})); doc.roundedRect(W-M-46,6,46,8,2,2,'F'); doc.setGState(new doc.GState({opacity:1})); doc.setFontSize(6.2); doc.setTextColor(212,175,55); doc.setFont('helvetica','bold'); doc.text('MESH API • GEMINI 2.5', W-M-44,10.4);
-      let y=26; doc.setFont('times','bold'); doc.setFontSize(25); doc.setTextColor(245,242,235); const tl=doc.splitTextToSize(lastRecipe.title, W-M*2); doc.text(tl,M,y); y+=tl.length*8.8+4;
-      doc.setFont('helvetica','normal'); doc.setFontSize(7.8); doc.setTextColor(212,175,55); const meta=`${(lastRecipe.cuisine||'INTERNATIONAL').toUpperCase()} • ${lastRecipe.servings} EATERS • SPICE ${lastRecipe.spice||3}/5 • ${(lastApiResponse?.metrics?.confidence||92)}% CONF • ${(lastApiResponse?.metrics?.modelUsed||'gemma')} • ${(lastApiResponse?.metrics?.responseTimeMs||'') }ms`; doc.text(meta, M, y); y+=6;
-      doc.setDrawColor(255,255,255); doc.setGState(new doc.GState({opacity:0.055})); doc.setLineWidth(0.22); doc.line(M,y,W-M,y); doc.setGState(new doc.GState({opacity:1})); y+=6.5;
-      doc.setFont('helvetica','bold'); doc.setFontSize(8.8); doc.setTextColor(212,175,55); doc.text('INGREDIENTS — SCALED', M,y); doc.setFont('helvetica','normal'); doc.setFontSize(6.8); doc.setTextColor(138,134,126); doc.text(`${lastRecipe.servings} EATERS • CHECK AS YOU SHOP`, W-M,y,{align:'right'}); y+=5;
-      doc.setFont('helvetica','normal'); doc.setFontSize(9); doc.setTextColor(212,208,200);
-      lastRecipe.ingredients.forEach(ing=>{ if(y>H-28){ doc.addPage(); doc.setFillColor(7,9,11); doc.rect(0,0,W,H,'F'); y=18; } doc.setDrawColor(212,175,55); doc.setLineWidth(0.24); doc.setGState(new doc.GState({opacity:0.32})); doc.rect(M,y-3,3.1,3.1); doc.setGState(new doc.GState({opacity:1})); const ls=doc.splitTextToSize(ing, W-M*2-8); doc.text(ls, M+5.6,y); y+=ls.length*4.4+2.1; }); y+=3;
-      if(y>H-44){ doc.addPage(); doc.setFillColor(7,9,11); doc.rect(0,0,W,H,'F'); y=18; }
-      doc.setFont('helvetica','bold'); doc.setFontSize(8.8); doc.setTextColor(212,175,55); doc.text('METHOD — STORY + SCIENCE', M,y); y+=5;
-      lastRecipe.steps.forEach((step,i)=>{ if(y>H-30){ doc.addPage(); doc.setFillColor(7,9,11); doc.rect(0,0,W,H,'F'); y=18; } doc.setFont('times','bold'); doc.setFontSize(10.5); doc.setTextColor(212,175,55); doc.setGState(new doc.GState({opacity:0.72})); doc.text(String(i+1).padStart(2,'0'), M,y); doc.setGState(new doc.GState({opacity:1})); doc.setFont('helvetica','normal'); doc.setFontSize(8.8); doc.setTextColor(212,208,200); const ls=doc.splitTextToSize(step, W-M*2-11); doc.text(ls, M+9.5,y); y+=Math.max(ls.length*4.3,6)+2.3; }); y+=4;
-      if(y>H-46){ doc.addPage(); doc.setFillColor(7,9,11); doc.rect(0,0,W,H,'F'); y=18; }
-      const tipW=W-M*2; doc.setFont('helvetica','normal'); doc.setFontSize(8.5); const tipLines=doc.splitTextToSize(lastRecipe.tip, tipW-11); const tipH=10+tipLines.length*4.2+5; doc.setFillColor(212,175,55); doc.setGState(new doc.GState({opacity:0.07})); doc.roundedRect(M,y-2,tipW,tipH,3,3,'F'); doc.setGState(new doc.GState({opacity:1})); doc.setDrawColor(212,175,55); doc.setLineWidth(0.7); doc.line(M,y-2,M,y-2+tipH); doc.setFont('helvetica','bold'); doc.setFontSize(6.8); doc.setTextColor(212,175,55); doc.text("CHEF'S TIP — ROUXMIND PRO MAX 7D", M+5.2,y+2); y+=6; doc.setFont('helvetica','italic'); doc.setFontSize(8.4); doc.setTextColor(212,208,200); doc.text(tipLines, M+5.2,y); y+=tipH;
-      if(lastRecipe.raw){ if(y>H-50){ doc.addPage(); doc.setFillColor(7,9,11); doc.rect(0,0,W,H,'F'); y=18; } doc.setFont('helvetica','bold'); doc.setFontSize(6.5); doc.setTextColor(138,134,126); doc.text('RAW MODEL OUTPUT — GEMMA 3:', M,y); y+=4; doc.setFont('helvetica','normal'); doc.setFontSize(6.8); doc.setTextColor(180,176,168); const rawLines=doc.splitTextToSize(lastRecipe.raw.slice(0,2000), tipW); rawLines.forEach(l=>{ if(y>H-12){ doc.addPage(); doc.setFillColor(7,9,11); doc.rect(0,0,W,H,'F'); y=14; } doc.text(l, M,y); y+=3.2; }); }
-      const fy=H-14; doc.setDrawColor(255,255,255); doc.setGState(new doc.GState({opacity:0.05})); doc.setLineWidth(0.2); doc.line(M,fy,W-M,fy); doc.setGState(new doc.GState({opacity:1})); doc.setFont('helvetica','normal'); doc.setFontSize(6.2); doc.setTextColor(138,134,126); doc.text('Generated by RouxMind Pro Max 7D • Sooban Talha Technologies • Mesh API • Logs!A:I • Users!A:F • Global!A:D', M,fy+5); doc.setTextColor(212,175,55); doc.setFont('helvetica','bold'); doc.text('✦ AUTHENTIC • SCALED • LOGGED • RANKED', W-M,fy+5,{align:'right'});
-      const safe=lastRecipe.title.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,''); doc.save(`RouxMind-ProMax7D-${safe}-${lastRecipe.servings}eaters.pdf`);
-    });
-  })();
-  </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a19e6d82b8d3bb2c',t:'MTc4Mzg0MjMxOQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+  function escapeAttr(s) {
+    const div = document.createElement("div");
+    div.textContent = s ?? "";
+    return div.innerHTML;
+  }
+
+  // ---- Mobile sidebar toggle visibility ----
+  function checkMobile() {
+    document.getElementById("sidebar-toggle").style.display = window.innerWidth <= 768 ? "inline-flex" : "none";
+  }
+  checkMobile();
+  window.addEventListener("resize", checkMobile);
+})();
+</script>
+</body>
 </html>
