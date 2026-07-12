@@ -1,301 +1,638 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark" data-font="small">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>RouxMind — Generate a Recipe</title>
-<link rel="icon" href="logo.png" />
-<link rel="stylesheet" href="style.css" />
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>RouxMind — Generate Recipes</title>
+    <meta name="description" content="Generate delicious recipes with AI. Enter ingredients, set preferences, and get instant recipes.">
+    <link rel="icon" href="clogo.png">
+    
+    <!-- Fonts & Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,500;1,600&family=Inter:wght@300;400;500;600;700;800;900&family=Orbitron:wght@600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- Libraries -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1"></script>
+    
+    <!-- Styles -->
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-<div id="mouse-glow"></div>
-<div id="onboarding-root"></div>
 
-<div style="display:flex; min-height:100vh; position:relative; z-index:2;">
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     LOADING SPINNER
+     ═══════════════════════════════════════════════════════════════════════════ -->
+<div class="loading-spinner"></div>
 
-  <!-- ============ SIDEBAR ============ -->
-  <aside class="sidebar" id="sidebar" style="width:280px; flex-shrink:0; padding:1.25rem 0.75rem; display:flex; flex-direction:column; gap:1.25rem;">
-    <a href="index.html" style="display:flex; align-items:center; gap:0.6rem; text-decoration:none; padding:0 0.5rem;">
-      <img src="logo.png" alt="RouxMind" style="width:30px; height:30px; border-radius:8px;" />
-      <span class="wordmark" style="font-size:1.2rem;">RouxMind</span>
-    </a>
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     PARTICLES BACKGROUND
+     ═══════════════════════════════════════════════════════════════════════════ -->
+<canvas id="particleCanvas" style="position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:0"></canvas>
 
-    <div id="sidebar-stats" class="glass-card"></div>
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     TOAST CONTAINER
+     ═══════════════════════════════════════════════════════════════════════════ -->
+<div id="toastContainer" class="toast-container"></div>
 
-    <div>
-      <div class="eyebrow" style="padding:0 1.1rem; margin-bottom:0.5rem;">Recent</div>
-      <div id="sidebar-history" style="display:flex; flex-direction:column; gap:0.15rem; max-height:220px; overflow-y:auto;"></div>
-    </div>
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     SIDEBAR BACKDROP
+     ═══════════════════════════════════════════════════════════════════════════ -->
+<div class="sb-backdrop" id="sbBackdrop"></div>
 
-    <div>
-      <div class="eyebrow" style="padding:0 1.1rem; margin-bottom:0.5rem;">⭐ Saved</div>
-      <div id="sidebar-saved" style="display:flex; flex-direction:column; gap:0.15rem; max-height:220px; overflow-y:auto;"></div>
-    </div>
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     MAIN APP LAYOUT
+     ═══════════════════════════════════════════════════════════════════════════ -->
+<div class="app-container">
 
-    <div style="margin-top:auto; padding:0.75rem 1.1rem; border-top:1px solid var(--border-glass);">
-      <a href="https://soobantalhatech.xyz" target="_blank" rel="noopener" style="display:flex; align-items:center; gap:0.5rem; text-decoration:none;">
-        <img src="clogo.png" alt="" style="width:20px; height:20px; border-radius:5px;" />
-        <span class="text-muted" style="font-size:0.75rem;">Sooban Talha Technologies</span>
-      </a>
-    </div>
-  </aside>
-
-  <!-- ============ MAIN ============ -->
-  <main style="flex:1; padding:1.5rem 2rem 4rem; max-width:820px; margin:0 auto; width:100%;">
-    <div style="display:flex; align-items:center; gap:1rem; margin-bottom:2rem;">
-      <button id="sidebar-toggle" class="btn btn-ghost" style="display:none; padding:0.6rem;">☰</button>
-      <div>
-        <h1 class="display" style="font-size:1.8rem;">What are we cooking?</h1>
-        <p style="font-size:0.9rem;">Type a dish, describe your ingredients, or snap a photo.</p>
-      </div>
-    </div>
-
-    <!-- ---- Input mode tabs ---- -->
-    <div class="glass-card" style="padding:1.75rem; margin-bottom:1.5rem;">
-      <div style="display:flex; gap:0.5rem; margin-bottom:1.25rem;">
-        <button class="btn btn-ghost mode-tab active" data-mode="text" style="flex:1; padding:0.7rem;">✏️ Text</button>
-        <button class="btn btn-ghost mode-tab" data-mode="camera" style="flex:1; padding:0.7rem;">📷 Camera</button>
-        <button class="btn btn-ghost mode-tab" data-mode="upload" style="flex:1; padding:0.7rem;">🖼️ Upload</button>
-      </div>
-
-      <div id="mode-text">
-        <input id="dish-input" class="input-field" placeholder="e.g. Butter chicken, or 'leftover rice, eggs, spring onion'" />
-      </div>
-
-      <div id="mode-camera" style="display:none;">
-        <video id="camera-feed" autoplay playsinline style="width:100%; border-radius:var(--radius-md); background:#000; max-height:320px;"></video>
-        <canvas id="camera-canvas" style="display:none;"></canvas>
-        <div style="display:flex; gap:0.75rem; margin-top:0.75rem;">
-          <button id="camera-start" class="btn btn-ghost" style="flex:1;">Open Camera</button>
-          <button id="camera-capture" class="btn btn-primary" style="flex:1; display:none;">📸 Capture</button>
+    <!-- ═══════════════════════════════════════════════════════════════════════
+         LEFT PANEL / SIDEBAR
+         ═══════════════════════════════════════════════════════════════════════ -->
+    <aside class="left-panel" id="leftPanel">
+        
+        <!-- Panel Header -->
+        <div class="lp-header">
+            <div class="lp-brand">
+                <img src="clogo.png" alt="RouxMind" class="lp-logo">
+                <span class="lp-name">RouxMind</span>
+            </div>
+            <a href="index.html" class="lp-home" title="Home">
+                <i class="fas fa-home"></i>
+            </a>
         </div>
-        <img id="camera-preview" style="display:none; width:100%; border-radius:var(--radius-md); margin-top:0.75rem;" />
-      </div>
 
-      <div id="mode-upload" style="display:none;">
-        <label for="file-input" class="glass-card" style="display:flex; flex-direction:column; align-items:center; justify-content:center; padding:2.5rem; cursor:pointer; border-style:dashed;">
-          <span style="font-size:1.8rem; margin-bottom:0.5rem;">🖼️</span>
-          <span class="text-muted" style="font-size:0.9rem;">Click to upload an image</span>
-        </label>
-        <input id="file-input" type="file" accept="image/*" style="display:none;" />
-        <img id="upload-preview" style="display:none; width:100%; border-radius:var(--radius-md); margin-top:0.75rem;" />
-      </div>
-
-      <!-- ---- Sliders ---- -->
-      <div style="display:grid; grid-template-columns:1fr; gap:1.25rem; margin-top:1.75rem;">
-        <div>
-          <div style="display:flex; justify-content:space-between; margin-bottom:0.4rem; font-size:0.88rem;">
-            <span>Servings</span><span id="servings-val" class="text-glow">2</span>
-          </div>
-          <input id="servings-slider" type="range" min="1" max="10" value="2" class="slider" />
+        <!-- User Profile -->
+        <div class="user-profile">
+            <div class="user-avatar" id="sidebarAvatar">👨‍🍳</div>
+            <div class="user-info">
+                <div class="user-name" id="sidebarUserName">Chef</div>
+                <div class="user-tagline">Where Every Plate Tells Your Story</div>
+            </div>
         </div>
-        <div>
-          <div style="display:flex; justify-content:space-between; margin-bottom:0.4rem; font-size:0.88rem;">
-            <span>Spice level</span><span id="spice-val" class="text-glow">Medium</span>
-          </div>
-          <input id="spice-slider" type="range" min="1" max="5" value="3" class="slider" />
+
+        <!-- Stats Grid -->
+        <div class="stats-grid" id="sidebarStats">
+            <div class="stat-card">
+                <div class="stat-value" id="sidebarTotalRecipes">0</div>
+                <div class="stat-label"><i class="fas fa-utensils"></i> Recipes</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="sidebarStreakValue">0</div>
+                <div class="stat-label"><i class="fas fa-fire"></i> Streak</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="sidebarRankValue">🥄</div>
+                <div class="stat-label"><i class="fas fa-trophy"></i> Rank</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="sidebarXpValue">0</div>
+                <div class="stat-label"><i class="fas fa-star"></i> XP</div>
+            </div>
         </div>
-        <div>
-          <div style="display:flex; justify-content:space-between; margin-bottom:0.4rem; font-size:0.88rem;">
-            <span>Time available</span><span id="time-val" class="text-glow">Fast</span>
-          </div>
-          <input id="time-slider" type="range" min="1" max="4" value="2" class="slider" />
+
+        <!-- Navigation -->
+        <nav class="sidebar-nav">
+            <div class="nav-item active" data-nav="generate" id="navGenerate">
+                <i class="fas fa-utensils nav-icon"></i>
+                <span class="nav-text">Generate Recipe</span>
+            </div>
+            <div class="nav-item" data-nav="history" id="navHistory">
+                <i class="fas fa-history nav-icon"></i>
+                <span class="nav-text">History</span>
+                <span class="nav-badge" id="histBadge">0</span>
+            </div>
+            <div class="nav-item" data-nav="saved" id="navSaved">
+                <i class="fas fa-star nav-icon"></i>
+                <span class="nav-text">Saved Recipes</span>
+                <span class="nav-badge" id="savedBadge">0</span>
+            </div>
+            <div class="nav-item" data-nav="settings" id="navSettings">
+                <i class="fas fa-cog nav-icon"></i>
+                <span class="nav-text">Settings</span>
+            </div>
+            <div class="nav-item" data-nav="focus" id="navFocus">
+                <i class="fas fa-expand-alt nav-icon"></i>
+                <span class="nav-text">Focus Mode</span>
+            </div>
+        </nav>
+
+        <!-- Demo Replay -->
+        <button class="demo-replay-btn" id="demoReplayBtn">
+            <i class="fas fa-play-circle"></i> Watch Demo
+        </button>
+
+        <!-- History Preview -->
+        <div class="lp-section">
+            <div class="lp-section-header">
+                <span class="lp-section-title">Recent Recipes</span>
+                <button class="lp-section-all" id="lpHistAll">View All</button>
+            </div>
+            <div class="lp-section-list" id="lpHistList">
+                <div class="lp-empty">No history yet — start cooking!</div>
+            </div>
         </div>
-      </div>
 
-      <button id="generate-btn" class="btn btn-ember" style="width:100%; margin-top:1.75rem; padding:1.05rem;">
-        🍳 Generate Recipe
-      </button>
-    </div>
+        <!-- Saved Preview -->
+        <div class="lp-section">
+            <div class="lp-section-header">
+                <span class="lp-section-title">Saved Recipes</span>
+                <button class="lp-section-all" id="lpSavedAll">View All</button>
+            </div>
+            <div class="lp-section-list" id="lpSavedList">
+                <div class="lp-empty">No saved recipes yet.</div>
+            </div>
+        </div>
 
-    <!-- ---- Loading state ---- -->
-    <div id="loading-state" style="display:none; flex-direction:column; align-items:center; padding:3rem; gap:1rem;">
-      <div class="loader-ring"></div>
-      <p id="loading-msg" class="text-muted">Whisking up your recipe…</p>
-    </div>
+        <!-- Avatar Picker -->
+        <div id="sidebarAvatarPicker"></div>
 
-    <!-- ---- Error state ---- -->
-    <div id="error-state" class="glass-card" style="display:none; padding:1.25rem; border-color:var(--accent-error); margin-bottom:1.5rem;">
-      <p id="error-msg" style="color:var(--accent-error);"></p>
-    </div>
+        <!-- About -->
+        <div class="sidebar-about">
+            <button class="about-toggle" id="aboutToggleBtn">
+                <i class="fas fa-info-circle"></i> About RouxMind
+                <i class="fas fa-chevron-down about-chevron" id="aboutChevron"></i>
+            </button>
+            <div class="about-content" id="aboutContent">
+                <div class="about-text">
+                    <strong>RouxMind v2.0</strong> — AI recipe generator.
+                    Turn ingredients into delicious recipes instantly.
+                </div>
+                <div class="about-text">
+                    <i class="fas fa-code"></i> Built by <strong>Sooban Talha Tech</strong><br>
+                    <i class="fas fa-globe"></i> <a href="https://soobantalhatech.xyz" target="_blank">soobantalhatech.xyz</a>
+                </div>
+                <div class="about-text" style="color:#d4af37;font-style:italic;">
+                    "Where Every Plate Tells Your Story" — Sooban Talha
+                </div>
+                <div class="about-text">
+                    <i class="fas fa-heart" style="color:#ff4444"></i> Free forever for every home cook.
+                </div>
+            </div>
+        </div>
 
-    <!-- ---- Result ---- -->
-    <div id="result-root"></div>
-  </main>
+    </aside>
+
+    <!-- ═══════════════════════════════════════════════════════════════════════
+         RIGHT PANEL / MAIN CONTENT
+         ═══════════════════════════════════════════════════════════════════════ -->
+    <main class="right-panel" id="rightPanel">
+
+        <!-- ═══════════ HEADER ═══════════ -->
+        <header class="app-header" id="appHeader">
+            <div class="header-left">
+                <button class="header-btn" id="sbToggle" aria-label="Toggle sidebar">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <div class="header-logo" id="headerLogo">
+                    <span class="header-mark">🍳</span>
+                    <div class="header-text">
+                        <span class="header-name">RouxMind</span>
+                        <span class="header-ver">v2.0</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="header-stats">
+                <div class="header-stat header-stat-streak">
+                    <i class="fas fa-fire"></i>
+                    <span id="headerStreak">0</span>
+                    <span class="header-stat-lbl">Streak</span>
+                </div>
+                <div class="header-stat header-stat-hide-md">
+                    <i class="fas fa-clock"></i> Sessions: <span id="statSessions">0</span>
+                </div>
+                <div class="header-stat header-stat-hide-md">
+                    <i class="fas fa-history"></i> History: <span id="statHistory">0</span>
+                </div>
+                <div class="header-stat header-stat-hide-sm">
+                    <i class="fas fa-star"></i> Saved: <span id="statSaved">0</span>
+                </div>
+            </div>
+
+            <div class="header-greeting" id="headerGreeting">Where Every Plate Tells Your Story</div>
+
+            <div class="header-actions">
+                <button class="header-btn" id="themeBtn" title="Toggle Theme">
+                    <i class="fas fa-moon" id="themeIcon"></i>
+                </button>
+                <button class="header-btn header-wizard-btn" id="wizardHeaderBtn" title="Open Wizard">
+                    <i class="fas fa-magic"></i>
+                </button>
+                <button class="header-btn" id="settingsBtn" title="Settings">
+                    <i class="fas fa-cog"></i>
+                </button>
+                <div class="header-avatar" id="avBtn" title="User Menu">
+                    <span id="avInitials">👨‍🍳</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- ═══════════ AVATAR DROPDOWN ═══════════ -->
+        <div class="av-dropdown" id="avDropdown">
+            <div class="av-user">
+                <div class="av-avatar" id="avDropdownAvatar">👨‍🍳</div>
+                <div>
+                    <div class="av-name" id="avDropdownName">Chef</div>
+                    <div class="av-sub">RouxMind Member</div>
+                </div>
+            </div>
+            <div class="av-divider"></div>
+            <button class="av-item" id="avHist"><i class="fas fa-history"></i> History</button>
+            <button class="av-item" id="avSaved"><i class="fas fa-star"></i> Saved Recipes</button>
+            <button class="av-item" id="avSettings"><i class="fas fa-cog"></i> Settings</button>
+            <div class="av-divider"></div>
+            <button class="av-item av-danger" id="avClear"><i class="fas fa-trash-alt"></i> Clear All Data</button>
+        </div>
+
+        <!-- ═══════════ OUTPUT TOOLBAR ═══════════ -->
+        <div class="out-toolbar" id="outToolbar" style="display:none">
+            <button class="otb-btn" id="copyBtn" title="Copy"><i class="fas fa-copy"></i> <span>Copy</span></button>
+            <button class="otb-btn otb-pdf" id="pdfBtn" data-theme="🌙" title="PDF"><i class="fas fa-file-pdf"></i> <span>PDF</span></button>
+            <button class="otb-btn" id="saveBtn" title="Save"><i class="fas fa-star"></i> <span>Save</span></button>
+            <button class="otb-btn" id="shareBtn" title="Share"><i class="fas fa-share-alt"></i> <span>Share</span></button>
+            <button class="otb-btn otb-danger" id="clearBtn" title="Clear"><i class="fas fa-trash-alt"></i> <span>Clear</span></button>
+            <div class="otb-sep"></div>
+            <button class="otb-btn otb-new" id="newWizardBtn" title="New Recipe"><i class="fas fa-magic"></i> <span>New</span></button>
+            <button class="otb-btn" id="focusModeBtn" title="Focus"><i class="fas fa-expand-alt"></i> <span>Focus</span></button>
+            <div class="otb-hint"><kbd>Ctrl</kbd>+<kbd>K</kbd> wizard · <kbd>Esc</kbd> close</div>
+        </div>
+
+        <!-- ═══════════ OUTPUT AREA ═══════════ -->
+        <div class="out-area" id="outArea">
+
+            <!-- Welcome Screen (First Visit) -->
+            <div id="welcomeScreen" class="welcome-screen">
+                <div class="welcome-content">
+                    <div class="welcome-icon">🧠</div>
+                    <h1>Welcome to RouxMind!</h1>
+                    <p>Where every plate tells your story.</p>
+                    <div class="welcome-form">
+                        <label for="welcomeNameInput">Enter your name:</label>
+                        <input type="text" id="welcomeNameInput" placeholder="Your name..." maxlength="30">
+                        <div class="welcome-options">
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="welcomeAnonymous">
+                                🔒 Anonymous stats only
+                            </label>
+                        </div>
+                        <button class="btn btn-primary btn-welcome" id="welcomeBtn">
+                            🚀 Start Cooking →
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Welcome Back Screen -->
+            <div id="welcomeBackScreen" class="welcome-back" style="display:none">
+                <div class="welcome-back-content">
+                    <div class="welcome-back-icon">🔥</div>
+                    <h1>Welcome back, <span id="wbName">Chef</span>!</h1>
+                    <div class="wb-stats">
+                        <div class="wb-stat">
+                            <div class="wb-stat-val" id="wbRecipes">0</div>
+                            <div class="wb-stat-lbl">Recipes</div>
+                        </div>
+                        <div class="wb-stat">
+                            <div class="wb-stat-val" id="wbStreak">0</div>
+                            <div class="wb-stat-lbl">Streak</div>
+                        </div>
+                        <div class="wb-stat">
+                            <div class="wb-stat-val" id="wbRank">🥄</div>
+                            <div class="wb-stat-lbl">Rank</div>
+                        </div>
+                        <div class="wb-stat">
+                            <div class="wb-stat-val" id="wbXp">0</div>
+                            <div class="wb-stat-lbl">XP</div>
+                        </div>
+                    </div>
+                    <button class="btn btn-primary" id="welcomeBackBtn">
+                        Continue Cooking →
+                    </button>
+                </div>
+            </div>
+
+            <!-- Empty State -->
+            <div id="emptyState" class="empty-state">
+                <div class="es-mark">🍳</div>
+                <div class="es-title">Ready to Cook Something Amazing?</div>
+                <div class="es-sub">Enter your ingredients and let AI create the perfect recipe for you</div>
+                <div class="es-cta-row">
+                    <button class="empty-wizard-btn" id="emptyWizardBtn">
+                        <i class="fas fa-magic"></i> Open Recipe Wizard
+                    </button>
+                </div>
+                <div class="es-features">
+                    <span class="es-feat" data-tool="recipe" title="Generate a recipe">
+                        <i class="fas fa-utensils"></i> Recipe
+                    </span>
+                    <span class="es-feat es-feat-mega" data-tool="recipe" title="Upload photo">
+                        <i class="fas fa-camera"></i> Photo to Recipe
+                    </span>
+                </div>
+                <div class="es-shortcuts">
+                    <div class="shortcut"><kbd>Ctrl</kbd>+<kbd>K</kbd> Open Wizard</div>
+                    <div class="shortcut"><kbd>Ctrl</kbd>+<kbd>H</kbd> History</div>
+                    <div class="shortcut"><kbd>Esc</kbd> Close</div>
+                </div>
+            </div>
+
+            <!-- Thinking Indicator -->
+            <div id="thinkingWrap" style="display:none">
+                <div class="thinking-card">
+                    <div class="th-av"><i class="fas fa-utensils"></i></div>
+                    <div class="th-body">
+                        <div class="th-title">RouxMind is cooking up your recipe…</div>
+                        <div class="th-dots"><span></span><span></span><span></span></div>
+                        <div class="th-stages">
+                            <span class="ths" id="ts0">🎯 Analysing</span>
+                            <span class="ths" id="ts1">📝 Planning</span>
+                            <span class="ths" id="ts2">👨‍🍳 Cooking</span>
+                            <span class="ths" id="ts3">✨ Perfecting</span>
+                            <span class="ths" id="ts4">✅ Ready!</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Result Area -->
+            <div id="resultArea"></div>
+
+        </div>
+
+        <!-- ═══════════ BACK TO TOP ═══════════ -->
+        <button class="back-to-top" id="backToTopBtn"><i class="fas fa-arrow-up"></i></button>
+
+    </main>
 </div>
 
-<script src="app.js"></script>
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     STREAM OVERLAY
+     ═══════════════════════════════════════════════════════════════════════════ -->
+<div class="stream-overlay" id="streamFullpage" style="display:none">
+    <div class="sfp-header">
+        <div class="sfp-left">
+            <div class="sfp-indicator">
+                <span class="sfp-dot"></span>
+                <span class="sfp-dot"></span>
+                <span class="sfp-dot"></span>
+            </div>
+            <div>
+                <div class="sfp-label" id="sfpLabel">Cooking up your recipe…</div>
+                <div class="sfp-topic" id="sfpTopic"></div>
+            </div>
+        </div>
+        <div class="sfp-right">
+            <div class="sfp-tool-badge">
+                <i class="fas fa-utensils" id="sfpToolIcon"></i>
+                <span id="sfpToolName">Recipe</span>
+            </div>
+            <div class="sfp-stages-row">
+                <span class="ssc-stage" id="ss0" title="Analysing">🎯</span>
+                <span class="ssc-stage" id="ss1" title="Planning">📝</span>
+                <span class="ssc-stage" id="ss2" title="Cooking">👨‍🍳</span>
+                <span class="ssc-stage" id="ss3" title="Perfecting">✨</span>
+                <span class="ssc-stage" id="ss4" title="Ready">✅</span>
+            </div>
+        </div>
+    </div>
+    <div class="sfp-fact" id="sfpFact"></div>
+    <div class="sfp-progress-track">
+        <div class="sfp-progress-fill" id="sscProgressBar"></div>
+    </div>
+    <div class="sfp-scroll" id="sfpScroll">
+        <div class="sfp-text md-content" id="sfpText"></div>
+    </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     MODALS
+     ═══════════════════════════════════════════════════════════════════════════ -->
+
+<!-- ─── Wizard Modal ─── -->
+<div class="modal-overlay" id="wizardModal">
+    <div class="modal modal-lg">
+        <div class="modal-header">
+            <div class="modal-title"><i class="fas fa-magic"></i> Recipe Wizard</div>
+            <button class="modal-close" data-close="wizardModal"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="modal-body" id="wizardContent"></div>
+    </div>
+</div>
+
+<!-- ─── History Modal ─── -->
+<div class="modal-overlay" id="histModal">
+    <div class="modal modal-md">
+        <div class="modal-header">
+            <div class="modal-title"><i class="fas fa-history"></i> Recipe History</div>
+            <button class="modal-close" data-close="histModal"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="modal-body">
+            <div class="hist-search">
+                <i class="fas fa-search"></i>
+                <input type="text" id="histSearchInput" placeholder="Search recipes…">
+                <button id="histSearchClear"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="hist-actions">
+                <button id="clearHistBtn" class="hist-action"><i class="fas fa-trash"></i> Clear All</button>
+                <button id="exportHistBtn" class="hist-action"><i class="fas fa-download"></i> Export JSON</button>
+            </div>
+            <div id="histList" class="hist-list"></div>
+            <div id="histEmpty" class="hist-empty" style="display:none">
+                <i class="fas fa-history"></i><p>No history yet. Generate some recipes!</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ─── Saved Modal ─── -->
+<div class="modal-overlay" id="savedModal">
+    <div class="modal modal-md">
+        <div class="modal-header">
+            <div class="modal-title"><i class="fas fa-star"></i> Saved Recipes <span id="savedCount" class="modal-badge">0</span></div>
+            <button class="modal-close" data-close="savedModal"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="modal-body">
+            <div id="savedList" class="saved-list"></div>
+            <div id="savedEmpty" class="saved-empty" style="display:none">
+                <i class="fas fa-star"></i><p>No saved recipes yet. Save your favorite recipes!</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ─── Settings Modal ─── -->
+<div class="modal-overlay" id="settingsModal">
+    <div class="modal modal-md">
+        <div class="modal-header">
+            <div class="modal-title"><i class="fas fa-cog"></i> Settings</div>
+            <button class="modal-close" data-close="settingsModal"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="modal-body">
+            <!-- Profile -->
+            <div class="settings-section">
+                <div class="settings-title"><i class="fas fa-user"></i> Your Profile</div>
+                <div class="settings-row">
+                    <div class="settings-label">Display Name</div>
+                    <div class="settings-input-group">
+                        <input type="text" id="nameInput" placeholder="Your name" class="settings-input">
+                        <button id="saveNameBtn" class="settings-btn">Save</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Avatar -->
+            <div class="settings-section">
+                <div class="settings-title"><i class="fas fa-palette"></i> Avatar</div>
+                <div id="avatarPickerSettings"></div>
+            </div>
+
+            <!-- Appearance -->
+            <div class="settings-section">
+                <div class="settings-title"><i class="fas fa-palette"></i> Appearance</div>
+                <div class="settings-row">
+                    <div class="settings-label">Theme</div>
+                    <div class="theme-buttons">
+                        <button class="theme-btn active" data-theme-btn="dark"><i class="fas fa-moon"></i> Dark</button>
+                        <button class="theme-btn" data-theme-btn="light"><i class="fas fa-sun"></i> Light</button>
+                        <button class="theme-btn" data-theme-btn="golden"><i class="fas fa-star"></i> Golden</button>
+                    </div>
+                </div>
+                <div class="settings-row">
+                    <div class="settings-label">Font Size</div>
+                    <div class="font-buttons">
+                        <button class="font-btn font-sz active" data-size="small">S</button>
+                        <button class="font-btn font-sz" data-size="medium">M</button>
+                        <button class="font-btn font-sz" data-size="large">L</button>
+                        <button class="font-btn font-sz" data-size="xlarge">XL</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Language -->
+            <div class="settings-section">
+                <div class="settings-title"><i class="fas fa-language"></i> Default Language</div>
+                <div class="settings-row">
+                    <div class="settings-label">Output Language</div>
+                    <div class="settings-input-group">
+                        <select id="defaultLangSel" class="settings-input" style="flex:1;max-width:200px">
+                            <option value="English" selected>🇬🇧 English</option>
+                            <option value="Urdu">🇵🇰 Urdu</option>
+                            <option value="Hindi">🇮🇳 Hindi</option>
+                            <option value="Arabic">🇸🇦 Arabic</option>
+                            <option value="French">🇫🇷 French</option>
+                            <option value="German">🇩🇪 German</option>
+                            <option value="Spanish">🇪🇸 Spanish</option>
+                            <option value="Portuguese">🇧🇷 Portuguese</option>
+                            <option value="Russian">🇷🇺 Russian</option>
+                            <option value="Turkish">🇹🇷 Turkish</option>
+                            <option value="Chinese">🇨🇳 Chinese</option>
+                            <option value="Japanese">🇯🇵 Japanese</option>
+                        </select>
+                        <button id="saveDefaultLangBtn" class="settings-btn">Save</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PDF Style -->
+            <div class="settings-section">
+                <div class="settings-title"><i class="fas fa-file-pdf"></i> PDF Style</div>
+                <div class="settings-row">
+                    <div class="settings-label">PDF Theme</div>
+                    <div class="theme-buttons">
+                        <button class="theme-btn active" data-pdf-theme="dark"><i class="fas fa-moon"></i> Dark PDF</button>
+                        <button class="theme-btn" data-pdf-theme="light"><i class="fas fa-sun"></i> Light PDF</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stats -->
+            <div class="settings-section">
+                <div class="settings-title"><i class="fas fa-chart-bar"></i> Your Statistics</div>
+                <div class="stats-grid" id="dsStats"></div>
+            </div>
+
+            <!-- Backup -->
+            <div class="settings-section">
+                <div class="settings-title"><i class="fas fa-database"></i> Backup &amp; Restore</div>
+                <div class="settings-buttons">
+                    <button id="exportDataBtn" class="settings-btn"><i class="fas fa-download"></i> Export</button>
+                    <button id="importBackupBtn" class="settings-btn"><i class="fas fa-upload"></i> Import</button>
+                    <button id="clearDataBtn" class="settings-btn danger"><i class="fas fa-trash"></i> Clear All</button>
+                </div>
+            </div>
+
+            <!-- About -->
+            <div class="settings-section">
+                <div class="settings-title"><i class="fas fa-info-circle"></i> About</div>
+                <div class="about-card-settings">
+                    <div class="about-logo">🍳</div>
+                    <div class="about-name">RouxMind <span class="about-name-ver">v2.0</span></div>
+                    <div class="about-tagline">"Where Every Plate Tells Your Story"</div>
+                    <div class="about-desc">A completely free AI recipe generator built for home cooks everywhere. No login, no payment — ever.</div>
+                    <div class="about-founder">
+                        <div class="founder-avatar">ST</div>
+                        <div class="founder-info">
+                            <div class="founder-name">Sooban Talha</div>
+                            <div class="founder-role">Founder &amp; Developer</div>
+                            <div class="founder-company">Sooban Talha Tech</div>
+                        </div>
+                    </div>
+                    <div class="about-quote">
+                        <i class="fas fa-quote-left"></i>
+                        "I built RouxMind because great cooking tools should be free for everyone."
+                        <cite>— Sooban Talha</cite>
+                    </div>
+                    <div class="about-links">
+                        <a href="https://soobantalhatech.xyz" target="_blank" class="about-link"><i class="fas fa-building"></i> soobantalhatech.xyz</a>
+                        <a href="https://rouxmind.vercel.app" target="_blank" class="about-link"><i class="fas fa-external-link-alt"></i> rouxmind.vercel.app</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ─── Confirm Modal ─── -->
+<div class="modal-overlay" id="confirmModal">
+    <div class="modal modal-sm">
+        <div class="modal-header">
+            <div class="modal-title">Confirm Action</div>
+            <button class="modal-close" data-close="confirmModal"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="modal-body">
+            <p id="confirmMsg">Are you sure?</p>
+            <div class="confirm-buttons">
+                <button id="confirmOkBtn" class="confirm-btn ok">Yes, Confirm</button>
+                <button class="confirm-btn cancel" data-close="confirmModal">Cancel</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     SCRIPTS
+     ═══════════════════════════════════════════════════════════════════════════ -->
 <script>
-(function () {
-  let currentMode = "text";
-  let currentImageBase64 = null;
-  let cameraStream = null;
-  let lastRecipe = null;
+    // Theme flash prevention
+    (function(){
+        try {
+            const p = JSON.parse(localStorage.getItem('rm_prefs') || '{}');
+            if (p.theme) document.documentElement.setAttribute('data-theme', p.theme);
+            if (p.fontSize) document.documentElement.setAttribute('data-font', p.fontSize);
+        } catch(e) {}
+    })();
 
-  // ---- Mode tabs ----
-  document.querySelectorAll(".mode-tab").forEach(tab => {
-    tab.addEventListener("click", () => {
-      document.querySelectorAll(".mode-tab").forEach(t => t.classList.remove("active"));
-      tab.classList.add("active");
-      currentMode = tab.dataset.mode;
-      ["text", "camera", "upload"].forEach(m => {
-        document.getElementById(`mode-${m}`).style.display = m === currentMode ? "block" : "none";
-      });
+    // Remove spinner on load
+    window.addEventListener('load', function(){
+        document.body.classList.add('loaded');
+        const spinner = document.querySelector('.loading-spinner');
+        if (spinner) spinner.remove();
     });
-  });
-
-  // ---- Sliders ----
-  const spiceLabels = ["Mild", "Light", "Medium", "Hot", "Extra Hot"];
-  const timeLabels = ["Quick", "Fast", "Standard", "Slow"];
-
-  document.getElementById("servings-slider").addEventListener("input", e => {
-    document.getElementById("servings-val").textContent = e.target.value;
-  });
-  document.getElementById("spice-slider").addEventListener("input", e => {
-    document.getElementById("spice-val").textContent = spiceLabels[e.target.value - 1];
-  });
-  document.getElementById("time-slider").addEventListener("input", e => {
-    document.getElementById("time-val").textContent = timeLabels[e.target.value - 1];
-  });
-
-  // ---- Camera ----
-  document.getElementById("camera-start").addEventListener("click", async () => {
-    try {
-      cameraStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
-      const video = document.getElementById("camera-feed");
-      video.srcObject = cameraStream;
-      document.getElementById("camera-start").style.display = "none";
-      document.getElementById("camera-capture").style.display = "block";
-    } catch (err) {
-      alert("Couldn't access camera: " + err.message);
-    }
-  });
-
-  document.getElementById("camera-capture").addEventListener("click", () => {
-    const video = document.getElementById("camera-feed");
-    const canvas = document.getElementById("camera-canvas");
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
-    canvas.getContext("2d").drawImage(video, 0, 0);
-    const dataUrl = canvas.toDataURL("image/jpeg", 0.85);
-    currentImageBase64 = dataUrl.split(",")[1];
-
-    const preview = document.getElementById("camera-preview");
-    preview.src = dataUrl;
-    preview.style.display = "block";
-    video.style.display = "none";
-
-    if (cameraStream) cameraStream.getTracks().forEach(t => t.stop());
-  });
-
-  // ---- Upload ----
-  document.getElementById("file-input").addEventListener("change", e => {
-    const file = e.target.files[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = () => {
-      currentImageBase64 = reader.result.split(",")[1];
-      const preview = document.getElementById("upload-preview");
-      preview.src = reader.result;
-      preview.style.display = "block";
-    };
-    reader.readAsDataURL(file);
-  });
-
-  // ---- Generate ----
-  document.getElementById("generate-btn").addEventListener("click", async () => {
-    const dishText = document.getElementById("dish-input").value.trim();
-    const servings = document.getElementById("servings-slider").value;
-    const spice = document.getElementById("spice-slider").value;
-    const time = document.getElementById("time-slider").value;
-
-    const usingImage = (currentMode === "camera" || currentMode === "upload") && currentImageBase64;
-
-    if (!dishText && !usingImage) {
-      alert("Please enter a dish name or provide an image.");
-      return;
-    }
-
-    document.getElementById("loading-state").style.display = "flex";
-    document.getElementById("error-state").style.display = "none";
-    document.getElementById("result-root").innerHTML = "";
-
-    try {
-      const recipe = await generateRecipe({
-        dishText: usingImage ? null : dishText,
-        imageBase64: usingImage ? currentImageBase64 : null,
-        servings, spice, time
-      });
-      lastRecipe = recipe;
-      renderResult(recipe);
-    } catch (err) {
-      document.getElementById("error-msg").textContent = err.message;
-      document.getElementById("error-state").style.display = "block";
-    } finally {
-      document.getElementById("loading-state").style.display = "none";
-    }
-  });
-
-  function renderResult(recipe) {
-    const root = document.getElementById("result-root");
-    root.innerHTML = `
-      <div class="glass-card reveal" style="padding:2rem;">
-        <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:1rem; flex-wrap:wrap;">
-          <div>
-            <div class="eyebrow" style="margin-bottom:0.5rem;">${escapeAttr(recipe.cuisine || "")} · ${escapeAttr(recipe.difficulty || "")}</div>
-            <h2 class="display" style="font-size:1.6rem;">${escapeAttr(recipe.title || "")}</h2>
-            <p style="font-size:0.92rem; margin-top:0.4rem;">${escapeAttr(recipe.description || "")}</p>
-          </div>
-          <div style="display:flex; gap:0.5rem;">
-            <button id="save-recipe" class="btn btn-ghost" style="padding:0.6rem 1rem;">⭐ Save</button>
-            <button id="download-pdf" class="btn btn-primary" style="padding:0.6rem 1rem;">📄 PDF</button>
-          </div>
-        </div>
-
-        <div style="display:flex; gap:0.75rem; flex-wrap:wrap; margin:1.25rem 0;">
-          <span class="stat-pill">👥 ${recipe.servings || "-"} servings</span>
-          <span class="stat-pill">⏱️ ${escapeAttr(recipe.prepTime || "-")} prep</span>
-          <span class="stat-pill">🔥 ${escapeAttr(recipe.cookTime || "-")} cook</span>
-        </div>
-
-        <h3 style="font-size:1.1rem; margin-bottom:0.75rem;">Ingredients</h3>
-        <ul style="list-style:none; display:flex; flex-direction:column; gap:0.4rem; margin-bottom:1.5rem;">
-          ${(recipe.ingredients || []).map(i => `<li style="font-size:0.92rem;">• <strong>${escapeAttr(i.amount)}</strong> ${escapeAttr(i.item)}</li>`).join("")}
-        </ul>
-
-        <h3 style="font-size:1.1rem; margin-bottom:0.75rem;">Steps</h3>
-        <ol style="display:flex; flex-direction:column; gap:0.75rem; margin-bottom:1.5rem; padding-left:1.2rem;">
-          ${(recipe.steps || []).map(s => `<li style="font-size:0.92rem;">${escapeAttr(s.instruction)}${s.duration ? ` <span class="text-muted">(${escapeAttr(s.duration)})</span>` : ""}</li>`).join("")}
-        </ol>
-
-        ${recipe.tips?.length ? `
-          <h3 style="font-size:1.1rem; margin-bottom:0.75rem;">Chef's Tips</h3>
-          <ul style="list-style:none; display:flex; flex-direction:column; gap:0.4rem;">
-            ${recipe.tips.map(t => `<li style="font-size:0.92rem;">💡 ${escapeAttr(t)}</li>`).join("")}
-          </ul>` : ""}
-      </div>`;
-
-    document.getElementById("download-pdf").addEventListener("click", () => downloadRecipePDF(lastRecipe));
-    document.getElementById("save-recipe").addEventListener("click", () => {
-      RM.saveRecipe(lastRecipe);
-      renderSaved();
-    });
-  }
-
-  function escapeAttr(s) {
-    const div = document.createElement("div");
-    div.textContent = s ?? "";
-    return div.innerHTML;
-  }
-
-  // ---- Mobile sidebar toggle visibility ----
-  function checkMobile() {
-    document.getElementById("sidebar-toggle").style.display = window.innerWidth <= 768 ? "inline-flex" : "none";
-  }
-  checkMobile();
-  window.addEventListener("resize", checkMobile);
-})();
 </script>
+
+<script src="app.js"></script>
+
 </body>
 </html>
