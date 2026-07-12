@@ -1,719 +1,205 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="RouxMind - World's Most Advanced AI Recipe Generator. Where Every Plate Tells Your Story. Built by Sooban Talha Tech.">
-    <meta name="keywords" content="AI recipe generator, recipe, cooking, food, chef, kitchen, Sooban Talha, Mesh API, gemini, AI">
-    <meta name="author" content="Sooban Talha">
-    <meta name="robots" content="index, follow">
-    <meta property="og:title" content="RouxMind - AI Recipe Generator">
-    <meta property="og:description" content="Where Every Plate Tells Your Story">
-    <meta property="og:type" content="website">
-    <meta property="og:url" content="https://rouxmind.vercel.app">
-    <meta property="og:image" content="https://rouxmind.vercel.app/logo.png">
-    <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="RouxMind - AI Recipe Generator">
-    <meta name="twitter:description" content="Where Every Plate Tells Your Story">
-    <meta name="twitter:image" content="https://rouxmind.vercel.app/logo.png">
-    <meta name="theme-color" content="#050508">
-    <title>RouxMind - World's Most Advanced AI Recipe Generator | Sooban Talha Tech</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>RouxMind AI v4.0 — Where Every Plate Tells Your Story</title>
+  <meta name="description" content="RouxMind AI — The world's most advanced AI culinary studio. Generate recipes, meal plans, and prep lists instantly.">
+  <link rel="icon" href="logo.png">
+
+  <!-- FONTS -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&family=Orbitron:wght@600;700;800;900&display=swap" rel="stylesheet">
+  
+  <!-- SCRIPTS -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+
+  <link rel="stylesheet" href="style.css">
+  
+  <style>
+    /* LOCAL LANDING OVERRIDES */
+    .hero {
+      position: relative; min-height: 100svh; display: flex; flex-direction: column;
+      align-items: center; justify-content: center; text-align: center;
+      padding: 140px 24px 80px; overflow: hidden;
+    }
+    .hero-content { position: relative; z-index: 10; max-width: 900px; }
+    .brand-lockup {
+      font-family: var(--tech); font-weight: 900; letter-spacing: 0.2em; text-transform: uppercase;
+      font-size: clamp(20px, 3vw, 32px); margin-bottom: 24px;
+      background: linear-gradient(180deg, #fff 0%, var(--gold) 100%);
+      -webkit-background-clip: text; background-clip: text; color: transparent;
+      filter: drop-shadow(0 0 20px rgba(212,175,55,0.3));
+    }
+    .horizon-line { width: min(600px, 80vw); height: 1px; margin: 0 auto 32px; position: relative; background: linear-gradient(90deg, transparent, var(--gold), transparent); }
+    .horizon-line::after { content: ''; position: absolute; top: -3px; left: 50%; transform: translateX(-50%); width: 7px; height: 7px; border-radius: 50%; background: #fff; box-shadow: 0 0 15px #fff; }
     
-    <!-- Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    .hero-title { font-family: var(--display); font-size: clamp(48px, 8vw, 100px); line-height: 0.95; letter-spacing: -3px; margin-bottom: 28px; }
+    .hero-title span { display: block; }
+    .hero-title .accent { font-style: italic; font-weight: 500; color: var(--gold-soft); }
+
+    .btn-mega-landing {
+      padding: 20px 52px; border-radius: 100px; font-weight: 900; font-size: 18px;
+      background: linear-gradient(135deg, var(--gold-soft), var(--gold)); color: #100c02;
+      box-shadow: 0 20px 50px rgba(212,175,55,0.3); transition: .4s var(--ease-spring);
+      display: inline-flex; align-items: center; gap: 12px;
+    }
+    .btn-mega-landing:hover { transform: translateY(-8px) scale(1.05); box-shadow: 0 30px 70px rgba(212,175,55,0.45); }
+
+    .nav-landing {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 20px 48px; backdrop-filter: blur(20px); background: rgba(3,5,12,0.5);
+      border-bottom: 1px solid var(--line);
+    }
+    .nav-logo-landing { display: flex; align-items: center; gap: 12px; }
+    .nav-logo-landing img { width: 38px; height: 38px; filter: drop-shadow(0 0 10px var(--gold)); }
+    .nav-logo-landing span { font-family: var(--tech); font-weight: 800; letter-spacing: 2px; }
+
+    section { position: relative; z-index: 10; padding: 120px 0; }
+    .container { max-width: 1240px; margin: 0 auto; padding: 0 32px; }
     
-    <!-- Favicon -->
-    <link rel="icon" type="image/png" href="logo.png">
-    
-    <!-- Styles -->
-    <link rel="stylesheet" href="style.css">
-    
-    <!-- Inline critical CSS for faster loading -->
-    <style>
-        :root {
-            --primary: #00d4ff;
-            --secondary: #0099cc;
-            --dark-void: #050508;
-            --dark-card: #0a0a12;
-            --text-primary: #e8f0f8;
-            --text-secondary: #8899aa;
-            --accent: #00ff88;
-            --danger: #ff4466;
-            --glass: rgba(0, 212, 255, 0.06);
-            --glass-strong: rgba(5, 5, 8, 0.95);
-            --neon-glow: rgba(0, 212, 255, 0.15);
-            --border-glow: rgba(0, 212, 255, 0.12);
-        }
-        
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        
-        body {
-            font-family: 'Inter', sans-serif;
-            background: var(--dark-void);
-            color: var(--text-primary);
-            overflow-x: hidden;
-            min-height: 100vh;
-        }
-        
-        /* Loading screen */
-        .loading-screen {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: var(--dark-void);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 9999;
-            transition: opacity 0.5s, visibility 0.5s;
-        }
-        
-        .loading-screen.hidden {
-            opacity: 0;
-            visibility: hidden;
-        }
-        
-        .loader {
-            text-align: center;
-        }
-        
-        .loader-logo {
-            width: 80px;
-            height: 80px;
-            margin: 0 auto 20px;
-            opacity: 0;
-            animation: fadeInUp 0.8s ease-out 0.2s forwards;
-        }
-        
-        .loader-bar {
-            width: 200px;
-            height: 4px;
-            background: var(--dark-card);
-            border-radius: 2px;
-            overflow: hidden;
-            margin: 0 auto;
-            opacity: 0;
-            animation: fadeInUp 0.8s ease-out 0.4s forwards;
-        }
-        
-        .loader-bar-fill {
-            height: 100%;
-            background: linear-gradient(90deg, var(--primary), var(--secondary));
-            width: 0%;
-            animation: loadingBar 2.5s ease-out forwards;
-            box-shadow: 0 0 20px var(--primary);
-        }
-        
-        @keyframes loadingBar {
-            0% { width: 0%; }
-            100% { width: 100%; }
-        }
-        
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-    </style>
+    .feature-grid-landing { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; margin-top: 60px; }
+    .f-card-landing { 
+      background: var(--glass); border: 1px solid var(--line-strong); padding: 48px 32px; 
+      border-radius: 24px; transition: .4s var(--ease); text-align: left;
+    }
+    .f-card-landing:hover { background: var(--bg-panel); border-color: var(--gold); transform: translateY(-10px); }
+    .f-icon-landing { font-size: 42px; margin-bottom: 24px; display: block; }
+    .f-card-landing h3 { font-family: var(--display); font-size: 24px; margin-bottom: 16px; color: var(--gold-soft); }
+    .f-card-landing p { color: var(--ink-soft); line-height: 1.7; font-weight: 300; }
+  </style>
 </head>
 <body>
-    <!-- Loading Screen -->
-    <div class="loading-screen" id="loadingScreen">
-        <div class="loader">
-            <img src="logo.png" alt="RouxMind Logo" class="loader-logo">
-            <div class="loader-bar">
-                <div class="loader-bar-fill"></div>
-            </div>
-        </div>
+
+  <div class="atmosphere"></div>
+  <div class="gridlines"></div>
+  <canvas id="starfield"></canvas>
+
+  <nav class="nav-landing">
+    <div class="nav-logo-landing">
+      <img src="logo.png" alt="RouxMind">
+      <span>ROUXMIND <span style="color:var(--gold)">AI</span></span>
     </div>
+    <div style="display:flex; gap:32px; align-items:center;">
+      <a href="#features" style="font-size:14px; font-weight:500; color:var(--ink-soft)">Features</a>
+      <a href="recipe.html" style="padding:10px 24px; border-radius:50px; background:var(--gold); color:#000; font-weight:800; font-size:13px;">Dashboard</a>
+    </div>
+  </nav>
 
-    <!-- Floating Particles -->
-    <div class="particles" id="particles"></div>
+  <header class="hero">
+    <div class="hero-content">
+      <div class="brand-lockup">The Culinary Future</div>
+      <div class="horizon-line"></div>
+      <h1 class="hero-title">
+        <span>Where Every Plate</span>
+        <span class="accent">Tells Your Story.</span>
+      </h1>
+      <p class="es-sub" style="margin-bottom:48px;">RouxMind is the world's most advanced AI culinary assistant. Transform basic ingredients into restaurant-quality recipes, complete with nutrition, pairings, and professional prep lists.</p>
+      <a href="recipe.html" class="btn-mega-landing">🚀 Launch Studio Now</a>
+    </div>
+    <div style="margin-top:80px; font-family:var(--mono); font-size:10px; color:var(--ink-faint); letter-spacing:3px; text-transform:uppercase;">Scroll to discover</div>
+  </header>
 
-    <!-- Navigation -->
-    <nav class="navbar">
-        <div class="nav-container">
-            <a href="/" class="nav-logo">
-                <img src="logo.png" alt="RouxMind" class="nav-logo-img">
-                <span class="nav-logo-text">
-                    <span class="logo-name">Roux</span><span class="logo-name accent">Mind</span>
-                </span>
-            </a>
-            <div class="nav-links">
-                <a href="/" class="nav-link active">Home</a>
-                <a href="recipe.html" class="nav-link">Dashboard</a>
-                <a href="#features" class="nav-link">Features</a>
-                <a href="#about" class="nav-link">About</a>
-            </div>
-            <a href="recipe.html" class="btn btn-primary btn-glow">
-                <span class="btn-icon">🚀</span>
-                <span class="btn-text">Start Cooking</span>
-            </a>
+  <section id="features">
+    <div class="container">
+      <div style="text-align:center; max-width:700px; margin:0 auto;">
+        <span style="font-family:var(--mono); font-size:11px; color:var(--gold); letter-spacing:2px; text-transform:uppercase;">The Toolkit</span>
+        <h2 style="font-family:var(--display); font-size:48px; margin-top:16px;">Five tools. <span style="color:var(--gold-soft); font-style:italic;">One Master Chef.</span></h2>
+      </div>
+
+      <div class="feature-grid-landing">
+        <div class="f-card-landing">
+          <span class="f-icon-landing">🍳</span>
+          <h3>Recipe Studio</h3>
+          <p>Generate precise, structured recipes with ingredient mapping and step-by-step chef instructions.</p>
         </div>
-    </nav>
-
-    <!-- Hero Section -->
-    <section class="hero">
-        <div class="hero-container">
-            <div class="hero-content">
-                <div class="hero-badge">
-                    <span class="badge-dot"></span>
-                    <span>Next-Gen AI Recipe Generator</span>
-                </div>
-                <h1 class="hero-title">
-                    <span class="title-line">Where Every Plate</span>
-                    <span class="title-line accent">Tells Your Story</span>
-                </h1>
-                <p class="hero-description">
-                    RouxMind is the world's most advanced AI recipe generator, powered by Mesh API's cutting-edge models. 
-                    Transform your ingredients into culinary masterpieces with just a click.
-                </p>
-                <div class="hero-stats">
-                    <div class="stat">
-                        <span class="stat-number">3</span>
-                        <span class="stat-label">AI Models Racing</span>
-                    </div>
-                    <div class="stat">
-                        <span class="stat-number">5</span>
-                        <span class="stat-label">Input Methods</span>
-                    </div>
-                    <div class="stat">
-                        <span class="stat-number">20+</span>
-                        <span class="stat-label">Languages</span>
-                    </div>
-                    <div class="stat">
-                        <span class="stat-number">7</span>
-                        <span class="stat-label">Rank Levels</span>
-                    </div>
-                </div>
-                <div class="hero-actions">
-                    <a href="recipe.html" class="btn btn-primary btn-large btn-glow">
-                        <span class="btn-icon">🍳</span>
-                        <span class="btn-text">Generate Recipe</span>
-                    </a>
-                    <a href="#features" class="btn btn-ghost btn-large">
-                        <span class="btn-icon">✨</span>
-                        <span class="btn-text">Explore Features</span>
-                    </a>
-                </div>
-            </div>
-            <div class="hero-visual">
-                <div class="visual-card">
-                    <div class="card-glow"></div>
-                    <div class="card-content">
-                        <div class="mock-interface">
-                            <div class="mock-header">
-                                <div class="mock-dot red"></div>
-                                <div class="mock-dot yellow"></div>
-                                <div class="mock-dot green"></div>
-                                <span class="mock-title">Recipe Preview</span>
-                            </div>
-                            <div class="mock-body">
-                                <div class="mock-recipe">
-                                    <h3>🍽️ Spicy Chicken Curry</h3>
-                                    <p class="mock-ingredients">📋 Chicken, Onions, Tomatoes, Spices...</p>
-                                    <div class="mock-progress">
-                                        <div class="mock-progress-bar"></div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+        <div class="f-card-landing">
+          <span class="f-icon-landing">📅</span>
+          <h3>Meal Architect</h3>
+          <p>Intelligent 7-day meal plans designed around your macros, preferences, and dietary goals.</p>
         </div>
-        <div class="hero-wave">
-            <svg viewBox="0 0 1440 120" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M0 120L60 105C120 90 240 60 360 45C480 30 600 30 720 37.5C840 45 960 60 1080 67.5C1200 75 1320 75 1380 75L1440 75V120H1380C1320 120 1200 120 1080 120C960 120 840 120 720 120C600 120 480 120 360 120C240 120 120 120 60 120H0Z" fill="url(#waveGradient)"/>
-                <defs>
-                    <linearGradient id="waveGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                        <stop offset="0%" style="stop-color:rgba(0,212,255,0.1)"/>
-                        <stop offset="50%" style="stop-color:rgba(0,153,204,0.05)"/>
-                        <stop offset="100%" style="stop-color:rgba(0,212,255,0)"/>
-                    </linearGradient>
-                </defs>
-            </svg>
+        <div class="f-card-landing">
+          <span class="f-icon-landing">🛒</span>
+          <h3>Smart Grocery</h3>
+          <p>Instantly turn any recipe into a organized shopping list, sorted by grocery aisle for speed.</p>
         </div>
-    </section>
-
-    <!-- Features Section -->
-    <section class="features" id="features">
-        <div class="section-container">
-            <div class="section-header">
-                <span class="section-tag">✨ Features</span>
-                <h2 class="section-title">Ultra-Advanced Capabilities</h2>
-                <p class="section-description">
-                    RouxMind pushes the boundaries of what's possible with AI-powered recipe generation.
-                </p>
-            </div>
-            <div class="features-grid">
-                <!-- Feature 1 -->
-                <div class="feature-card" data-aos="fade-up">
-                    <div class="feature-icon">🎯</div>
-                    <h3 class="feature-title">AI-Powered Input Intelligence</h3>
-                    <p class="feature-description">
-                        Smart auto-detect, voice-to-text, camera capture, drag & drop uploads, and text input with autocomplete.
-                    </p>
-                    <div class="feature-tags">
-                        <span>Camera</span>
-                        <span>Voice</span>
-                        <span>Smart Detect</span>
-                    </div>
-                </div>
-                
-                <!-- Feature 2 -->
-                <div class="feature-card" data-aos="fade-up" data-aos-delay="100">
-                    <div class="feature-icon">⚡</div>
-                    <h3 class="feature-title">Real-Time Streaming</h3>
-                    <p class="feature-description">
-                        Watch your recipe generate token-by-token with SSE streaming and typewriter effect.
-                    </p>
-                    <div class="feature-tags">
-                        <span>SSE</span>
-                        <span>Typewriter</span>
-                        <span>5-Stage Progress</span>
-                    </div>
-                </div>
-                
-                <!-- Feature 3 -->
-                <div class="feature-card" data-aos="fade-up" data-aos-delay="200">
-                    <div class="feature-icon">🤖</div>
-                    <h3 class="feature-title">Multi-Model AI Orchestration</h3>
-                    <p class="feature-description">
-                        Three models race in parallel - first success wins. Vision, Recipe, and Ultra-Fast models.
-                    </p>
-                    <div class="feature-tags">
-                        <span>Gemini</span>
-                        <span>Gemma</span>
-                        <span>Ling</span>
-                    </div>
-                </div>
-                
-                <!-- Feature 4 -->
-                <div class="feature-card" data-aos="fade-up" data-aos-delay="300">
-                    <div class="feature-icon">📊</div>
-                    <h3 class="feature-title">Professional Dashboard</h3>
-                    <p class="feature-description">
-                        5 input methods, spice slider, servings grid, time preferences, language selector, depth levels.
-                    </p>
-                    <div class="feature-tags">
-                        <span>Glass UI</span>
-                        <span>Neon Theme</span>
-                        <span>Smooth Animations</span>
-                    </div>
-                </div>
-                
-                <!-- Feature 5 -->
-                <div class="feature-card" data-aos="fade-up" data-aos-delay="400">
-                    <div class="feature-icon">👤</div>
-                    <h3 class="feature-title">Advanced User System</h3>
-                    <p class="feature-description">
-                        Local storage persistence, streak tracking, XP system with 7 ranks, recipe counter.
-                    </p>
-                    <div class="feature-tags">
-                        <span>XP System</span>
-                        <span>Streaks</span>
-                        <span>7 Ranks</span>
-                    </div>
-                </div>
-                
-                <!-- Feature 6 -->
-                <div class="feature-card" data-aos="fade-up" data-aos-delay="500">
-                    <div class="feature-icon">📄</div>
-                    <h3 class="feature-title">PDF Generation</h3>
-                    <p class="feature-description">
-                        Professional PDFs with cover page, recipe, nutrition info, dark/light themes.
-                    </p>
-                    <div class="feature-tags">
-                        <span>Cover Page</span>
-                        <span>Nutrition</span>
-                        <span>Branding</span>
-                    </div>
-                </div>
-                
-                <!-- Feature 7 -->
-                <div class="feature-card" data-aos="fade-up" data-aos-delay="600">
-                    <div class="feature-icon">📈</div>
-                    <h3 class="feature-title">Analytics Dashboard</h3>
-                    <p class="feature-description">
-                        Track total recipes, success rate, average cost, response time, top dishes, model usage.
-                    </p>
-                    <div class="feature-tags">
-                        <span>Stats</span>
-                        <span>Success Rate</span>
-                        <span>Model Usage</span>
-                    </div>
-                </div>
-                
-                <!-- Feature 8 -->
-                <div class="feature-card" data-aos="fade-up" data-aos-delay="700">
-                    <div class="feature-icon">✨</div>
-                    <h3 class="feature-title">Premium UI/UX</h3>
-                    <p class="feature-description">
-                        Glass-morphism, neon glow, 60fps animations, floating particles, spring physics.
-                    </p>
-                    <div class="feature-tags">
-                        <span>Glass-morphism</span>
-                        <span>Neon Blue</span>
-                        <span>60fps</span>
-                    </div>
-                </div>
-            </div>
+        <div class="f-card-landing">
+          <span class="f-icon-landing">🍷</span>
+          <h3>Wine & Pairings</h3>
+          <p>Elevate your meal with expert sommelier recommendations for wines, spirits, and mocktails.</p>
         </div>
-    </section>
-
-    <!-- Rank System Section -->
-    <section class="ranks" id="ranks">
-        <div class="section-container">
-            <div class="section-header">
-                <span class="section-tag">🏆 Rank System</span>
-                <h2 class="section-title">Earn XP, Climb the Ranks</h2>
-                <p class="section-description">
-                    Every recipe you generate earns you XP. Climb through 7 prestigious ranks from Kitchen Apprentice to Culinary Legend.
-                </p>
-            </div>
-            <div class="ranks-list">
-                <div class="rank-card" data-aos="fade-right">
-                    <div class="rank-icon">🥄</div>
-                    <div class="rank-info">
-                        <h4>Kitchen Apprentice</h4>
-                        <p>0-49 XP</p>
-                    </div>
-                    <div class="rank-xp">0-49 XP</div>
-                </div>
-                <div class="rank-arrow">→</div>
-                <div class="rank-card" data-aos="fade-right" data-aos-delay="100">
-                    <div class="rank-icon">🍳</div>
-                    <div class="rank-info">
-                        <h4>Home Cook</h4>
-                        <p>50-149 XP</p>
-                    </div>
-                    <div class="rank-xp">50-149 XP</div>
-                </div>
-                <div class="rank-arrow">→</div>
-                <div class="rank-card" data-aos="fade-right" data-aos-delay="200">
-                    <div class="rank-icon">👨‍🍳</div>
-                    <div class="rank-info">
-                        <h4>Sous Chef</h4>
-                        <p>150-349 XP</p>
-                    </div>
-                    <div class="rank-xp">150-349 XP</div>
-                </div>
-                <div class="rank-arrow">→</div>
-                <div class="rank-card" data-aos="fade-left" data-aos-delay="300">
-                    <div class="rank-icon">👩‍🍳</div>
-                    <div class="rank-info">
-                        <h4>Chef</h4>
-                        <p>350-599 XP</p>
-                    </div>
-                    <div class="rank-xp">350-599 XP</div>
-                </div>
-                <div class="rank-arrow">→</div>
-                <div class="rank-card" data-aos="fade-left" data-aos-delay="400">
-                    <div class="rank-icon">🧑‍🍳</div>
-                    <div class="rank-info">
-                        <h4>Executive Chef</h4>
-                        <p>600-999 XP</p>
-                    </div>
-                    <div class="rank-xp">600-999 XP</div>
-                </div>
-                <div class="rank-arrow">→</div>
-                <div class="rank-card legendary" data-aos="fade-left" data-aos-delay="500">
-                    <div class="rank-icon">⭐</div>
-                    <div class="rank-info">
-                        <h4>Master Chef</h4>
-                        <p>1000-1999 XP</p>
-                    </div>
-                    <div class="rank-xp">1000-1999 XP</div>
-                </div>
-                <div class="rank-arrow">→</div>
-                <div class="rank-card legendary" data-aos="zoom-in" data-aos-delay="600">
-                    <div class="rank-icon">👑</div>
-                    <div class="rank-info">
-                        <h4>Culinary Legend</h4>
-                        <p>2000+ XP</p>
-                    </div>
-                    <div class="rank-xp">2000+ XP</div>
-                </div>
-            </div>
+        <div class="f-card-landing">
+          <span class="f-icon-landing">⚡</span>
+          <h3>Prep Lists</h3>
+          <p>Professional mise-en-place guides to help you organize your kitchen before you turn on the stove.</p>
         </div>
-    </section>
-
-    <!-- Input Methods Section -->
-    <section class="input-methods" id="input-methods">
-        <div class="section-container">
-            <div class="section-header">
-                <span class="section-tag">🎯 Input Methods</span>
-                <h2 class="section-title">5 Ways to Start Cooking</h2>
-                <p class="section-description">
-                    Choose your preferred input method. RouxMind adapts to how you want to create.
-                </p>
-            </div>
-            <div class="methods-grid">
-                <div class="method-card" data-aos="fade-up">
-                    <div class="method-icon camera">📸</div>
-                    <h3>Camera</h3>
-                    <p>Snap a photo of your ingredients and let AI identify them instantly.</p>
-                    <div class="method-features">
-                        <span>📷 Instant capture</span>
-                        <span>🔍 Auto-detect</span>
-                        <span>🖼️ Preview thumbnail</span>
-                    </div>
-                </div>
-                <div class="method-card" data-aos="fade-up" data-aos-delay="100">
-                    <div class="method-icon voice">🎤</div>
-                    <h3>Voice</h3>
-                    <p>Speak your ingredients naturally with real-time speech-to-text.</p>
-                    <div class="method-features">
-                        <span>🎙️ Real-time transcription</span>
-                        <span>📊 Live feedback</span>
-                        <span>🎵 Audio wave animation</span>
-                    </div>
-                </div>
-                <div class="method-card" data-aos="fade-up" data-aos-delay="200">
-                    <div class="method-icon text">📝</div>
-                    <h3>Text</h3>
-                    <p>Type your ingredients manually with smart autocomplete.</p>
-                    <div class="method-features">
-                        <span>✍️ Manual typing</span>
-                        <span>💡 Smart suggestions</span>
-                        <span>📊 Character count</span>
-                    </div>
-                </div>
-                <div class="method-card" data-aos="fade-up" data-aos-delay="300">
-                    <div class="method-icon upload">📂</div>
-                    <h3>Upload</h3>
-                    <p>Drag and drop any image to extract ingredients automatically.</p>
-                    <div class="method-features">
-                        <span>📁 Drag & drop</span>
-                        <span>🔍 AI extraction</span>
-                        <span>🖼️ Image preview</span>
-                    </div>
-                </div>
-                <div class="method-card" data-aos="fade-up" data-aos-delay="400">
-                    <div class="method-icon smart">🎯</div>
-                    <h3>Smart</h3>
-                    <p>Start typing and AI will suggest complete ingredient lists.</p>
-                    <div class="method-features">
-                        <span>🤖 AI auto-detect</span>
-                        <span>✨ One-click fill</span>
-                        <span>📊 Confidence level</span>
-                    </div>
-                </div>
-            </div>
+        <div class="f-card-landing" style="background: linear-gradient(135deg, rgba(212,175,55,0.1), transparent);">
+          <span class="f-icon-landing">💎</span>
+          <h3>Mega Bundle</h3>
+          <p>All culinary tools in one premium generation. The ultimate high-fidelity cooking package.</p>
         </div>
-    </section>
+      </div>
+    </div>
+  </section>
 
-    <!-- About Section -->
-    <section class="about" id="about">
-        <div class="section-container">
-            <div class="about-grid">
-                <div class="about-content" data-aos="fade-right">
-                    <span class="section-tag">📚 About</span>
-                    <h2 class="section-title">Built with Passion</h2>
-                    <p class="about-text">
-                        RouxMind is the culmination of cutting-edge AI technology and culinary passion. 
-                        Built by <strong>Sooban Talha</strong> at <strong>Sooban Talha Technologies</strong>, 
-                        this platform represents the future of recipe generation.
-                    </p>
-                    <p class="about-text">
-                        Powered by <strong>Mesh API</strong>, RouxMind leverages the most advanced AI models 
-                        to transform your ingredients into delicious, detailed recipes with stunning precision.
-                    </p>
-                    <div class="about-features">
-                        <div class="about-feature">
-                            <div class="check-icon">✓</div>
-                            <span>Mesh API Hackathon 2026 Entry</span>
-                        </div>
-                        <div class="about-feature">
-                            <div class="check-icon">✓</div>
-                            <span>Multi-model AI orchestration</span>
-                        </div>
-                        <div class="about-feature">
-                            <div class="check-icon">✓</div>
-                            <span>Real-time streaming generation</span>
-                        </div>
-                        <div class="about-feature">
-                            <div class="check-icon">✓</div>
-                            <span>Ultra-premium cinematic UI</span>
-                        </div>
-                    </div>
-                    <div class="about-actions">
-                        <a href="recipe.html" class="btn btn-primary btn-glow">
-                            <span class="btn-icon">🚀</span>
-                            <span class="btn-text">Try It Now</span>
-                        </a>
-                        <a href="https://soobantalhatech.xyz" target="_blank" class="btn btn-ghost">
-                            <span class="btn-icon">🌐</span>
-                            <span class="btn-text">Visit Website</span>
-                        </a>
-                    </div>
-                </div>
-                <div class="about-visual" data-aos="fade-left">
-                    <div class="visual-card large">
-                        <div class="card-glow"></div>
-                        <div class="card-content">
-                            <img src="logowithname.png" alt="RouxMind Logo with Name" class="about-logo">
-                            <div class="about-stats">
-                                <div class="stat">
-                                    <span class="stat-number">10K+</span>
-                                    <span class="stat-label">Recipes Generated</span>
-                                </div>
-                                <div class="stat">
-                                    <span class="stat-number">3</span>
-                                    <span class="stat-label">AI Models</span>
-                                </div>
-                                <div class="stat">
-                                    <span class="stat-number">20+</span>
-                                    <span class="stat-label">Languages</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
+  <footer class="dash-mini-footer" style="padding:80px 0;">
+    <div class="container">
+      <div style="margin-bottom:32px;">
+        <img src="logo.png" style="width:48px; margin: 0 auto 16px; filter: drop-shadow(0 0 10px var(--gold));">
+        <div style="font-family:var(--tech); font-weight:800; letter-spacing:2px;">ROUXMIND AI</div>
+      </div>
+      <p style="color:var(--ink-faint); font-size:14px; margin-bottom:24px;">Built with passion by Sooban Talha Tech — Powered by Mesh API</p>
+      <div style="display:flex; justify-content:center; gap:24px;">
+        <a href="https://soobantalhatech.xyz" target="_blank" style="color:var(--gold-soft); font-size:12px;">Developer Site</a>
+        <a href="recipe.html" style="color:var(--gold-soft); font-size:12px;">Open Studio</a>
+      </div>
+    </div>
+  </footer>
 
-    <!-- Footer -->
-    <footer class="footer">
-        <div class="footer-container">
-            <div class="footer-top">
-                <div class="footer-brand" data-aos="fade-up">
-                    <img src="logo.png" alt="RouxMind" class="footer-logo">
-                    <div class="footer-brand-text">
-                        <h3>RouxMind</h3>
-                        <p>Where Every Plate Tells Your Story</p>
-                    </div>
-                </div>
-                <div class="footer-links" data-aos="fade-up" data-aos-delay="100">
-                    <div class="footer-column">
-                        <h4>Product</h4>
-                        <a href="/">Home</a>
-                        <a href="recipe.html">Dashboard</a>
-                        <a href="#features">Features</a>
-                        <a href="#about">About</a>
-                    </div>
-                    <div class="footer-column">
-                        <h4>Resources</h4>
-                        <a href="https://meshapi.ai" target="_blank">Mesh API</a>
-                        <a href="https://soobantalhatech.xyz" target="_blank">Sooban Talha Tech</a>
-                        <a href="#ranks">Rank System</a>
-                        <a href="#input-methods">Input Methods</a>
-                    </div>
-                    <div class="footer-column">
-                        <h4>Legal</h4>
-                        <a href="#">Privacy Policy</a>
-                        <a href="#">Terms of Service</a>
-                        <a href="#">Cookie Policy</a>
-                    </div>
-                    <div class="footer-column">
-                        <h4>Connect</h4>
-                        <a href="mailto:soobantalhatechnologies@gmail.com">Email</a>
-                        <a href="https://twitter.com" target="_blank">Twitter</a>
-                        <a href="https://linkedin.com" target="_blank">LinkedIn</a>
-                        <a href="https://github.com" target="_blank">GitHub</a>
-                    </div>
-                </div>
-            </div>
-            <div class="footer-bottom">
-                <p>© 2026 Sooban Talha Technologies. All rights reserved.</p>
-                <p class="footer-powered">
-                    <span>⚡ Powered by </span>
-                    <a href="https://meshapi.ai" target="_blank" class="powered-link">Mesh API</a>
-                </p>
-                <p class="footer-built">
-                    <span>Built with ❤️ by </span>
-                    <a href="https://soobantalhatech.xyz" target="_blank" class="built-link">Sooban Talha</a>
-                </p>
-            </div>
-        </div>
-    </footer>
-
-    <!-- Back to Top Button -->
-    <button class="back-to-top" id="backToTop" data-aos="fade-in">
-        <span>↑</span>
-    </button>
-
-    <!-- Scripts -->
-    <script>
-        // Loading screen
-        window.addEventListener('load', () => {
-            setTimeout(() => {
-                document.getElementById('loadingScreen').classList.add('hidden');
-            }, 2500);
-        });
-
-        // Back to top button
-        const backToTop = document.getElementById('backToTop');
-        window.addEventListener('scroll', () => {
-            if (window.pageYOffset > 300) {
-                backToTop.style.display = 'flex';
-            } else {
-                backToTop.style.display = 'none';
-            }
-        });
-        backToTop.addEventListener('click', () => {
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        });
-
-        // Floating particles
-        function createParticles() {
-            const particles = document.getElementById('particles');
-            for (let i = 0; i < 30; i++) {
-                const particle = document.createElement('div');
-                particle.className = 'particle';
-                particle.style.cssText = `
-                    left: ${Math.random() * 100}%;
-                    top: ${Math.random() * 100}%;
-                    width: ${Math.random() * 4 + 2}px;
-                    height: ${Math.random() * 4 + 2}px;
-                    animation-delay: ${Math.random() * 5}s;
-                    animation-duration: ${Math.random() * 10 + 10}s;
-                `;
-                particles.appendChild(particle);
-            }
+  <script>
+    // STARFIELD BACKGROUND ENGINE
+    (function(){
+      const canvas = document.getElementById('starfield');
+      const ctx = canvas.getContext('2d');
+      let w, h, stars = [];
+      const COLORS = ['#d4af37','#00d4ff','#9b6bff','#eef1f8'];
+      function resize(){
+        w = canvas.width = window.innerWidth;
+        h = canvas.height = window.innerHeight;
+      }
+      function init(){
+        resize();
+        stars = Array.from({length: 200}, () => ({
+          x: Math.random()*w, y: Math.random()*h,
+          r: Math.random()*1.5+0.2,
+          c: COLORS[Math.floor(Math.random()*COLORS.length)],
+          s: Math.random()*0.3+0.05,
+          o: Math.random()*0.6+0.2
+        }));
+      }
+      function draw(){
+        ctx.clearRect(0,0,w,h);
+        for(const s of stars){
+          s.y -= s.s; if(s.y < -5) s.y = h+5;
+          ctx.beginPath(); ctx.fillStyle = s.c; ctx.globalAlpha = s.o;
+          ctx.arc(s.x, s.y, s.r, 0, Math.PI*2); ctx.fill();
         }
-        createParticles();
+        requestAnimationFrame(draw);
+      }
+      window.addEventListener('resize', resize);
+      init(); draw();
+    })();
 
-        // Smooth scroll for anchor links
-        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-            anchor.addEventListener('click', function(e) {
-                e.preventDefault();
-                const target = document.querySelector(this.getAttribute('href'));
-                if (target) {
-                    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                }
-            });
-        });
-
-        // AOS-like animation on scroll
-        const observerOptions = {
-            threshold: 0.1,
-            rootMargin: '0px 0px -50px 0px'
-        };
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    entry.target.classList.add('aos-animate');
-                }
-            });
-        }, observerOptions);
-        document.querySelectorAll('[data-aos]').forEach(el => {
-            observer.observe(el);
-        });
-    </script>
-
-    <!-- External Scripts -->
-    <script src="app.js"></script>
+    // GSAP REVEALS
+    gsap.registerPlugin(ScrollTrigger);
+    document.querySelectorAll('.f-card-landing').forEach(el => {
+      gsap.from(el, {
+        opacity: 0, y: 50, duration: 1, ease: 'power3.out',
+        scrollTrigger: { trigger: el, start: 'top 90%' }
+      });
+    });
+  </script>
 </body>
 </html>
