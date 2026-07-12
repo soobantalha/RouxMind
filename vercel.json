@@ -1,12 +1,100 @@
 {
   "version": 2,
+  "builds": [
+    {
+      "src": "api/recipe.js",
+      "use": "@vercel/node"
+    },
+    {
+      "src": "index.html",
+      "use": "@vercel/static"
+    },
+    {
+      "src": "recipe.html",
+      "use": "@vercel/static"
+    },
+    {
+      "src": "style.css",
+      "use": "@vercel/static"
+    },
+    {
+      "src": "app.js",
+      "use": "@vercel/static"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/api/recipe",
+      "dest": "/api/recipe.js"
+    },
+    {
+      "src": "/api/recipe/(.*)",
+      "dest": "/api/recipe.js"
+    },
+    {
+      "src": "/recipe.html",
+      "dest": "/recipe.html"
+    },
+    {
+      "src": "/style.css",
+      "dest": "/style.css"
+    },
+    {
+      "src": "/app.js",
+      "dest": "/app.js"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/index.html"
+    }
+  ],
+  "env": {
+    "MESH_API_KEY": "@mesh_api_key",
+    "GOOGLE_WEBHOOK_URL": "@google_webhook_url"
+  },
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "X-Frame-Options",
+          "value": "DENY"
+        },
+        {
+          "key": "X-XSS-Protection",
+          "value": "1; mode=block"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "strict-origin-when-cross-origin"
+        }
+      ]
+    },
+    {
+      "source": "/api/(.*)",
+      "headers": [
+        {
+          "key": "Access-Control-Allow-Origin",
+          "value": "*"
+        },
+        {
+          "key": "Access-Control-Allow-Methods",
+          "value": "GET, POST, PUT, DELETE, OPTIONS"
+        },
+        {
+          "key": "Access-Control-Allow-Headers",
+          "value": "Content-Type, Authorization"
+        }
+      ]
+    }
+  ],
   "functions": {
     "api/recipe.js": {
-      "maxDuration": 30
+      "maxDuration": 300
     }
-  },
-  "rewrites": [
-    { "source": "/", "destination": "/index.html" },
-    { "source": "/generate", "destination": "/recipe.html" }
-  ]
+  }
 }

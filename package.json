@@ -1,14 +1,25 @@
 {
   "name": "rouxmind",
-  "version": "1.0.0",
-  "description": "RouxMind — AI recipe generator by Sooban Talha Technologies",
-  "main": "index.html",
+  "version": "2.0.0",
+  "description": "RouxMind — Where Every Plate Tells Your Story",
+  "main": "api/recipe.js",
   "scripts": {
-    "dev": "vercel dev",
-    "deploy": "vercel --prod"
+    "start": "node api/recipe.js",
+    "dev": "node api/recipe.js",
+    "vercel-build": "echo hello"
   },
   "dependencies": {
-    "googleapis": "^140.0.0"
+    "@vercel/analytics": "^1.5.0",
+    "express": "^4.18.2",
+    "multer": "^1.4.5-lts.1",
+    "axios": "^1.6.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "helmet": "^7.1.0",
+    "compression": "^1.7.4"
+  },
+  "devDependencies": {
+    "@vercel/node": "^3.0.0"
   },
   "engines": {
     "node": ">=18.0.0"
