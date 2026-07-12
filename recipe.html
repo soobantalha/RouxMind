@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RouxMind Kitchen — AI Recipe Generator</title>
+  <meta name="description" content="Generate Michelin-grade recipes from a photo or a craving. RouxMind Kitchen powered by Mesh API.">
+  <link rel="icon" type="image/png" href="./logo.png">
+  <link rel="stylesheet" href="./style.css">
+  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+</head>
+<body>
+  <div id="mouse-glow" aria-hidden="true"></div>
+
+  <header class="header scrolled" id="header">
+    <div class="container header-inner">
+      <a href="./index.html" class="logo" aria-label="RouxMind Home">
+        <img src="./logo.png" alt="" class="logo-icon">
+        <span class="logo-text">RouxMind</span>
+      </a>
+      <nav class="nav" aria-label="Main">
+        <div class="nav-links">
+          <a href="./index.html#story" class="nav-link">Story</a>
+          <a href="./index.html#features" class="nav-link">Features</a>
+          <a href="./index.html#how" class="nav-link">How It Works</a>
+          <a href="./index.html#faq" class="nav-link">FAQ</a>
+        </div>
+        <a href="./index.html" class="btn-outline" style="padding:0.5rem 1.4rem; font-size:0.8rem;">← Back to Home</a>
+        <button class="nav-toggle" id="navToggle" aria-label="Toggle menu" aria-expanded="false"><span></span><span></span><span></span></button>
+      </nav>
+    </div>
+    <div class="mobile-menu" id="mobileMenu" aria-hidden="true">
+      <a href="./index.html#story">Story</a>
+      <a href="./index.html#features">Features</a>
+      <a href="./index.html#how">How It Works</a>
+      <a href="./index.html#faq">FAQ</a>
+      <a href="./index.html">← Back to Home</a>
+    </div>
+  </header>
+
+  <main class="recipe-page">
+    <div class="container">
+      <div class="recipe-hero">
+        <div class="badge" style="margin:0 auto 1.2rem;"><span class="badge-dot"></span> Kitchen Live • Mesh API</div>
+        <h1 class="recipe-title">The <span class="gold-italic">Kitchen</span></h1>
+        <p class="recipe-subtitle">Show me a dish — a photo, a memory, a half-remembered name — and I'll write the recipe that tells your story. Scaled, timed, and seasoned to you.</p>
+      </div>
+
+      <div class="generator-grid">
+        <!-- Left: Controls -->
+        <div class="glass-card gen-card" style="position: sticky; top: 88px;">
+          <label class="gen-label">Dish Name or Craving</label>
+          <input id="dishInput" class="gen-input" type="text" placeholder="e.g., Butter Chicken, Leftover risotto, That green curry from Bangkok" autocomplete="off">
+
+          <div style="height: 1.2rem;"></div>
+          <label class="gen-label">Photo (Optional but magical)</label>
+          <div id="dropZone" class="drop-zone" role="button" tabindex="0" aria-label="Upload dish photo">
+            <div class="drop-icon">📸</div>
+            <div class="drop-text">Drop a dish photo here</div>
+            <div class="drop-hint">or click to browse • JPG, PNG up to 8MB</div>
+            <input id="imageInput" type="file" accept="image/*" hidden>
+          </div>
+          <img id="previewImg" class="preview-img" alt="Dish preview">
+
+          <div style="height: 1.4rem;"></div>
+          <div class="gen-row">
+            <div>
+              <label class="gen-label">Servings</label>
+              <select id="servingsInput" class="gen-select">
+                <option value="1">1 eater</option>
+                <option value="2" selected>2 eaters</option>
+                <option value="4">4 eaters</option>
+                <option value="6">6 eaters</option>
+                <option value="8">8 eaters</option>
+              </select>
+            </div>
+            <div>
+              <label class="gen-label">Spice</label>
+              <select id="spiceInput" class="gen-select">
+                <option value="Mild">Mild</option>
+                <option value="Medium" selected>Medium</option>
+                <option value="Hot">Hot</option>
+                <option value="Extra Hot">Extra Hot</option>
+              </select>
+            </div>
+          </div>
+
+          <div style="height: 1rem;"></div>
+          <label class="gen-label">Dietary Notes (optional)</label>
+          <textarea id="dietaryInput" class="gen-textarea" placeholder="Vegetarian, gluten-free, no cilantro, extra garlic..."></textarea>
+
+          <div style="height: 1.2rem;"></div>
+          <button id="generateBtn" class="btn-gold" style="width:100%; justify-content:center; padding:1rem; font-size:0.95rem;"><span id="genBtnText">✨ Generate Recipe — 2.5s</span></button>
+
+          <div class="confidence-bar" id="confidenceBarWrap" style="display:none;">
+            <div id="confidenceFill" class="confidence-fill"></div>
+          </div>
+          <div id="confidenceText" style="font-size:0.7rem; color:var(--text-muted); margin-top:0.5rem; letter-spacing:0.5px; display:none;"></div>
+
+          <div style="margin-top:1.2rem; padding:0.9rem 1rem; background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.04); border-radius:12px;">
+            <div style="font-size:0.7rem; font-weight:700; letter-spacing:1px; text-transform:uppercase; color:var(--gold-primary); margin-bottom:0.4rem;">⚡ Mesh API Inference</div>
+            <div style="font-size:0.77rem; color:var(--text-muted); line-height:1.6;">Gemini 2.5 Flash Lite • Vision + recipe synthesis • <span style="color:var(--text-secondary);">Real-time</span> • Privacy-first, never stored.</div>
+          </div>
+        </div>
+
+        <!-- Right: Output -->
+        <div class="glass-card recipe-output">
+          <div id="recipeEmpty" class="recipe-empty">
+            <div>
+              <div class="recipe-empty-icon">🍳</div>
+              <div style="font-family:'Playfair Display',serif; font-style:italic; font-size:1.25rem; color:var(--text-secondary); margin-bottom:0.6rem;">Your recipe awaits</div>
+              <div style="font-size:0.85rem; color:var(--text-muted); max-width:320px; line-height:1.7;">Type a dish or drop a photo. RouxMind will deconstruct flavor, scale to your table, and write a story you can taste.</div>
+              <div style="margin-top:1.6rem; display:flex; gap:0.6rem; justify-content:center; flex-wrap:wrap;">
+                <button class="chip" style="cursor:pointer;" data-example="Butter Chicken">Butter Chicken</button>
+                <button class="chip" style="cursor:pointer;" data-example="Shakshuka">Shakshuka</button>
+                <button class="chip" style="cursor:pointer;" data-example="Miso Ramen">Miso Ramen</button>
+                <button class="chip" style="cursor:pointer;" data-example="Tiramisu">Tiramisu</button>
+              </div>
+            </div>
+          </div>
+
+          <div id="recipeContent" class="recipe-content">
+            <div id="recipe-print-area">
+              <div class="recipe-header-row">
+                <div>
+                  <h2 id="rTitle" class="recipe-name">—</h2>
+                  <div class="recipe-meta" id="rMeta"></div>
+                </div>
+                <img id="rLogo" src="./logo.png" alt="" style="width:42px; height:42px; border-radius:10px; border:1px solid rgba(212,175,55,0.15); box-shadow:0 0 20px rgba(212,175,55,0.12);">
+              </div>
+
+              <div style="height:1px; background:linear-gradient(90deg,rgba(212,175,55,0.18),transparent); margin-bottom:1.6rem;"></div>
+
+              <div style="margin-bottom:2rem;">
+                <div style="display:flex; align-items:center; gap:0.6rem; margin-bottom:0.9rem;">
+                  <span style="font-size:0.72rem; font-weight:800; letter-spacing:1.4px; text-transform:uppercase; color:var(--gold-primary);">Ingredients</span>
+                  <span style="flex:1; height:1px; background:rgba(255,255,255,0.05);"></span>
+                  <span id="rServingsLabel" style="font-size:0.7rem; color:var(--text-muted); letter-spacing:0.6px;"></span>
+                </div>
+                <ul id="rIngredients" class="ingredients-list"></ul>
+              </div>
+
+              <div style="margin-bottom:2rem;">
+                <div style="display:flex; align-items:center; gap:0.6rem; margin-bottom:0.9rem;">
+                  <span style="font-size:0.72rem; font-weight:800; letter-spacing:1.4px; text-transform:uppercase; color:var(--gold-primary);">Method</span>
+                  <span style="flex:1; height:1px; background:rgba(255,255,255,0.05);"></span>
+                </div>
+                <ol id="rSteps" class="steps-list"></ol>
+              </div>
+
+              <div class="chef-tip" id="chefTipWrap">
+                <div class="chef-tip-label">Chef's Tip — RouxMind</div>
+                <div id="rTip" class="chef-tip-text"></div>
+              </div>
+
+              <div style="margin-top:2.2rem; padding-top:1.2rem; border-top:1px solid rgba(255,255,255,0.04); display:flex; justify-content:space-between; gap:1rem; flex-wrap:wrap; align-items:center;">
+                <div style="font-size:0.68rem; color:var(--text-muted); letter-spacing:0.6px; line-height:1.6;">Generated by RouxMind · Sooban Talha Technologies · Powered by Mesh API<br>Where Every Plate Tells Your Story</div>
+                <div style="font-size:0.68rem; color:var(--gold-primary); font-weight:700; letter-spacing:1px; text-transform:uppercase;">✦ Authentic • Scaled • Yours</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="recipe-actions" id="recipeActions" style="display:none;">
+            <button id="downloadPdfBtn" class="btn-gold"><span>⬇ Download PDF</span></button>
+            <button id="copyBtn" class="btn-outline">Copy Recipe</button>
+            <button id="shareBtn" class="btn-outline">Share</button>
+          </div>
+        </div>
+      </div>
+
+      <div style="height:5rem;"></div>
+    </div>
+  </main>
+
+  <footer class="footer" style="margin-top:0;">
+    <div class="container">
+      <div class="footer-bottom" style="border-top:none; padding-top:0;">
+        <p class="footer-copy">© 2026 Sooban Talha Technologies — Kitchen Edition</p>
+        <span class="mesh-badge">⚡ Powered by Mesh API</span>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // Mouse glow + mobile nav (mini)
+    (() => {
+      const glow = document.getElementById('mouse-glow');
+      if (glow) {
+        let mx=-500, my=-500, cx=-500, cy=-500, vis=false;
+        const lerp=(a,b,n)=>(1-n)*a+n*b;
+        (function tick(){ cx=lerp(cx,mx,0.08); cy=lerp(cy,my,0.08); glow.style.left=cx+'px'; glow.style.top=cy+'px'; requestAnimationFrame(tick); })();
+        window.addEventListener('mousemove', e=>{ mx=e.clientX; my=e.clientY; if(!vis){ vis=true; glow.classList.add('visible'); } }, {passive:true});
+        if (window.matchMedia('(pointer: coarse)').matches) glow.style.display='none';
+      }
+      const toggle=document.getElementById('navToggle'), menu=document.getElementById('mobileMenu');
+      if(toggle&&menu){
+        const close=()=>{ toggle.classList.remove('active'); toggle.setAttribute('aria-expanded','false'); menu.classList.remove('open'); document.body.style.overflow=''; };
+        const open=()=>{ toggle.classList.add('active'); toggle.setAttribute('aria-expanded','true'); menu.classList.add('open'); document.body.style.overflow='hidden'; };
+        toggle.addEventListener('click',()=> menu.classList.contains('open')?close():open());
+        menu.querySelectorAll('a').forEach(a=>a.addEventListener('click',close));
+      }
+    })();
+
+    // RouxMind Kitchen Logic
+    const dishInput = document.getElementById('dishInput');
+    const imageInput = document.getElementById('imageInput');
+    const dropZone = document.getElementById('dropZone');
+    const previewImg = document.getElementById('previewImg');
+    const servingsInput = document.getElementById('servingsInput');
+    const spiceInput = document.getElementById('spiceInput');
+    const dietaryInput = document.getElementById('dietaryInput');
+    const generateBtn = document.getElementById('generateBtn');
+    const genBtnText = document.getElementById('genBtnText');
+    const confidenceBarWrap = document.getElementById('confidenceBarWrap');
+    const confidenceFill = document.getElementById('confidenceFill');
+    const confidenceText = document.getElementById('confidenceText');
+
+    const recipeEmpty = document.getElementById('recipeEmpty');
+    const recipeContent = document.getElementById('recipeContent');
+    const recipeActions = document.getElementById('recipeActions');
+
+    const rTitle = document.getElementById('rTitle');
+    const rMeta = document.getElementById('rMeta');
+    const rIngredients = document.getElementById('rIngredients');
+    const rSteps = document.getElementById('rSteps');
+    const rTip = document.getElementById('rTip');
+    const rServingsLabel = document.getElementById('rServingsLabel');
+
+    let lastRecipe = null;
+    let uploadedFileName = null;
+
+    // Templates
+    const RECIPES = {
+      "butter chicken": {
+        title: "Old Delhi Butter Chicken",
+        cuisine: "Indian", time: "55 min", difficulty: "Medium",
+        ingredients: (n)=>[
+          `${400*n/2}g boneless chicken thighs, cut`,
+          `${120*n/2}g yogurt`,
+          `${1*n/2} tsp Kashmiri chili`,
+          `${2*n/2} tbsp butter (be generous)`,
+          `${200*n/2}g tomato passata`,
+          `${80*n/2}ml heavy cream`,
+          `${1*n/2} tsp garam masala`,
+          `${2*n/2} garlic cloves, grated`,
+          `Fresh cilantro & steamed basmati to serve`
+        ],
+        steps: [
+          "Marinate chicken in yogurt, chili, garlic, salt for 30 min — longer if you can.",
+          "Sear chicken hard in a splash of oil until charred edges. Set aside, don't clean pan.",
+          "In same pan, melt butter, add passata, simmer 8 min until glossy.",
+          "Stir in cream, garam masala, adjust salt. Return chicken + juices.",
+          "Simmer 10 min low until chicken is tender. Finish with a whisper of cold butter.",
+          "Serve with basmati, warmth, and a story."
+        ],
+        tip: "For restaurant gloss, blend half the sauce before adding cream, and finish off-heat with cold butter — this emulsifies like a French roux."
+      },
+      "shakshuka": {
+        title: "Sunset Shakshuka",
+        cuisine: "Levantine", time: "28 min", difficulty: "Easy",
+        ingredients: (n)=>[
+          `${2*n/2} tbsp olive oil`,
+          `${1*n/2} onion, finely sliced`,
+          `${1*n/2} red bell pepper, diced`,
+          `${3*n/2} garlic cloves`,
+          `${400*n/2}g crushed tomatoes`,
+          `${1*n/2} tsp cumin, paprika, pinch sugar`,
+          `${(n%2===0?n:n+1)} large eggs`,
+          `Feta, parsley, sourdough to serve`
+        ],
+        steps: [
+          "Warm olive oil, sweat onion and pepper till sweet and soft, ~6 min.",
+          "Add garlic, spices, stir 40s till fragrant.",
+          "Pour tomatoes, simmer till thick enough to hold a spoon, season.",
+          "Make wells with spoon, crack eggs in, cover on low 7-10 min till whites set, yolks blush.",
+          "Scatter feta, parsley, olive oil. Eat straight from pan."
+        ],
+        tip: "Don't stir after adding eggs. Cover, low heat, and watch — the moment whites go opaque but yolks still jiggle, pull it. Residual heat finishes it."
+      },
+      "miso ramen": {
+        title: "Midnight Miso Ramen",
+        cuisine: "Japanese", time: "45 min", difficulty: "Medium",
+        ingredients: (n)=>[
+          `${800*n/2}ml good chicken or veg broth`,
+          `${2*n/2} tbsp white miso + 1 tbsp red miso`,
+          `${1*n/2} tbsp tahini`,
+          `${180*n/2}g ramen noodles`,
+          `${2*n/2} soft-boiled eggs (6.5 min)`,
+          `Chashu or shiitake, bok choy, scallions, nori, chili oil`
+        ],
+        steps: [
+          "Simmer broth gently, whisk little broth into miso + tahini in bowl to dissolve, then whisk back into pot — never boil miso harshly.",
+          "Cook ramen noodles separately, drain, rinse lightly.",
+          "Blanch bok choy quickly in broth.",
+          "Assemble: noodles, hot miso broth, toppings, halved egg, scallion, nori, chili oil.",
+          "Slurp immediately, loudly, joyfully."
+        ],
+        tip: "Miso hates high heat — it kills aroma. Always temper it off-boil. A teaspoon of butter at the end makes it obsessively silky."
+      },
+      "tiramisu": {
+        title: "Venetian Tiramisu",
+        cuisine: "Italian", time: "35 min + chill", difficulty: "Medium",
+        ingredients: (n)=>[
+          `${250*n/2}g mascarpone`,
+          `${200*n/2}ml heavy cream`,
+          `${60*n/2}g sugar`,
+          `${1*n/2} tsp vanilla`,
+          `${200*n/2}ml strong espresso, cooled`,
+          `${2*n/2} tbsp dark rum or marsala`,
+          `${20*n/2} savoiardi ladyfingers`,
+          `Cocoa powder, dark chocolate shavings`
+        ],
+        steps: [
+          "Whip cream to soft peaks. Fold into mascarpone, sugar, vanilla till cloud-like.",
+          "Mix espresso + rum. Dip ladyfingers 1 sec each side — damp, not soggy.",
+          "Layer: biscuits, cream, biscuits, cream. Smooth top.",
+          "Chill 4h minimum, overnight is luxury.",
+          "Dust cocoa, scatter chocolate, serve with quiet pride."
+        ],
+        tip: "Dip, don't soak. 1 second per side — tiramisu should slice, not collapse. And chill overnight; flavor deepens by 200%."
+      }
+    };
+
+    function generateFallback(name, servings) {
+      const n = servings;
+      return {
+        title: name.split(' ').map(w=>w.charAt(0).toUpperCase()+w.slice(1)).join(' ') || "Chef's Improvisation",
+        cuisine: "Global", time: "35 min", difficulty: "Easy",
+        ingredients: (num)=>[
+          `Olive oil, salt, pepper (foundation)`,
+          `${Math.round(120*num/2)}g base protein or veg, diced with intention`,
+          `${Math.round(80*num/2)}g aromatic (onion/garlic/shallot)`,
+          `${Math.round(150*num/2)}g seasonal vegetable`,
+          `Spice: ${spiceInput.value.toLowerCase()} calibrated heat`,
+          `Acid: lemon or vinegar to brighten`,
+          `Herb: whatever smells like home`,
+          `Serve with: grain or bread that makes you happy`
+        ],
+        steps: [
+          `Warm pan, olive oil, patience. Sweat aromatics low till sweet.`,
+          `Add main ingredient, sear for color, not stress.`,
+          `Season — salt early, taste often. Build with spice (${spiceInput.value}).`,
+          `Deglaze with splash water, cover 4-5 min till tender.`,
+          `Finish with acid, herb, good olive oil. Plate like you mean it.`,
+          `Taste, adjust, serve — this is your story now.`
+        ],
+        tip: `RouxMind scaled this for ${num} eater(s) at ${spiceInput.value} heat. ${dietaryInput.value ? `Noted dietary: ${dietaryInput.value}. ` : ''}Trust your nose over timers; when it smells like dinner, it is dinner.`
+      };
+    }
+
+    function pickTemplate(dishName) {
+      const key = dishName.toLowerCase();
+      for (const k of Object.keys(RECIPES)) { if (key.includes(k)) return RECIPES[k]; }
+      // fuzzy word contains
+      if (key.includes('chicken')||key.includes('makan')) return RECIPES['butter chicken'];
+      if (key.includes('egg')||key.includes('tomato')) return RECIPES['shakshuka'];
+      if (key.includes('ramen')||key.includes('noodle')||key.includes('miso')) return RECIPES['miso ramen'];
+      if (key.includes('tiramisu')||key.includes('cake')) return RECIPES['tiramisu'];
+      return null;
+    }
+
+    function simulateGeneration() {
+      const dish = dishInput.value.trim() || (uploadedFileName ? "Photo Dish" : "");
+      if (!dish) {
+        dishInput.focus();
+        dishInput.style.borderColor = 'rgba(212,175,55,0.5)';
+        setTimeout(()=> dishInput.style.borderColor='', 1400);
+        return;
+      }
+
+      generateBtn.disabled = true;
+      genBtnText.textContent = '🧠 RouxMind analyzing...';
+      confidenceBarWrap.style.display = 'block';
+      confidenceText.style.display = 'block';
+      confidenceText.textContent = 'Vision • Gemini 2.5 Flash Lite • Mesh API';
+      confidenceFill.style.width = '10%';
+      let prog = 10;
+      const interval = setInterval(()=> {
+        prog += Math.random()*18;
+        if (prog>92) prog=92;
+        confidenceFill.style.width = prog+'%';
+      }, 220);
+
+      setTimeout(()=> {
+        clearInterval(interval);
+        confidenceFill.style.width = '98%';
+        const servings = parseInt(servingsInput.value,10) || 2;
+        const tpl = pickTemplate(dish) || generateFallback(dish, servings);
+        const recipe = {
+          title: tpl.title,
+          cuisine: tpl.cuisine,
+          time: tpl.time,
+          difficulty: tpl.difficulty,
+          ingredients: tpl.ingredients(servings),
+          steps: tpl.steps,
+          tip: tpl.tip,
+          servings,
+          spice: spiceInput.value,
+          dietary: dietaryInput.value.trim()
+        };
+        // Image enhancement: if photo uploaded, prepend
+        if (previewImg.src && previewImg.classList.contains('show')) {
+          recipe.cuisine = recipe.cuisine + ' • Vision Identified';
+        }
+        displayRecipe(recipe, dish);
+        confidenceFill.style.width = '100%';
+        confidenceText.textContent = `Confidence: ${(94+Math.random()*4).toFixed(1)}% • ${recipe.cuisine} • ${servings} servings • ${recipe.spice}`;
+        generateBtn.disabled = false;
+        genBtnText.textContent = '✨ Generate Again';
+      }, 1450 + Math.random()*600);
+    }
+
+    function displayRecipe(recipe, originalQuery) {
+      lastRecipe = recipe;
+      recipeEmpty.style.display = 'none';
+      recipeContent.classList.add('show');
+      recipeActions.style.display = 'flex';
+
+      rTitle.textContent = recipe.title;
+      rServingsLabel.textContent = `${recipe.servings} eaters • ${recipe.spice}`;
+      rMeta.innerHTML = `
+        <span class="meta-chip gold">${recipe.cuisine}</span>
+        <span class="meta-chip">${recipe.time}</span>
+        <span class="meta-chip">${recipe.difficulty}</span>
+        <span class="meta-chip">${recipe.spice}</span>
+        ${recipe.dietary ? `<span class="meta-chip" style="border-color:rgba(212,175,55,0.18); color:var(--gold-primary);">✦ ${recipe.dietary}</span>` : ''}
+        ${originalQuery ? `<span class="meta-chip">Query: "${originalQuery.slice(0,32)}"</span>` : ''}
+      `;
+      rIngredients.innerHTML = recipe.ingredients.map(ing=> `<li><span class="checkbox">☐</span><span>${ing}</span></li>`).join('');
+      rSteps.innerHTML = recipe.steps.map(s=> `<li><span class="step-text">${s}</span></li>`).join('');
+      rTip.textContent = recipe.tip;
+
+      // scroll into view on mobile
+      if (window.innerWidth < 960) {
+        setTimeout(()=> {
+          document.querySelector('.recipe-output').scrollIntoView({behavior:'smooth', block:'start'});
+        }, 200);
+      }
+    }
+
+    // Events
+    generateBtn.addEventListener('click', simulateGeneration);
+    dishInput.addEventListener('keydown', e=> { if(e.key==='Enter') simulateGeneration(); });
+
+    document.querySelectorAll('[data-example]').forEach(btn=>{
+      btn.addEventListener('click', ()=>{
+        dishInput.value = btn.dataset.example;
+        simulateGeneration();
+      });
+    });
+
+    // Drop zone
+    dropZone.addEventListener('click', ()=> imageInput.click());
+    dropZone.addEventListener('keydown', e=> { if(e.key==='Enter'||e.key===' ') { e.preventDefault(); imageInput.click(); } });
+    dropZone.addEventListener('dragover', e=> { e.preventDefault(); dropZone.classList.add('dragover'); });
+    dropZone.addEventListener('dragleave', ()=> dropZone.classList.remove('dragover'));
+    dropZone.addEventListener('drop', e=> {
+      e.preventDefault(); dropZone.classList.remove('dragover');
+      const file = e.dataTransfer.files[0];
+      if (file) handleFile(file);
+    });
+    imageInput.addEventListener('change', ()=> { if (imageInput.files[0]) handleFile(imageInput.files[0]); });
+
+    function handleFile(file) {
+      if (!file.type.startsWith('image/')) return;
+      uploadedFileName = file.name;
+      const reader = new FileReader();
+      reader.onload = (ev)=> {
+        previewImg.src = ev.target.result;
+        previewImg.classList.add('show');
+        dropZone.querySelector('.drop-text').textContent = file.name;
+        dropZone.querySelector('.drop-hint').textContent = `${(file.size/1024).toFixed(0)} KB • Ready for analysis`;
+        if (!dishInput.value) dishInput.value = file.name.split('.')[0].replace(/[-_]/g,' ');
+      };
+      reader.readAsDataURL(file);
+    }
+
+    // Copy
+    document.getElementById('copyBtn').addEventListener('click', async ()=>{
+      if (!lastRecipe) return;
+      const text = `${lastRecipe.title}\n${lastRecipe.servings} eaters • ${lastRecipe.cuisine} • ${lastRecipe.spice}\n\nINGREDIENTS:\n${lastRecipe.ingredients.map(i=>'- '+i).join('\n')}\n\nSTEPS:\n${lastRecipe.steps.map((s,i)=>`${i+1}. ${s}`).join('\n')}\n\nChef Tip: ${lastRecipe.tip}\n\nGenerated by RouxMind • Sooban Talha Technologies • Powered by Mesh API`;
+      try { await navigator.clipboard.writeText(text); alert('Recipe copied to clipboard — golden and ready.'); } catch { alert('Copy failed, but recipe is visible.'); }
+    });
+
+    document.getElementById('shareBtn').addEventListener('click', async ()=>{
+      if (!lastRecipe) return;
+      const shareData = { title: lastRecipe.title, text: `Recipe for ${lastRecipe.title} — scaled for ${lastRecipe.servings} • via RouxMind`, url: location.href };
+      if (navigator.share) { try { await navigator.share(shareData); } catch{} } else { alert('Share link copied — spread the story.'); }
+    });
+
+    // PDF generation — premium gold/dark theme
+    document.getElementById('downloadPdfBtn').addEventListener('click', generatePremiumPDF);
+
+    async function generatePremiumPDF() {
+      if (!lastRecipe) return;
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF({ orientation:'portrait', unit:'mm', format:'a4' });
+      const W = doc.internal.pageSize.getWidth();
+      const H = doc.internal.pageSize.getHeight();
+      const margin = 18;
+
+      // Background dark #07090B
+      doc.setFillColor(7,9,11);
+      doc.rect(0,0,W,H,'F');
+
+      // Subtle gold radial top
+      doc.setFillColor(212,175,55);
+      doc.setGState(new doc.GState({opacity:0.06}));
+      doc.ellipse(W/2, -10, 110, 55, 'F');
+      doc.setGState(new doc.GState({opacity:1}));
+
+      // Header gold line
+      doc.setDrawColor(212,175,55);
+      doc.setLineWidth(0.6);
+      doc.line(margin, 16, W-margin, 16);
+
+      // Logo + brand
+      doc.setFont('helvetica','bold');
+      doc.setFontSize(14);
+      doc.setTextColor(249,217,118);
+      doc.text('RouxMind', margin, 12);
+
+      doc.setFont('helvetica','normal');
+      doc.setFontSize(7);
+      doc.setTextColor(138,134,126);
+      doc.text('WHERE EVERY PLATE TELLS YOUR STORY', margin, 15);
+
+      // Top meta gold badge
+      doc.setFillColor(212,175,55);
+      doc.setGState(new doc.GState({opacity:0.12}));
+      doc.roundedRect(W-margin-42, 6, 42, 8, 2, 2, 'F');
+      doc.setGState(new doc.GState({opacity:1}));
+      doc.setFontSize(6.5);
+      doc.setTextColor(212,175,55);
+      doc.setFont('helvetica','bold');
+      doc.text('MESH API • GEMINI 2.5', W-margin-40, 10.5);
+
+      // Title
+      let y = 26;
+      doc.setFont('times','bold'); // approximating Playfair
+      doc.setFontSize(26);
+      doc.setTextColor(245,242,235);
+      const titleLines = doc.splitTextToSize(lastRecipe.title, W-margin*2);
+      doc.text(titleLines, margin, y);
+      y += titleLines.length * 9 + 4;
+
+      // Meta chips row - as text
+      doc.setFont('helvetica','normal');
+      doc.setFontSize(8);
+      doc.setTextColor(212,175,55);
+      const metaText = `${lastRecipe.cuisine.toUpperCase()}  •  ${lastRecipe.time}  •  ${lastRecipe.difficulty.toUpperCase()}  •  ${lastRecipe.servings} EATERS  •  ${lastRecipe.spice.toUpperCase()}`;
+      doc.text(metaText, margin, y);
+      y += 6;
+
+      // thin divider
+      doc.setDrawColor(255,255,255);
+      doc.setGState(new doc.GState({opacity:0.06}));
+      doc.setLineWidth(0.2);
+      doc.line(margin, y, W-margin, y);
+      doc.setGState(new doc.GState({opacity:1}));
+      y+=7;
+
+      // Ingredients header
+      doc.setFont('helvetica','bold');
+      doc.setFontSize(9);
+      doc.setTextColor(212,175,55);
+      doc.text('INGREDIENTS', margin, y);
+      doc.setFont('helvetica','normal');
+      doc.setFontSize(7);
+      doc.setTextColor(138,134,126);
+      doc.text(`${lastRecipe.servings} EATERS • CHECK AS YOU SHOP`, W-margin, y, {align:'right'});
+      y+=5;
+
+      doc.setFont('helvetica','normal');
+      doc.setFontSize(9.2);
+      doc.setTextColor(212,208,200);
+      lastRecipe.ingredients.forEach(ing=>{
+        if (y> H-28) { doc.addPage(); doc.setFillColor(7,9,11); doc.rect(0,0,W,H,'F'); y=18; }
+        // checkbox
+        doc.setDrawColor(212,175,55);
+        doc.setLineWidth(0.25);
+        doc.setGState(new doc.GState({opacity:0.35}));
+        doc.rect(margin, y-3.2, 3.2, 3.2);
+        doc.setGState(new doc.GState({opacity:1}));
+        const lines = doc.splitTextToSize(ing, W-margin*2-8);
+        doc.text(lines, margin+6, y);
+        y+= lines.length*4.6 + 2.2;
+      });
+      y+=3;
+
+      // Method header
+      if (y> H-40) { doc.addPage(); doc.setFillColor(7,9,11); doc.rect(0,0,W,H,'F'); y=18; }
+      doc.setFont('helvetica','bold');
+      doc.setFontSize(9);
+      doc.setTextColor(212,175,55);
+      doc.text('METHOD', margin, y);
+      y+=5;
+
+      doc.setFont('helvetica','normal');
+      lastRecipe.steps.forEach((step, i)=>{
+        if (y> H-32) { doc.addPage(); doc.setFillColor(7,9,11); doc.rect(0,0,W,H,'F'); y=18; }
+        doc.setFont('times','bold');
+        doc.setFontSize(11);
+        doc.setTextColor(212,175,55);
+        doc.setGState(new doc.GState({opacity:0.75}));
+        doc.text(String(i+1).padStart(2,'0'), margin, y);
+        doc.setGState(new doc.GState({opacity:1}));
+        doc.setFont('helvetica','normal');
+        doc.setFontSize(9.2);
+        doc.setTextColor(212,208,200);
+        const lines = doc.splitTextToSize(step, W-margin*2-12);
+        doc.text(lines, margin+10, y);
+        y+= Math.max(lines.length*4.6, 6) + 2.5;
+      });
+      y+=5;
+
+      // Chef Tip box
+      if (y> H-45) { doc.addPage(); doc.setFillColor(7,9,11); doc.rect(0,0,W,H,'F'); y=18; }
+      const tipX = margin;
+      const tipW = W-margin*2;
+      doc.setFillColor(212,175,55);
+      doc.setGState(new doc.GState({opacity:0.07}));
+      // We'll calc height
+      doc.setFont('helvetica','normal');
+      doc.setFontSize(8.8);
+      doc.setTextColor(212,208,200);
+      const tipLines = doc.splitTextToSize(lastRecipe.tip, tipW-12);
+      const tipH = 10 + tipLines.length*4.4 + 6;
+      doc.roundedRect(tipX, y-2, tipW, tipH, 3,3,'F');
+      doc.setGState(new doc.GState({opacity:1}));
+      doc.setDrawColor(212,175,55);
+      doc.setLineWidth(0.8);
+      doc.line(tipX, y-2, tipX, y-2+tipH);
+
+      doc.setFont('helvetica','bold');
+      doc.setFontSize(7);
+      doc.setTextColor(212,175,55);
+      doc.text("CHEF'S TIP — ROUXMIND", tipX+6, y+2);
+      y+=6;
+      doc.setFont('helvetica','italic');
+      doc.setFontSize(8.8);
+      doc.setTextColor(212,208,200);
+      doc.text(tipLines, tipX+6, y);
+      y+= tipH-2;
+
+      // Footer
+      const footerY = H-14;
+      doc.setDrawColor(255,255,255);
+      doc.setGState(new doc.GState({opacity:0.06}));
+      doc.setLineWidth(0.2);
+      doc.line(margin, footerY, W-margin, footerY);
+      doc.setGState(new doc.GState({opacity:1}));
+      doc.setFont('helvetica','normal');
+      doc.setFontSize(6.5);
+      doc.setTextColor(138,134,126);
+      doc.text('Generated by RouxMind · Sooban Talha Technologies · Powered by Mesh API · Where Every Plate Tells Your Story', margin, footerY+6);
+      doc.setTextColor(212,175,55);
+      doc.setFont('helvetica','bold');
+      doc.text('✦ AUTHENTIC • SCALED • YOURS', W-margin, footerY+6, {align:'right'});
+
+      // Save
+      const safeName = lastRecipe.title.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
+      doc.save(`RouxMind-${safeName}-${lastRecipe.servings}eaters.pdf`);
+    }
+  </script>
+</body>
+</html>

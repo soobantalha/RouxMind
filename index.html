@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RouxMind — Where Every Plate Tells Your Story</title>
+  <meta name="description" content="RouxMind is the world's most refined AI chef. Upload a photo, type a dish, and get a perfectly crafted recipe — scaled to your table, your taste, your story. Built by Sooban Talha Technologies, powered by Mesh API.">
+  <meta name="keywords" content="AI recipe, culinary AI, RouxMind, Mesh API, food tech, recipe generator">
+  <meta name="author" content="Sooban Talha Technologies">
+  <meta property="og:title" content="RouxMind — Where Every Plate Tells Your Story">
+  <meta property="og:description" content="The world's most refined AI chef. Michelin-grade recipes from a photo.">
+  <meta property="og:type" content="website">
+  <meta property="og:image" content="./logowithname.png">
+  <meta name="theme-color" content="#07090B">
+  <link rel="icon" type="image/png" href="./logo.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+
+  <!-- Preloader -->
+  <div id="preloader" aria-hidden="true">
+    <div class="preloader-ring"></div>
+    <div class="preloader-brand">RouxMind</div>
+  </div>
+
+  <!-- Mouse Glow -->
+  <div id="mouse-glow" aria-hidden="true"></div>
+
+  <!-- Header -->
+  <header class="header" id="header">
+    <div class="container header-inner">
+      <a href="#" class="logo" aria-label="RouxMind Home">
+        <img src="./logo.png" alt="" class="logo-icon">
+        <span class="logo-text">RouxMind</span>
+      </a>
+
+      <nav class="nav" aria-label="Main Navigation">
+        <div class="nav-links" id="navLinks">
+          <a href="#story" class="nav-link">Story</a>
+          <a href="#features" class="nav-link">Features</a>
+          <a href="#how" class="nav-link">How It Works</a>
+          <a href="#testimonials" class="nav-link">Testimonials</a>
+          <a href="#faq" class="nav-link">FAQ</a>
+        </div>
+        <a href="./recipe.html" class="btn-gold"><span>Try Now →</span></a>
+        <button class="nav-toggle" id="navToggle" aria-label="Toggle menu" aria-expanded="false">
+          <span></span><span></span><span></span>
+        </button>
+      </nav>
+    </div>
+    <div class="mobile-menu" id="mobileMenu" aria-hidden="true">
+      <a href="#story">Story</a>
+      <a href="#features">Features</a>
+      <a href="#how">How It Works</a>
+      <a href="#testimonials">Testimonials</a>
+      <a href="#faq">FAQ</a>
+      <a href="./recipe.html" style="background: linear-gradient(105deg,#F9D976,#D4AF37); color:#07090B; font-weight:700; text-align:center; margin-top:0.6rem;">🍳 Try RouxMind Now</a>
+    </div>
+  </header>
+
+  <!-- Hero -->
+  <section class="hero" id="top">
+    <div class="container hero-inner">
+      <div class="hero-content">
+        <div class="badge reveal">
+          <span class="badge-dot"></span> AI-Powered Culinary Intelligence
+        </div>
+        <h1 class="hero-headline reveal reveal-delay-1">
+          <span class="line-1">Where Every Plate</span>
+          <span class="line-2 gold-italic">Tells Your Story</span>
+        </h1>
+        <p class="hero-sub reveal reveal-delay-2">
+          RouxMind is the world's most refined AI chef. Upload a photo, type a dish, and get a perfectly crafted recipe — scaled to your table, your taste, your story.
+        </p>
+        <div class="hero-actions reveal reveal-delay-3">
+          <a href="./recipe.html" class="btn-gold btn-hero-primary"><span>🍳 Start Cooking</span></a>
+          <a href="#story" class="btn-outline btn-hero-secondary">Discover More</a>
+        </div>
+        <div class="hero-stats reveal reveal-delay-4">
+          <div class="stat-item">
+            <div class="stat-num">10K+</div>
+            <div class="stat-label">Recipes Generated</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-num">98%</div>
+            <div class="stat-label">Accuracy Rate</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-num">2.5s</div>
+            <div class="stat-label">Avg. Response Time</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="hero-visual reveal reveal-delay-2">
+        <div class="hero-logo-wrap">
+          <img src="./logo.png" alt="RouxMind Logo" class="hero-logo" loading="eager">
+        </div>
+        <div class="floating-badge fb-top">
+          <span class="fb-emoji">🧠</span> AI Brain
+        </div>
+        <div class="floating-badge fb-bottom">
+          <span class="fb-emoji">⭐</span> Michelin Grade
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Story -->
+  <section class="section" id="story">
+    <div class="container">
+      <div class="story-inner">
+        <div class="story-content">
+          <div class="section-label reveal">✦ The Story</div>
+          <h2 class="section-headline reveal reveal-delay-1">Born from a passion for <span class="gold-italic">culinary excellence</span></h2>
+          <div class="story-text reveal reveal-delay-2">
+            <p>
+              In a kitchen where tradition meets technology, <strong class="gold">RouxMind</strong> was conceived — not just as a recipe app, but as a digital companion that understands the poetry of plating and the science of flavor.
+            </p>
+            <p>
+              Crafted by the artisans at <strong class="gold">Sooban Talha Technologies</strong>, and illuminated by the raw speed of <strong class="gold">Mesh API</strong> inferencing, RouxMind sees the dish you love and writes the story you will taste.
+            </p>
+            <p>
+              We believe every plate is a memory waiting to happen. Your grandmother's biryani, that street taco from Oaxaca, the souffle that terrified you — RouxMind doesn't just replicate, it interprets. It learns your spice tolerance, your pantry, your people.
+            </p>
+            <div class="story-chips">
+              <span class="chip">✦ Built by S.T.T</span>
+              <span class="chip">✦ Mesh API Powered</span>
+              <span class="chip">✦ Privacy First</span>
+            </div>
+          </div>
+        </div>
+        <div class="story-visual reveal reveal-delay-3">
+          <img src="./logowithname.png" alt="RouxMind Full Logo" loading="lazy">
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features -->
+  <section class="section" id="features">
+    <div class="container">
+      <div class="section-label reveal">✦ Capabilities</div>
+      <h2 class="section-headline reveal reveal-delay-1">Designed for the modern <span class="gold-italic">culinary mind</span></h2>
+      <p class="section-desc reveal reveal-delay-2">Six pillars of intelligence that turn a fleeting craving into a forever recipe.</p>
+
+      <div class="features-grid">
+        <div class="glass-card feature-card reveal">
+          <div class="feature-icon">📸</div>
+          <h3 class="feature-title">Photo to Recipe</h3>
+          <p class="feature-desc">Upload any dish photo — our AI identifies it and builds the complete recipe instantly with confidence scoring.</p>
+        </div>
+        <div class="glass-card feature-card reveal reveal-delay-1">
+          <div class="feature-icon">🍴</div>
+          <h3 class="feature-title">Smart Scaling</h3>
+          <p class="feature-desc">Tell us how many eaters — ingredients scale perfectly, ratios stay Michelin-precise, no math required.</p>
+        </div>
+        <div class="glass-card feature-card reveal reveal-delay-2">
+          <div class="feature-icon">🌍</div>
+          <h3 class="feature-title">Global Cuisine</h3>
+          <p class="feature-desc">From Italian pasta to Thai curry — RouxMind understands flavor architectures from every corner of Earth.</p>
+        </div>
+        <div class="glass-card feature-card reveal">
+          <div class="feature-icon">⚡</div>
+          <h3 class="feature-title">Mesh API Powered</h3>
+          <p class="feature-desc">Real-time inferencing using Gemini 2.5 Flash Lite via Mesh API — fastest, most affordable intelligence layer.</p>
+        </div>
+        <div class="glass-card feature-card reveal reveal-delay-1">
+          <div class="feature-icon">📊</div>
+          <h3 class="feature-title">Your Legacy</h3>
+          <p class="feature-desc">Track your recipes, maintain streaks, collect chef titles, and rise through the ranks of RouxMind society.</p>
+        </div>
+        <div class="glass-card feature-card reveal reveal-delay-2">
+          <div class="feature-icon">🔒</div>
+          <h3 class="feature-title">Privacy First</h3>
+          <p class="feature-desc">Your images are processed instantly and never stored — ever. Only anonymized culinary insights remain.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- How It Works -->
+  <section class="section" id="how">
+    <div class="container">
+      <div class="section-label reveal">✦ The Ritual</div>
+      <h2 class="section-headline reveal reveal-delay-1">Three steps to <span class="gold-italic">extraordinary</span></h2>
+
+      <div class="how-grid">
+        <div class="glass-card how-card reveal">
+          <div class="how-number">01</div>
+          <span class="how-icon">📸</span>
+          <h3 class="how-title">Show or Tell</h3>
+          <p class="how-desc">Upload a photo of any dish or type its name. A memory, a menu screenshot, a leftover in your fridge — RouxMind understands.</p>
+          <div class="how-arrow">→</div>
+        </div>
+        <div class="glass-card how-card reveal reveal-delay-1">
+          <div class="how-number">02</div>
+          <span class="how-icon">🧠</span>
+          <h3 class="how-title">AI Processing</h3>
+          <p class="how-desc">Our Mesh API-powered AI analyzes, identifies, deconstructs, and reconstructs the perfect recipe — tailored to your servings and spice.</p>
+          <div class="how-arrow">→</div>
+        </div>
+        <div class="glass-card how-card reveal reveal-delay-2">
+          <div class="how-number">03</div>
+          <span class="how-icon">🍳</span>
+          <h3 class="how-title">Cook & Enjoy</h3>
+          <p class="how-desc">Get a complete recipe with ingredients, scaled quantities, step-by-step instructions, and chef tips — ready to cook in seconds.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Testimonials -->
+  <section class="section" id="testimonials">
+    <div class="container">
+      <div class="section-label reveal">✦ Community</div>
+      <h2 class="section-headline reveal reveal-delay-1">Loved by chefs, <span class="gold-italic">everywhere</span></h2>
+
+      <div class="testimonials-grid">
+        <div class="glass-card testimonial-card reveal">
+          <div class="stars">★★★★★</div>
+          <p class="testimonial-quote">"RouxMind turned my fridge leftovers into a Michelin-worthy meal. Absolutely magical — it even remembered I hate cilantro."</p>
+          <div class="testimonial-author">Sarah J.</div>
+          <div class="testimonial-role">Home Chef • New York</div>
+        </div>
+        <div class="glass-card testimonial-card reveal reveal-delay-1">
+          <div class="stars">★★★★★</div>
+          <p class="testimonial-quote">"The UI is breathtaking and the recipes are spot-on. 2.5 second generation? Feels like the future of food is already plated."</p>
+          <div class="testimonial-author">Michael R.</div>
+          <div class="testimonial-role">Food Blogger • London</div>
+        </div>
+        <div class="glass-card testimonial-card reveal reveal-delay-2">
+          <div class="stars">★★★★★</div>
+          <p class="testimonial-quote">"Finally an AI that understands my spice tolerance and doesn't judge my 2am butter chicken cravings. RouxMind is a game-changer."</p>
+          <div class="testimonial-author">Priya K.</div>
+          <div class="testimonial-role">Culinary Student • Mumbai</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="cta-section">
+    <div class="cta-box reveal">
+      <h2 class="cta-headline">Ready to create something <span class="gold-italic">extraordinary?</span></h2>
+      <p class="cta-sub">Join thousands of chefs using RouxMind to turn everyday meals into memorable experiences that tell your story.</p>
+      <div class="cta-actions">
+        <a href="./recipe.html" class="btn-gold"><span>🍳 Try RouxMind Now</span></a>
+        <a href="#features" class="btn-outline">Explore Features</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section class="section" id="faq">
+    <div class="container">
+      <div class="section-label reveal" style="display:flex; justify-content:center; width:100%;">✦ Questions</div>
+      <h2 class="section-headline reveal reveal-delay-1" style="text-align:center; margin-left:auto; margin-right:auto;">Everything you need to <span class="gold-italic">know</span></h2>
+
+      <div class="faq-wrap">
+        <div class="faq-item reveal" data-faq>
+          <button class="faq-question">
+            <span>How does RouxMind identify a dish from a photo?</span>
+            <span class="faq-toggle">+</span>
+          </button>
+          <div class="faq-answer">
+            <p>We leverage Google's Gemini 2.5 Flash Lite via Mesh API — a state-of-the-art vision-language model that doesn't just see pixels, it deconstructs plating, texture, color, and context to infer ingredients, technique, and cultural lineage with 98% accuracy.</p>
+          </div>
+        </div>
+
+        <div class="faq-item reveal" data-faq>
+          <button class="faq-question">
+            <span>Is my data safe with RouxMind?</span>
+            <span class="faq-toggle">+</span>
+          </button>
+          <div class="faq-answer">
+            <p>Absolutely. Privacy is our mise en place. Images are processed in-memory and discarded instantly. We store only anonymized aggregate stats — how many recipes generated, popular cuisines, never your personal photos or identifiable data.</p>
+          </div>
+        </div>
+
+        <div class="faq-item reveal" data-faq>
+          <button class="faq-question">
+            <span>What makes RouxMind different from other recipe AIs?</span>
+            <span class="faq-toggle">+</span>
+          </button>
+          <div class="faq-answer">
+            <p>Three things: Taste — literally, we calibrate spice, portion, and dietary nuance. Design — ethereal luxury, not clinical. And speed — Mesh API gives us sub-3-second generation at a fraction of the cost, passing that delight to you.</p>
+          </div>
+        </div>
+
+        <div class="faq-item reveal" data-faq>
+          <button class="faq-question">
+            <span>Who built RouxMind?</span>
+            <span class="faq-toggle">+</span>
+          </button>
+          <div class="faq-answer">
+            <p>Sooban Talha Technologies — a collective of AI engineers, Michelin-trained consultants, and food-obsessed designers from Karachi to Kyoto. We believe technology should feel like hospitality.</p>
+          </div>
+        </div>
+
+        <div class="faq-item reveal" data-faq>
+          <button class="faq-question">
+            <span>Can I use RouxMind on my phone?</span>
+            <span class="faq-toggle">+</span>
+          </button>
+          <div class="faq-answer">
+            <p>Yes — RouxMind is fully responsive and progressive. Cook from your phone in the grocery aisle, your tablet on the counter, or your desktop while meal prepping. Your legacy syncs everywhere.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <a href="#" class="logo">
+            <img src="./logo.png" alt="" class="logo-icon">
+            <span class="logo-text">RouxMind</span>
+          </a>
+          <p class="footer-desc">The world's most refined AI chef. Where every plate tells your story — with intelligence, elegance, and a touch of gold.</p>
+          <p class="footer-tagline">Where Every Plate Tells Your Story</p>
+        </div>
+
+        <div class="footer-col">
+          <h4>Explore</h4>
+          <a href="./recipe.html">Kitchen</a>
+          <a href="#features">Features</a>
+          <a href="#how">How It Works</a>
+          <a href="#testimonials">Testimonials</a>
+        </div>
+
+        <div class="footer-col">
+          <h4>Company</h4>
+          <a href="#story">About RouxMind</a>
+          <a href="#">Sooban Talha Tech</a>
+          <a href="#">Careers</a>
+          <a href="#">Contact</a>
+        </div>
+
+        <div class="footer-col">
+          <h4>Legal</h4>
+          <a href="#">Privacy Policy</a>
+          <a href="#">Terms of Service</a>
+          <a href="#">Cookie Policy</a>
+          <a href="https://meshapi.ai" target="_blank" rel="noopener">Mesh API</a>
+        </div>
+      </div>
+
+      <div class="footer-bottom">
+        <p class="footer-copy">© 2026 Sooban Talha Technologies — All rights reserved. Crafted with ♥ in Karachi.</p>
+        <a href="https://meshapi.ai" target="_blank" rel="noopener" class="mesh-badge">⚡ Powered by Mesh API</a>
+      </div>
+    </div>
+  </footer>
+
+  <script src="./app.js" defer></script>
+</body>
+</html>
