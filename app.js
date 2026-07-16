@@ -1,31 +1,29 @@
 /**
  * ============================================
- * ROUXMIND - Ultra-Premium AI Recipe Generator
- * World's Most Advanced AI Recipe Generator
+ * ROUXMIND v4.0 — Ultra-Premium AI Recipe Generator
  * Where Every Plate Tells Your Story
  * ============================================
- * 
  * Built by Sooban Talha Tech
  * Founder: Sooban Talha
  * Website: soobantalhatech.xyz
  * App URL: rouxmind.vercel.app
  * Hackathon: Mesh API Hackathon 2026 (meshapi.ai)
- * 
- * Frontend Features:
- * - SSE Streaming Client for real-time recipe generation
- * - 5 Input Methods: Camera, Voice, Text, Upload, Smart
- * - User System: XP, Streaks, Ranks, Local Storage
- * - History & Saved Recipes Management
- * - PDF Generation with jsPDF
- * - Analytics Dashboard
- * - Ultra-Premium Animations & Interactions
- * - Keyboard Shortcuts
- * - Theme Toggle (Dark/Light)
- * - Responsive Design
- * - Toast Notifications
- * - Modal System
- * - Form Validation
- * - Error Handling
+ *
+ * ALL BUGS FIXED:
+ * ✅ Sidebar toggle & mobile overlay
+ * ✅ Modal overlay click-to-close
+ * ✅ Analytics panel toggle (class-based)
+ * ✅ Camera/photo stream cleanup
+ * ✅ Voice recognition error handling
+ * ✅ Mobile responsive interactions
+ * ✅ Toast notifications
+ * ✅ Keyboard shortcuts
+ * ✅ Theme toggle
+ * ✅ History & saved recipes
+ * ✅ SSE streaming client
+ * ✅ PDF generation
+ * ✅ Settings persistence
+ * ✅ XP & rank system
  * ============================================
  */
 
@@ -35,7 +33,7 @@
 
 const ROUXMIND = {
     BRAND: 'RouxMind',
-    VERSION: '3.0.0',
+    VERSION: '4.0.0',
     DEVELOPER: 'Sooban Talha Tech',
     DEVSITE: 'https://soobantalhatech.xyz',
     WEBSITE: 'https://rouxmind.vercel.app',
@@ -64,7 +62,7 @@ const RANK_SYSTEM = [
 ];
 
 function getRank(xp) {
-    return RANK_SYSTEM.find(rank => xp >= rank.min && xp <= rank.max) || RANK_SYSTEM[RANK_SYSTEM.length - 1];
+    return RANK_SYSTEM.find(rank => xp >= rank.min && xp <= rank.max) || RANK_SYSTEM[0];
 }
 
 // ============================================
@@ -96,78 +94,38 @@ const LANGUAGE_MAP = {
 // ============================================
 
 const state = {
-    // User data
     user: {
         name: localStorage.getItem('rouxmind_user_name') || 'Guest',
-        avatar: localStorage.getItem('rouxmind_user_avatar') || '👤',
+        avatar: localStorage.getItem('rouxmind_user_avatar') || '🥄',
         xp: parseInt(localStorage.getItem('rouxmind_user_xp') || '0'),
         streak: parseInt(localStorage.getItem('rouxmind_user_streak') || '0'),
         totalRecipes: parseInt(localStorage.getItem('rouxmind_user_totalRecipes') || '0'),
         lastActive: localStorage.getItem('rouxmind_user_lastActive') || null,
         sessions: parseInt(localStorage.getItem('rouxmind_user_sessions') || '0')
     },
-    
-    // Settings
     settings: {
-        theme: localStorage.getItem('rouxmind_theme') || 'system',
+        theme: localStorage.getItem('rouxmind_theme') || 'dark',
         defaultLanguage: localStorage.getItem('rouxmind_defaultLanguage') || 'English',
         defaultServings: parseInt(localStorage.getItem('rouxmind_defaultServings') || '4')
     },
-    
-    // Current recipe
     currentRecipe: {
-        ingredients: '',
-        dish: '',
-        recipe: '',
-        options: {
-            spice: 3,
-            servings: 4,
-            time: 2,
-            language: 'English',
-            depth: 'standard'
-        },
-        metadata: {
-            tokens: 0,
-            cost: 0,
-            responseTime: 0,
-            model: '',
-            generatedAt: null,
-            requestId: null
-        }
+        ingredients: '', dish: '', recipe: '',
+        options: { spice: 3, servings: 4, time: 2, language: 'English', depth: 'standard' },
+        metadata: { tokens: 0, cost: 0, responseTime: 0, model: '', generatedAt: null, requestId: null }
     },
-    
-    // History
     history: JSON.parse(localStorage.getItem('rouxmind_history') || '[]'),
     savedRecipes: JSON.parse(localStorage.getItem('rouxmind_savedRecipes') || '[]'),
-    
-    // Analytics
     analytics: {
-        totalRecipes: 0,
-        successCount: 0,
-        failureCount: 0,
-        totalCost: 0,
-        totalTokens: 0,
-        totalResponseTime: 0,
-        modelUsage: {},
-        spicePreferences: {},
-        timePreferences: {},
-        languagePreferences: {},
-        depthPreferences: {},
-        topDishes: {},
-        dailyStats: {}
+        totalRecipes: 0, successCount: 0, failureCount: 0,
+        totalCost: 0, totalTokens: 0, totalResponseTime: 0,
+        modelUsage: {}, spicePreferences: {}, timePreferences: {},
+        languagePreferences: {}, depthPreferences: {}, topDishes: {}, dailyStats: {}
     },
-    
-    // UI State
     ui: {
-        currentInputMethod: 'text',
-        wizardStep: 1,
-        isGenerating: false,
-        isStreaming: false,
-        currentStream: '',
-        cameraStream: null,
-        isRecording: false,
-        recognition: null,
-        abortController: null
+        currentInputMethod: 'text', wizardStep: 1,
+        isGenerating: false, isStreaming: false, currentStream: '',
+        cameraStream: null, isRecording: false, recognition: null, abortController: null,
+        sidebarOpen: window.innerWidth > 1024
     }
 };
 
@@ -184,30 +142,23 @@ function formatDate(date) {
     const now = new Date();
     const then = new Date(date);
     const diff = now - then;
-    
     const seconds = Math.floor(diff / 1000);
     const minutes = Math.floor(seconds / 60);
     const hours = Math.floor(minutes / 60);
     const days = Math.floor(hours / 24);
-    
     if (seconds < 60) return 'Just now';
     if (minutes < 60) return `${minutes}m ago`;
     if (hours < 24) return `${hours}h ago`;
     if (days < 7) return `${days}d ago`;
-    
     return then.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 }
 
 function formatNumber(num) {
-    if (num >= 1000) {
-        return (num / 1000).toFixed(1) + 'K';
-    }
+    if (num >= 1000) return (num / 1000).toFixed(1) + 'K';
     return num.toString();
 }
 
-function formatCost(cost) {
-    return `$${cost.toFixed(4)}`;
-}
+function formatCost(cost) { return `$${cost.toFixed(4)}`; }
 
 function formatTime(ms) {
     if (ms < 1000) return `${ms}ms`;
@@ -223,10 +174,7 @@ function truncate(str, length = 50) {
 function debounce(func, wait) {
     let timeout;
     return function executedFunction(...args) {
-        const later = () => {
-            clearTimeout(timeout);
-            func(...args);
-        };
+        const later = () => { clearTimeout(timeout); func(...args); };
         clearTimeout(timeout);
         timeout = setTimeout(later, wait);
     };
@@ -243,30 +191,40 @@ function throttle(func, limit) {
     };
 }
 
+function loadScript(url) {
+    return new Promise((resolve, reject) => {
+        const script = document.createElement('script');
+        script.src = url;
+        script.onload = resolve;
+        script.onerror = reject;
+        document.head.appendChild(script);
+    });
+}
+
 // ============================================
 // LOCAL STORAGE HELPERS
 // ============================================
 
 function saveState() {
-    localStorage.setItem('rouxmind_user_name', state.user.name);
-    localStorage.setItem('rouxmind_user_avatar', state.user.avatar);
-    localStorage.setItem('rouxmind_user_xp', state.user.xp.toString());
-    localStorage.setItem('rouxmind_user_streak', state.user.streak.toString());
-    localStorage.setItem('rouxmind_user_totalRecipes', state.user.totalRecipes.toString());
-    localStorage.setItem('rouxmind_user_lastActive', state.user.lastActive);
-    localStorage.setItem('rouxmind_user_sessions', state.user.sessions.toString());
-    
-    localStorage.setItem('rouxmind_theme', state.settings.theme);
-    localStorage.setItem('rouxmind_defaultLanguage', state.settings.defaultLanguage);
-    localStorage.setItem('rouxmind_defaultServings', state.settings.defaultServings.toString());
-    
-    localStorage.setItem('rouxmind_history', JSON.stringify(state.history));
-    localStorage.setItem('rouxmind_savedRecipes', JSON.stringify(state.savedRecipes));
+    try {
+        localStorage.setItem('rouxmind_user_name', state.user.name);
+        localStorage.setItem('rouxmind_user_avatar', state.user.avatar);
+        localStorage.setItem('rouxmind_user_xp', state.user.xp.toString());
+        localStorage.setItem('rouxmind_user_streak', state.user.streak.toString());
+        localStorage.setItem('rouxmind_user_totalRecipes', state.user.totalRecipes.toString());
+        localStorage.setItem('rouxmind_user_lastActive', state.user.lastActive || '');
+        localStorage.setItem('rouxmind_user_sessions', state.user.sessions.toString());
+        localStorage.setItem('rouxmind_theme', state.settings.theme);
+        localStorage.setItem('rouxmind_defaultLanguage', state.settings.defaultLanguage);
+        localStorage.setItem('rouxmind_defaultServings', state.settings.defaultServings.toString());
+        localStorage.setItem('rouxmind_history', JSON.stringify(state.history));
+        localStorage.setItem('rouxmind_savedRecipes', JSON.stringify(state.savedRecipes));
+    } catch (e) {
+        console.warn('Failed to save state:', e);
+    }
 }
 
 function loadState() {
-    // Already loaded in initial state
-    // Update analytics from history
     updateAnalytics();
 }
 
@@ -278,36 +236,27 @@ function addXP(amount = 10) {
     const today = new Date().toISOString().split('T')[0];
     const lastActive = state.user.lastActive;
     
-    // Check if streak should be reset
     if (lastActive && lastActive !== today) {
         const lastDate = new Date(lastActive);
         const todayDate = new Date(today);
         const diff = todayDate - lastDate;
-        
-        // Reset streak if more than 1 day gap
-        if (diff > 86400000 * 1.5) { // 36 hours
+        if (diff > 86400000 * 1.5) {
             state.user.streak = 0;
         }
     }
     
-    // Update streak
     if (lastActive !== today) {
         state.user.streak += 1;
         state.user.lastActive = today;
     }
     
-    // Add XP
     state.user.xp += amount;
     state.user.totalRecipes++;
     state.user.sessions++;
     
-    // Save state
     saveState();
-    
-    // Update UI
     updateUserStats();
     
-    // Show level up notification
     const rank = getRank(state.user.xp);
     showToast(`+${amount} XP!`, 'success', rank.icon);
 }
@@ -315,22 +264,16 @@ function addXP(amount = 10) {
 function updateUserStats() {
     const rank = getRank(state.user.xp);
     
-    // Update nav stats
+    // Nav stats
     const streakEl = document.getElementById('streakStat');
     const recipesEl = document.getElementById('recipesStat');
     const xpEl = document.getElementById('xpStat');
     
-    if (streakEl) {
-        streakEl.querySelector('.stat-value').textContent = state.user.streak;
-    }
-    if (recipesEl) {
-        recipesEl.querySelector('.stat-value').textContent = state.user.totalRecipes;
-    }
-    if (xpEl) {
-        xpEl.querySelector('.stat-value').textContent = state.user.xp;
-    }
+    if (streakEl) streakEl.querySelector('.stat-value').textContent = state.user.streak;
+    if (recipesEl) recipesEl.querySelector('.stat-value').textContent = state.user.totalRecipes;
+    if (xpEl) xpEl.querySelector('.stat-value').textContent = state.user.xp;
     
-    // Update sidebar stats
+    // Sidebar stats
     const sidebarTotal = document.getElementById('sidebarTotalRecipes');
     const sidebarStreak = document.getElementById('sidebarStreak');
     const sidebarRank = document.getElementById('sidebarRank');
@@ -342,14 +285,12 @@ function updateUserStats() {
         sidebarRank.style.color = rank.color;
     }
     
-    // Update user avatar
+    // User display
     const userNameDisplay = document.getElementById('userNameDisplay');
-    const userAvatar = document.getElementById('userAvatar');
+    const userAvatarEl = document.querySelector('.lp-avatar .avatar-icon');
     
     if (userNameDisplay) userNameDisplay.textContent = state.user.name;
-    if (userAvatar) {
-        userAvatar.querySelector('.avatar-icon').textContent = state.user.avatar;
-    }
+    if (userAvatarEl) userAvatarEl.textContent = state.user.avatar;
 }
 
 // ============================================
@@ -364,44 +305,31 @@ function updateAnalytics() {
         totalCost: state.history.reduce((sum, h) => sum + (h.cost || 0), 0),
         totalTokens: state.history.reduce((sum, h) => sum + (h.tokens || 0), 0),
         totalResponseTime: state.history.reduce((sum, h) => sum + (h.responseTime || 0), 0),
-        modelUsage: {},
-        spicePreferences: {},
-        timePreferences: {},
-        languagePreferences: {},
-        depthPreferences: {},
-        topDishes: {},
-        dailyStats: {}
+        modelUsage: {}, spicePreferences: {}, timePreferences: {},
+        languagePreferences: {}, depthPreferences: {}, topDishes: {}, dailyStats: {}
     };
     
-    // Process each history item
     state.history.forEach(item => {
-        // Model usage
         const model = item.model || 'unknown';
         analytics.modelUsage[model] = (analytics.modelUsage[model] || 0) + 1;
         
-        // Spice preferences
         const spice = item.spice || 3;
         analytics.spicePreferences[spice] = (analytics.spicePreferences[spice] || 0) + 1;
         
-        // Time preferences
         const time = item.time || 2;
         analytics.timePreferences[time] = (analytics.timePreferences[time] || 0) + 1;
         
-        // Language preferences
         const lang = item.language || 'English';
         analytics.languagePreferences[lang] = (analytics.languagePreferences[lang] || 0) + 1;
         
-        // Depth preferences
         const depth = item.depth || 'standard';
         analytics.depthPreferences[depth] = (analytics.depthPreferences[depth] || 0) + 1;
         
-        // Top dishes
         if (item.dish) {
             const dish = item.dish.toLowerCase();
             analytics.topDishes[dish] = (analytics.topDishes[dish] || 0) + 1;
         }
         
-        // Daily stats
         if (item.generatedAt) {
             const date = new Date(item.generatedAt).toISOString().split('T')[0];
             analytics.dailyStats[date] = (analytics.dailyStats[date] || 0) + 1;
@@ -409,7 +337,6 @@ function updateAnalytics() {
     });
     
     state.analytics = analytics;
-    saveState();
 }
 
 function renderAnalytics() {
@@ -420,12 +347,10 @@ function renderAnalytics() {
     const modelUsageChart = document.getElementById('modelUsageChart');
     const topDishes = document.getElementById('topDishes');
     
-    if (analyticsTotal) {
-        analyticsTotal.textContent = formatNumber(state.analytics.totalRecipes);
-    }
+    if (analyticsTotal) analyticsTotal.textContent = formatNumber(state.analytics.totalRecipes);
     
     if (analyticsSuccess) {
-        const successRate = state.analytics.totalRecipes > 0 
+        const successRate = state.analytics.totalRecipes > 0
             ? Math.round((state.analytics.successCount / state.analytics.totalRecipes) * 100)
             : 0;
         analyticsSuccess.textContent = `${successRate}%`;
@@ -433,15 +358,13 @@ function renderAnalytics() {
     
     if (analyticsCost) {
         const avgCost = state.analytics.totalRecipes > 0
-            ? state.analytics.totalCost / state.analytics.totalRecipes
-            : 0;
+            ? state.analytics.totalCost / state.analytics.totalRecipes : 0;
         analyticsCost.textContent = formatCost(avgCost);
     }
     
     if (analyticsTime) {
         const avgTime = state.analytics.totalRecipes > 0
-            ? state.analytics.totalResponseTime / state.analytics.totalRecipes
-            : 0;
+            ? state.analytics.totalResponseTime / state.analytics.totalRecipes : 0;
         analyticsTime.textContent = formatTime(avgTime);
     }
     
@@ -456,9 +379,7 @@ function renderAnalytics() {
             bar.className = 'chart-bar';
             bar.innerHTML = `
                 <span class="chart-bar-label">${truncate(model, 15)}</span>
-                <div class="chart-bar-fill" style="--width: ${(count / maxCount) * 100}%">
-                    <span style="width: var(--width)"></span>
-                </div>
+                <div class="chart-bar-fill"><span style="width:${(count / maxCount) * 100}%"></span></div>
                 <span class="chart-bar-value">${count}</span>
             `;
             modelUsageChart.appendChild(bar);
@@ -469,8 +390,7 @@ function renderAnalytics() {
     if (topDishes) {
         topDishes.innerHTML = '';
         const dishes = Object.entries(state.analytics.topDishes)
-            .sort((a, b) => b[1] - a[1])
-            .slice(0, 5);
+            .sort((a, b) => b[1] - a[1]).slice(0, 5);
         
         dishes.forEach(([dish, count], index) => {
             const dishEl = document.createElement('div');
@@ -490,17 +410,8 @@ function renderAnalytics() {
 // ============================================
 
 function addToHistory(item) {
-    state.history.unshift({
-        ...item,
-        id: generateId(),
-        createdAt: new Date().toISOString()
-    });
-    
-    // Keep only last 100 items
-    if (state.history.length > 100) {
-        state.history = state.history.slice(0, 100);
-    }
-    
+    state.history.unshift({ ...item, id: generateId(), createdAt: new Date().toISOString() });
+    if (state.history.length > 100) state.history = state.history.slice(0, 100);
     saveState();
     updateAnalytics();
     renderHistory();
@@ -527,60 +438,54 @@ function renderHistory(filter = 'all', search = '') {
     
     let filtered = state.history;
     
-    // Apply filter
     if (filter === 'today') {
         const today = new Date().toISOString().split('T')[0];
-        filtered = filtered.filter(item => 
-            item.createdAt && item.createdAt.startsWith(today)
-        );
+        filtered = filtered.filter(item => item.createdAt && item.createdAt.startsWith(today));
     } else if (filter === 'week') {
         const weekAgo = new Date();
         weekAgo.setDate(weekAgo.getDate() - 7);
-        const weekAgoStr = weekAgo.toISOString().split('T')[0];
-        filtered = filtered.filter(item => 
-            item.createdAt && item.createdAt >= weekAgoStr
-        );
+        filtered = filtered.filter(item => item.createdAt && new Date(item.createdAt) >= weekAgo);
     } else if (filter === 'month') {
         const monthAgo = new Date();
         monthAgo.setMonth(monthAgo.getMonth() - 1);
-        const monthAgoStr = monthAgo.toISOString().split('T')[0];
-        filtered = filtered.filter(item => 
-            item.createdAt && item.createdAt >= monthAgoStr
-        );
+        filtered = filtered.filter(item => item.createdAt && new Date(item.createdAt) >= monthAgo);
     }
     
-    // Apply search
     if (search) {
         const searchLower = search.toLowerCase();
-        filtered = filtered.filter(item => 
+        filtered = filtered.filter(item =>
             (item.dish && item.dish.toLowerCase().includes(searchLower)) ||
             (item.ingredients && item.ingredients.toLowerCase().includes(searchLower)) ||
             (item.recipe && item.recipe.toLowerCase().includes(searchLower))
         );
     }
     
-    // Render
     if (filtered.length === 0) {
         historyList.innerHTML = '<p class="empty-state">No recipes found</p>';
         return;
     }
     
-    historyList.innerHTML = filtered.map(item => `
-        <div class="history-item" data-id="${item.id}" data-recipe='${JSON.stringify(item).replace(/'/g, "&apos;")}'>
+    historyList.innerHTML = filtered.map(item => {
+        const safeData = JSON.stringify(item).replace(/'/g, '&#39;').replace(/"/g, '&quot;');
+        return `
+        <div class="history-item" data-id="${item.id}" data-recipe='${safeData}'>
             <div class="item-header">
                 <span class="item-title">${truncate(item.dish || 'Untitled Recipe', 30)}</span>
                 <span class="item-date">${formatDate(item.createdAt)}</span>
             </div>
             <p class="item-preview">${truncate(item.recipe || item.ingredients || '', 100)}</p>
-        </div>
-    `).join('');
+        </div>`;
+    }).join('');
     
-    // Add click handlers
     historyList.querySelectorAll('.history-item').forEach(item => {
         item.addEventListener('click', () => {
-            const recipeData = JSON.parse(item.dataset.recipe);
-            loadRecipe(recipeData);
-            closeModal('historyModal');
+            try {
+                const recipeData = JSON.parse(item.dataset.recipe);
+                loadRecipe(recipeData);
+                closeModal('historyModal');
+            } catch (e) {
+                console.error('Failed to parse recipe data:', e);
+            }
         });
     });
 }
@@ -589,20 +494,13 @@ function renderHistory(filter = 'all', search = '') {
 // SAVED RECIPES
 // ============================================
 
-function saveRecipe(recipeData) {
-    // Check if already saved
+function saveRecipeAction(recipeData) {
     const exists = state.savedRecipes.some(r => r.id === recipeData.id);
     if (exists) {
         showToast('Already saved!', 'warning');
         return;
     }
-    
-    state.savedRecipes.unshift({
-        ...recipeData,
-        id: recipeData.id || generateId(),
-        savedAt: new Date().toISOString()
-    });
-    
+    state.savedRecipes.unshift({ ...recipeData, id: recipeData.id || generateId(), savedAt: new Date().toISOString() });
     saveState();
     showToast('Recipe saved!', 'success', '⭐');
     renderSavedRecipes();
@@ -624,25 +522,30 @@ function renderSavedRecipes() {
         return;
     }
     
-    savedList.innerHTML = state.savedRecipes.slice(0, 5).map(recipe => `
-        <div class="saved-item" data-id="${recipe.id}" data-recipe='${JSON.stringify(recipe).replace(/'/g, "&apos;")}'>
+    savedList.innerHTML = state.savedRecipes.slice(0, 5).map(recipe => {
+        const safeData = JSON.stringify(recipe).replace(/'/g, '&#39;').replace(/"/g, '&quot;');
+        return `
+        <div class="saved-item" data-id="${recipe.id}" data-recipe='${safeData}'>
             <span class="item-icon">⭐</span>
             <span class="item-title">${truncate(recipe.dish || 'Untitled Recipe', 25)}</span>
             <span class="item-time">${formatDate(recipe.savedAt)}</span>
-        </div>
-    `).join('');
+        </div>`;
+    }).join('');
     
-    // Add click handlers
     savedList.querySelectorAll('.saved-item').forEach(item => {
         item.addEventListener('click', () => {
-            const recipeData = JSON.parse(item.dataset.recipe);
-            loadRecipe(recipeData);
+            try {
+                const recipeData = JSON.parse(item.dataset.recipe);
+                loadRecipe(recipeData);
+            } catch (e) {
+                console.error('Failed to parse saved recipe:', e);
+            }
         });
     });
 }
 
 // ============================================
-// RECIPE LOADING
+// RECIPE LOADING & RENDERING
 // ============================================
 
 function loadRecipe(recipeData) {
@@ -651,26 +554,20 @@ function loadRecipe(recipeData) {
         dish: recipeData.dish || 'Untitled Recipe',
         recipe: recipeData.recipe || recipeData.ultra_long_notes || '',
         options: {
-            spice: recipeData.spice || 3,
-            servings: recipeData.servings || 4,
-            time: recipeData.time || 2,
-            language: recipeData.language || 'English',
+            spice: recipeData.spice || 3, servings: recipeData.servings || 4,
+            time: recipeData.time || 2, language: recipeData.language || 'English',
             depth: recipeData.depth || 'standard'
         },
         metadata: {
-            tokens: recipeData.tokens || 0,
-            cost: recipeData.cost || 0,
-            responseTime: recipeData.responseTime || 0,
-            model: recipeData.model || '',
+            tokens: recipeData.tokens || 0, cost: recipeData.cost || 0,
+            responseTime: recipeData.responseTime || 0, model: recipeData.model || '',
             generatedAt: recipeData.generatedAt || recipeData.timestamp || null,
             requestId: recipeData.requestId || null
         }
     };
     
-    // Update UI
     renderRecipe();
     
-    // Show recipe area
     const recipeArea = document.getElementById('recipeArea');
     const welcomeSection = document.getElementById('welcomeSection');
     const inputMethods = document.getElementById('inputMethods');
@@ -679,10 +576,7 @@ function loadRecipe(recipeData) {
     if (welcomeSection) welcomeSection.style.display = 'none';
     if (inputMethods) inputMethods.style.display = 'none';
     
-    // Scroll to recipe
-    if (recipeArea) {
-        recipeArea.scrollIntoView({ behavior: 'smooth' });
-    }
+    if (recipeArea) recipeArea.scrollIntoView({ behavior: 'smooth' });
 }
 
 function renderRecipe() {
@@ -690,14 +584,11 @@ function renderRecipe() {
     const recipeBadges = document.getElementById('recipeBadges');
     const recipeContent = document.getElementById('recipeContent');
     
-    if (recipeTitle) {
-        recipeTitle.textContent = state.currentRecipe.dish;
-    }
+    if (recipeTitle) recipeTitle.textContent = state.currentRecipe.dish;
     
     if (recipeBadges) {
         const spiceLabel = getSpiceLabel(state.currentRecipe.options.spice);
         const timeLabel = getTimeLabel(state.currentRecipe.options.time);
-        
         recipeBadges.innerHTML = `
             <span class="badge">${spiceLabel.icon} ${spiceLabel.label}</span>
             <span class="badge">👥 ${state.currentRecipe.options.servings} Servings</span>
@@ -707,11 +598,11 @@ function renderRecipe() {
     }
     
     if (recipeContent) {
-        // Render markdown
         if (typeof marked !== 'undefined') {
-            recipeContent.innerHTML = marked.parse(state.currentRecipe.recipe);
+            const rawHtml = marked.parse(state.currentRecipe.recipe);
+            recipeContent.innerHTML = typeof DOMPurify !== 'undefined' ? DOMPurify.sanitize(rawHtml) : rawHtml;
         } else {
-            recipeContent.innerHTML = `<pre>${state.currentRecipe.recipe}</pre>`;
+            recipeContent.innerHTML = `<pre style="white-space:pre-wrap">${state.currentRecipe.recipe}</pre>`;
         }
     }
 }
@@ -752,11 +643,13 @@ function applyTheme() {
         html.setAttribute('data-theme', theme);
     }
     
-    // Update theme toggle button
     const themeToggle = document.getElementById('themeToggle');
     if (themeToggle) {
-        const icon = theme === 'dark' ? '☀️' : theme === 'light' ? '🌙' : '🌓';
-        themeToggle.querySelector('.action-icon').textContent = icon;
+        const currentTheme = html.getAttribute('data-theme') || 'dark';
+        const icon = themeToggle.querySelector('.action-icon') || themeToggle.querySelector('i');
+        if (icon) {
+            icon.className = currentTheme === 'dark' ? 'fas fa-sun action-icon' : 'fas fa-moon action-icon';
+        }
     }
 }
 
@@ -773,16 +666,11 @@ function toggleTheme() {
 // TOAST NOTIFICATIONS
 // ============================================
 
-function showToast(message, type = 'info', icon = 'ℹ️') {
+function showToast(message, type = 'info', icon = null) {
     const container = document.getElementById('toastContainer');
     if (!container) return;
     
-    const icons = {
-        success: '✅',
-        error: '❌',
-        warning: '⚠️',
-        info: 'ℹ️'
-    };
+    const icons = { success: '✅', error: '❌', warning: '⚠️', info: 'ℹ️' };
     
     const toast = document.createElement('div');
     toast.className = `toast ${type}`;
@@ -794,21 +682,20 @@ function showToast(message, type = 'info', icon = 'ℹ️') {
     
     container.appendChild(toast);
     
-    // Auto remove
-    setTimeout(() => {
-        toast.style.animation = 'fadeOut 0.3s ease-out forwards';
-        setTimeout(() => toast.remove(), 300);
-    }, 3000);
+    const closeBtn = toast.querySelector('.toast-close');
+    closeBtn.addEventListener('click', () => removeToast(toast));
     
-    // Close button
-    toast.querySelector('.toast-close').addEventListener('click', () => {
-        toast.style.animation = 'fadeOut 0.3s ease-out forwards';
-        setTimeout(() => toast.remove(), 300);
-    });
+    setTimeout(() => removeToast(toast), 3500);
+}
+
+function removeToast(toast) {
+    if (!toast || !toast.parentNode) return;
+    toast.style.animation = 'toastOut 0.3s ease-out forwards';
+    setTimeout(() => { if (toast.parentNode) toast.remove(); }, 300);
 }
 
 // ============================================
-// MODAL SYSTEM
+// MODAL SYSTEM (FIXED)
 // ============================================
 
 function openModal(modalId) {
@@ -823,7 +710,9 @@ function closeModal(modalId) {
     const modal = document.getElementById(modalId);
     if (modal) {
         modal.classList.remove('active');
-        document.body.style.overflow = '';
+        // Only restore scroll if no other modals are open
+        const anyOpen = document.querySelector('.modal-overlay.active');
+        if (!anyOpen) document.body.style.overflow = '';
     }
 }
 
@@ -838,21 +727,67 @@ function toggleModal(modalId) {
     }
 }
 
-// Close all modals on escape
-document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') {
-        document.querySelectorAll('.modal.active').forEach(modal => {
-            closeModal(modal.id);
-        });
-    }
-});
+// ============================================
+// SIDEBAR MANAGEMENT (FIXED)
+// ============================================
 
-// Close modals on overlay click
-document.querySelectorAll('.modal-overlay').forEach(overlay => {
-    overlay.addEventListener('click', () => {
-        closeModal(overlay.parentElement.id);
-    });
-});
+function toggleSidebar() {
+    const panel = document.getElementById('leftPanel');
+    const overlay = document.getElementById('sidebarOverlay');
+    
+    if (panel) {
+        const isCollapsed = panel.classList.contains('collapsed');
+        
+        if (isCollapsed) {
+            panel.classList.remove('collapsed');
+            if (overlay) overlay.classList.add('active');
+            state.ui.sidebarOpen = true;
+        } else {
+            panel.classList.add('collapsed');
+            if (overlay) overlay.classList.remove('active');
+            state.ui.sidebarOpen = false;
+        }
+    }
+}
+
+function closeSidebar() {
+    const panel = document.getElementById('leftPanel');
+    const overlay = document.getElementById('sidebarOverlay');
+    
+    if (panel) panel.classList.add('collapsed');
+    if (overlay) overlay.classList.remove('active');
+    state.ui.sidebarOpen = false;
+}
+
+function initSidebar() {
+    const panel = document.getElementById('leftPanel');
+    const toggle = document.getElementById('sbToggle');
+    const overlay = document.getElementById('sidebarOverlay');
+    
+    // On mobile, start collapsed
+    if (window.innerWidth <= 1024) {
+        if (panel) panel.classList.add('collapsed');
+        state.ui.sidebarOpen = false;
+    } else {
+        if (panel) panel.classList.remove('collapsed');
+        state.ui.sidebarOpen = true;
+    }
+    
+    if (toggle) {
+        toggle.addEventListener('click', toggleSidebar);
+    }
+    
+    if (overlay) {
+        overlay.addEventListener('click', closeSidebar);
+    }
+    
+    // Close sidebar on window resize if mobile
+    window.addEventListener('resize', debounce(() => {
+        if (window.innerWidth <= 1024 && state.ui.sidebarOpen) {
+            closeSidebar();
+        }
+    }, 200));
+}
 
 // ============================================
 // WIZARD SYSTEM
@@ -860,6 +795,8 @@ document.querySelectorAll('.modal-overlay').forEach(overlay => {
 
 function initWizard() {
     const wizard = document.getElementById('recipeWizard');
+    if (!wizard) return;
+    
     const steps = wizard.querySelectorAll('.wizard-step');
     const prevBtn = document.getElementById('prevBtn');
     const nextBtn = document.getElementById('nextBtn');
@@ -872,37 +809,46 @@ function initWizard() {
     function updateWizardStep(step) {
         currentStep = step;
         
-        // Update step visibility
-        steps.forEach((s, i) => {
-            s.classList.toggle('active', i === step);
-        });
+        steps.forEach((s, i) => s.classList.toggle('active', i === step));
         
-        // Update progress
         progressSteps.forEach((s, i) => {
             s.classList.remove('active', 'completed');
-            if (i === step) {
-                s.classList.add('active');
-            } else if (i < step) {
-                s.classList.add('completed');
-            }
+            if (i === step) s.classList.add('active');
+            else if (i < step) s.classList.add('completed');
         });
         
-        progressLines.forEach((line, i) => {
-            line.classList.toggle('active', i < step);
-        });
+        progressLines.forEach((line, i) => line.classList.toggle('active', i < step));
         
-        // Update buttons
-        prevBtn.style.display = step > 0 ? 'flex' : 'none';
-        nextBtn.style.display = step < steps.length - 1 ? 'flex' : 'none';
-        generateBtn.style.display = step === steps.length - 1 ? 'flex' : 'none';
+        if (prevBtn) prevBtn.style.display = step > 0 ? 'inline-flex' : 'none';
+        if (nextBtn) nextBtn.style.display = step < steps.length - 1 ? 'inline-flex' : 'none';
+        if (generateBtn) generateBtn.style.display = step === steps.length - 1 ? 'inline-flex' : 'none';
         
-        // Update review on step 3
-        if (step === 2) {
-            updateReview();
-        }
+        if (step === 2) updateReview();
     }
     
     function updateReview() {
+        let ingredients = '';
+        const activePanel = document.querySelector('.input-panel.active');
+        if (activePanel) {
+            const panelId = activePanel.dataset.panel;
+            if (panelId === 'camera') {
+                const thumbnail = document.getElementById('cameraThumbnail');
+                if (thumbnail && thumbnail.style.display !== 'none') ingredients = 'Image captured';
+            } else if (panelId === 'voice') {
+                const transcript = document.getElementById('voiceTranscript');
+                ingredients = transcript ? transcript.textContent.replace('Your voice input will appear here...', '').trim() : '';
+            } else if (panelId === 'text') {
+                const textInput = document.getElementById('textInput');
+                ingredients = textInput ? textInput.value.trim() : '';
+            } else if (panelId === 'upload') {
+                const preview = document.getElementById('uploadPreview');
+                if (preview && preview.style.display !== 'none') ingredients = 'Image uploaded';
+            } else if (panelId === 'smart') {
+                const smartInput = document.getElementById('smartInput');
+                ingredients = smartInput ? smartInput.value.trim() : '';
+            }
+        }
+        
         const reviewIngredients = document.getElementById('reviewIngredients');
         const reviewSpice = document.getElementById('reviewSpice');
         const reviewServings = document.getElementById('reviewServings');
@@ -910,117 +856,79 @@ function initWizard() {
         const reviewLanguage = document.getElementById('reviewLanguage');
         const reviewDepth = document.getElementById('reviewDepth');
         
-        // Get current input
-        let ingredients = '';
-        const activePanel = document.querySelector('.input-panel.active');
-        if (activePanel) {
-            const panelId = activePanel.dataset.panel;
-            if (panelId === 'camera') {
-                const thumbnail = document.getElementById('cameraThumbnail');
-                if (thumbnail && thumbnail.style.display !== 'none') {
-                    ingredients = 'Image captured';
-                }
-            } else if (panelId === 'voice') {
-                const transcript = document.getElementById('voiceTranscript');
-                ingredients = transcript.textContent.replace('Your voice input will appear here...', '').trim();
-            } else if (panelId === 'text') {
-                const textInput = document.getElementById('textInput');
-                ingredients = textInput.value.trim();
-            } else if (panelId === 'upload') {
-                const preview = document.getElementById('uploadPreview');
-                if (preview && preview.style.display !== 'none') {
-                    ingredients = 'Image uploaded';
-                }
-            } else if (panelId === 'smart') {
-                const smartInput = document.getElementById('smartInput');
-                ingredients = smartInput.value.trim();
-            }
-        }
+        if (reviewIngredients) reviewIngredients.textContent = ingredients || 'Not set';
         
-        if (reviewIngredients) {
-            reviewIngredients.textContent = ingredients || 'Not set';
-        }
-        
-        // Get preferences
-        const spiceSlider = document.getElementById('spiceSlider');
         const spiceValue = document.getElementById('spiceValue');
+        if (reviewSpice && spiceValue) reviewSpice.textContent = `Spice: ${spiceValue.textContent}`;
+        
         const servingsGrid = document.getElementById('servingsGrid');
-        const timeButtons = document.getElementById('timeButtons');
-        const languageSelect = document.getElementById('languageSelect');
-        const depthSelect = document.getElementById('depthSelect');
-        
-        if (reviewSpice && spiceValue) {
-            reviewSpice.textContent = `Spice: ${spiceValue.textContent}`;
-        }
-        
         if (reviewServings && servingsGrid) {
             const activeServing = servingsGrid.querySelector('.serving-btn.active');
             reviewServings.textContent = `Servings: ${activeServing ? activeServing.dataset.servings : '4'}`;
         }
         
+        const timeButtons = document.getElementById('timeButtons');
         if (reviewTime && timeButtons) {
             const activeTime = timeButtons.querySelector('.time-btn.active');
-            reviewTime.textContent = `Time: ${activeTime ? activeTime.textContent : 'Medium'}`;
+            reviewTime.textContent = `Time: ${activeTime ? activeTime.textContent.trim() : 'Medium'}`;
         }
         
-        if (reviewLanguage && languageSelect) {
-            reviewLanguage.textContent = `Language: ${languageSelect.value}`;
-        }
+        const languageSelect = document.getElementById('languageSelect');
+        if (reviewLanguage && languageSelect) reviewLanguage.textContent = `Language: ${languageSelect.value}`;
         
-        if (reviewDepth && depthSelect) {
-            reviewDepth.textContent = `Depth: ${depthSelect.options[depthSelect.selectedIndex].text}`;
-        }
+        const depthSelect = document.getElementById('depthSelect');
+        if (reviewDepth && depthSelect) reviewDepth.textContent = `Depth: ${depthSelect.options[depthSelect.selectedIndex].text}`;
     }
     
-    // Navigation
-    prevBtn.addEventListener('click', () => {
-        if (currentStep > 0) {
-            updateWizardStep(currentStep - 1);
-        }
-    });
+    if (prevBtn) {
+        prevBtn.addEventListener('click', () => {
+            if (currentStep > 0) updateWizardStep(currentStep - 1);
+        });
+    }
     
-    nextBtn.addEventListener('click', () => {
-        if (currentStep < steps.length - 1) {
-            // Validate step 1
-            if (currentStep === 0) {
-                const activePanel = document.querySelector('.input-panel.active');
-                let hasInput = false;
-                
-                if (activePanel) {
-                    const panelId = activePanel.dataset.panel;
-                    if (panelId === 'camera') {
-                        const thumbnail = document.getElementById('cameraThumbnail');
-                        hasInput = thumbnail && thumbnail.style.display !== 'none';
-                    } else if (panelId === 'voice') {
-                        const transcript = document.getElementById('voiceTranscript');
-                        hasInput = transcript.textContent.trim() !== 'Your voice input will appear here...';
-                    } else if (panelId === 'text') {
-                        const textInput = document.getElementById('textInput');
-                        hasInput = textInput.value.trim().length > 0;
-                    } else if (panelId === 'upload') {
-                        const preview = document.getElementById('uploadPreview');
-                        hasInput = preview && preview.style.display !== 'none';
-                    } else if (panelId === 'smart') {
-                        const smartInput = document.getElementById('smartInput');
-                        hasInput = smartInput.value.trim().length > 0;
+    if (nextBtn) {
+        nextBtn.addEventListener('click', () => {
+            if (currentStep < steps.length - 1) {
+                if (currentStep === 0) {
+                    const activePanel = document.querySelector('.input-panel.active');
+                    let hasInput = false;
+                    
+                    if (activePanel) {
+                        const panelId = activePanel.dataset.panel;
+                        if (panelId === 'camera') {
+                            const thumbnail = document.getElementById('cameraThumbnail');
+                            hasInput = thumbnail && thumbnail.style.display !== 'none';
+                        } else if (panelId === 'voice') {
+                            const transcript = document.getElementById('voiceTranscript');
+                            hasInput = transcript && transcript.textContent.trim() !== 'Your voice input will appear here...' && transcript.textContent.trim() !== '';
+                        } else if (panelId === 'text') {
+                            const textInput = document.getElementById('textInput');
+                            hasInput = textInput && textInput.value.trim().length > 0;
+                        } else if (panelId === 'upload') {
+                            const preview = document.getElementById('uploadPreview');
+                            hasInput = preview && preview.style.display !== 'none';
+                        } else if (panelId === 'smart') {
+                            const smartInput = document.getElementById('smartInput');
+                            hasInput = smartInput && smartInput.value.trim().length > 0;
+                        }
+                    }
+                    
+                    if (!hasInput) {
+                        showToast('Please provide ingredients first', 'warning');
+                        return;
                     }
                 }
-                
-                if (!hasInput) {
-                    showToast('Please provide ingredients first', 'warning');
-                    return;
-                }
+                updateWizardStep(currentStep + 1);
             }
-            
-            updateWizardStep(currentStep + 1);
-        }
-    });
+        });
+    }
     
-    generateBtn.addEventListener('click', () => {
-        generateRecipeFromWizard();
-    });
+    if (generateBtn) {
+        generateBtn.addEventListener('click', () => {
+            generateRecipeFromWizard();
+        });
+    }
     
-    // Initialize
     updateWizardStep(0);
     
     // Input tabs
@@ -1031,21 +939,18 @@ function initWizard() {
         tab.addEventListener('click', () => {
             inputTabs.forEach(t => t.classList.remove('active'));
             inputPanels.forEach(p => p.classList.remove('active'));
-            
             tab.classList.add('active');
             const panel = document.querySelector(`.input-panel[data-panel="${tab.dataset.tab}"]`);
             if (panel) panel.classList.add('active');
-            
             state.ui.currentInputMethod = tab.dataset.tab;
         });
     });
 }
 
 // ============================================
-// INPUT HANDLERS
+// CAMERA INPUT (FIXED - Stream cleanup)
 // ============================================
 
-// Camera
 function initCamera() {
     const startCamera = document.getElementById('startCamera');
     const captureBtn = document.getElementById('captureBtn');
@@ -1062,23 +967,32 @@ function initCamera() {
     let stream = null;
     let capturedData = null;
     
+    function stopStream() {
+        if (stream) {
+            stream.getTracks().forEach(track => track.stop());
+            stream = null;
+        }
+        if (state.ui.cameraStream) {
+            state.ui.cameraStream.getTracks().forEach(track => track.stop());
+            state.ui.cameraStream = null;
+        }
+    }
+    
     if (startCamera) {
         startCamera.addEventListener('click', async () => {
             try {
-                stream = await navigator.mediaDevices.getUserMedia({ 
+                stopStream();
+                stream = await navigator.mediaDevices.getUserMedia({
                     video: { facingMode: 'environment' },
                     audio: false
                 });
                 
                 cameraVideo.srcObject = stream;
-                cameraOverlay.style.display = 'none';
-                cameraControls.style.display = 'flex';
-                
-                // Stop previous stream
-                if (state.ui.cameraStream) {
-                    state.ui.cameraStream.getTracks().forEach(track => track.stop());
-                }
                 state.ui.cameraStream = stream;
+                
+                if (cameraOverlay) cameraOverlay.style.display = 'none';
+                if (cameraControls) cameraControls.style.display = 'flex';
+                if (cameraThumbnail) cameraThumbnail.style.display = 'none';
                 
             } catch (err) {
                 console.error('Camera error:', err);
@@ -1089,40 +1003,40 @@ function initCamera() {
     
     if (captureBtn) {
         captureBtn.addEventListener('click', () => {
-            cameraCanvas.width = cameraVideo.videoWidth;
-            cameraCanvas.height = cameraVideo.videoHeight;
+            if (!cameraVideo || !cameraCanvas) return;
+            
+            cameraCanvas.width = cameraVideo.videoWidth || 640;
+            cameraCanvas.height = cameraVideo.videoHeight || 480;
             const ctx = cameraCanvas.getContext('2d');
             ctx.drawImage(cameraVideo, 0, 0);
             
             capturedData = cameraCanvas.toDataURL('image/jpeg', 0.8);
-            capturedImage.src = capturedData;
+            if (capturedImage) capturedImage.src = capturedData;
             
-            cameraThumbnail.style.display = 'block';
-            cameraControls.style.display = 'none';
+            if (cameraThumbnail) cameraThumbnail.style.display = 'block';
+            if (cameraControls) cameraControls.style.display = 'none';
             
-            // Stop stream
-            if (stream) {
-                stream.getTracks().forEach(track => track.stop());
-                stream = null;
-            }
+            stopStream();
         });
     }
     
     if (retakeBtn) {
         retakeBtn.addEventListener('click', async () => {
-            cameraThumbnail.style.display = 'none';
-            cameraControls.style.display = 'flex';
             capturedData = null;
+            if (cameraThumbnail) cameraThumbnail.style.display = 'none';
             
             try {
-                stream = await navigator.mediaDevices.getUserMedia({ 
-                    video: { facingMode: 'environment' },
-                    audio: false
+                stopStream();
+                stream = await navigator.mediaDevices.getUserMedia({
+                    video: { facingMode: 'environment' }, audio: false
                 });
                 cameraVideo.srcObject = stream;
                 state.ui.cameraStream = stream;
+                if (cameraOverlay) cameraOverlay.style.display = 'none';
+                if (cameraControls) cameraControls.style.display = 'flex';
             } catch (err) {
                 console.error('Camera error:', err);
+                showToast('Could not access camera', 'error');
             }
         });
     }
@@ -1131,7 +1045,6 @@ function initCamera() {
         usePhotoBtn.addEventListener('click', () => {
             if (capturedData) {
                 state.currentRecipe.ingredients = capturedData;
-                cameraThumbnail.style.display = 'none';
                 showToast('Photo selected', 'success', '📸');
             } else {
                 showToast('Please capture a photo first', 'warning');
@@ -1141,31 +1054,30 @@ function initCamera() {
     
     if (removeThumbnail) {
         removeThumbnail.addEventListener('click', () => {
-            cameraThumbnail.style.display = 'none';
+            if (cameraThumbnail) cameraThumbnail.style.display = 'none';
             capturedData = null;
         });
     }
 }
 
-// Voice
+// ============================================
+// VOICE INPUT
+// ============================================
+
 function initVoice() {
     const startVoice = document.getElementById('startVoice');
     const stopVoice = document.getElementById('stopVoice');
     const voiceTranscript = document.getElementById('voiceTranscript');
     const voiceVisualizer = document.getElementById('voiceVisualizer');
-    const voiceWave = document.getElementById('voiceWave');
     
     let recognition = null;
     let isRecording = false;
     
-    // Check browser support
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     
     if (!SpeechRecognition) {
-        if (startVoice) {
-            startVoice.style.display = 'none';
-            voiceTranscript.innerHTML = '<p style="color: var(--danger);">Voice recognition not supported in your browser</p>';
-        }
+        if (startVoice) startVoice.style.display = 'none';
+        if (voiceTranscript) voiceTranscript.innerHTML = '<p style="color:var(--danger)">Voice recognition not supported in your browser</p>';
         return;
     }
     
@@ -1183,12 +1095,12 @@ function initVoice() {
                     recognition.start();
                     isRecording = true;
                     startVoice.style.display = 'none';
-                    stopVoice.style.display = 'flex';
-                    voiceVisualizer.classList.add('recording');
-                    voiceTranscript.innerHTML = '<p>Listening...</p>';
+                    if (stopVoice) stopVoice.style.display = 'inline-flex';
+                    if (voiceVisualizer) voiceVisualizer.classList.add('recording');
+                    if (voiceTranscript) voiceTranscript.innerHTML = '<p>Listening...</p>';
                     state.ui.isRecording = true;
                 } catch (err) {
-                    console.error('Voice recognition error:', err);
+                    console.error('Voice start error:', err);
                     showToast('Could not start voice recognition', 'error');
                 }
             }
@@ -1200,9 +1112,9 @@ function initVoice() {
             if (isRecording) {
                 recognition.stop();
                 isRecording = false;
-                startVoice.style.display = 'flex';
+                if (startVoice) startVoice.style.display = 'inline-flex';
                 stopVoice.style.display = 'none';
-                voiceVisualizer.classList.remove('recording');
+                if (voiceVisualizer) voiceVisualizer.classList.remove('recording');
                 state.ui.isRecording = false;
             }
         });
@@ -1221,72 +1133,64 @@ function initVoice() {
             }
         }
         
-        if (finalTranscript) {
+        if (finalTranscript && voiceTranscript) {
             voiceTranscript.innerHTML = `<p>${finalTranscript.trim()}</p>`;
             state.currentRecipe.ingredients = finalTranscript.trim();
-        } else if (interimTranscript) {
+        } else if (interimTranscript && voiceTranscript) {
             voiceTranscript.innerHTML = `<p>${finalTranscript.trim()} <em>${interimTranscript}</em></p>`;
         }
     };
     
     recognition.onerror = (event) => {
         console.error('Speech recognition error:', event.error);
-        showToast(`Voice recognition error: ${event.error}`, 'error');
-        
+        if (event.error !== 'no-speech') {
+            showToast(`Voice error: ${event.error}`, 'error');
+        }
         isRecording = false;
-        startVoice.style.display = 'flex';
-        stopVoice.style.display = 'none';
-        voiceVisualizer.classList.remove('recording');
+        if (startVoice) startVoice.style.display = 'inline-flex';
+        if (stopVoice) stopVoice.style.display = 'none';
+        if (voiceVisualizer) voiceVisualizer.classList.remove('recording');
         state.ui.isRecording = false;
     };
     
     recognition.onend = () => {
-        if (isRecording) {
-            // Auto-restart if we want continuous listening
-            // recognition.start();
-        } else {
-            isRecording = false;
-            startVoice.style.display = 'flex';
-            stopVoice.style.display = 'none';
-            voiceVisualizer.classList.remove('recording');
+        if (!isRecording) {
+            if (startVoice) startVoice.style.display = 'inline-flex';
+            if (stopVoice) stopVoice.style.display = 'none';
+            if (voiceVisualizer) voiceVisualizer.classList.remove('recording');
             state.ui.isRecording = false;
         }
     };
 }
 
-// Text Input
+// ============================================
+// TEXT INPUT
+// ============================================
+
 function initTextInput() {
     const textInput = document.getElementById('textInput');
     const textSuggestions = document.getElementById('textSuggestions');
     const ingredientChips = document.getElementById('ingredientChips');
     
     if (textInput) {
-        // Auto-grow textarea
         textInput.addEventListener('input', () => {
             textInput.style.height = 'auto';
-            textInput.style.height = textInput.scrollHeight + 'px';
+            textInput.style.height = Math.min(textInput.scrollHeight, 300) + 'px';
             state.currentRecipe.ingredients = textInput.value.trim();
         });
         
-        // Initial height
-        textInput.style.height = textInput.scrollHeight + 'px';
-        
-        // Smart suggestions
         textInput.addEventListener('input', debounce(() => {
             const value = textInput.value.trim().toLowerCase();
-            if (value.length < 2) {
-                textSuggestions.innerHTML = '';
+            if (value.length < 2 || !textSuggestions) {
+                if (textSuggestions) textSuggestions.innerHTML = '';
                 return;
             }
             
-            const matches = QUICK_INGREDIENTS.filter(ing => 
-                ing.toLowerCase().includes(value)
-            );
-            
+            const matches = QUICK_INGREDIENTS.filter(ing => ing.toLowerCase().includes(value));
             if (matches.length > 0) {
-                textSuggestions.innerHTML = matches.slice(0, 5).map(ing => `
-                    <span class="suggestion-tag">${ing}</span>
-                `).join('');
+                textSuggestions.innerHTML = matches.slice(0, 5).map(ing =>
+                    `<span class="suggestion-tag">${ing}</span>`
+                ).join('');
                 
                 textSuggestions.querySelectorAll('.suggestion-tag').forEach(tag => {
                     tag.addEventListener('click', () => {
@@ -1301,11 +1205,10 @@ function initTextInput() {
         }, 300));
     }
     
-    // Quick ingredient chips
     if (ingredientChips) {
-        ingredientChips.innerHTML = QUICK_INGREDIENTS.slice(0, 8).map(ing => `
-            <span class="ingredient-chip">${ing}</span>
-        `).join('');
+        ingredientChips.innerHTML = QUICK_INGREDIENTS.slice(0, 10).map(ing =>
+            `<span class="ingredient-chip">${ing}</span>`
+        ).join('');
         
         ingredientChips.querySelectorAll('.ingredient-chip').forEach(chip => {
             chip.addEventListener('click', () => {
@@ -1319,7 +1222,10 @@ function initTextInput() {
     }
 }
 
-// Upload
+// ============================================
+// UPLOAD
+// ============================================
+
 function initUpload() {
     const uploadZone = document.getElementById('uploadZone');
     const fileInput = document.getElementById('fileInput');
@@ -1329,49 +1235,28 @@ function initUpload() {
     const removeUpload = document.getElementById('removeUpload');
     
     if (uploadZone) {
-        // Drag and drop
-        uploadZone.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            uploadZone.classList.add('dragover');
-        });
-        
-        uploadZone.addEventListener('dragleave', () => {
-            uploadZone.classList.remove('dragover');
-        });
-        
+        uploadZone.addEventListener('dragover', (e) => { e.preventDefault(); uploadZone.classList.add('dragover'); });
+        uploadZone.addEventListener('dragleave', () => uploadZone.classList.remove('dragover'));
         uploadZone.addEventListener('drop', (e) => {
             e.preventDefault();
             uploadZone.classList.remove('dragover');
-            
-            if (e.dataTransfer.files.length > 0) {
-                handleFileUpload(e.dataTransfer.files[0]);
-            }
+            if (e.dataTransfer.files.length > 0) handleFileUpload(e.dataTransfer.files[0]);
         });
-        
-        // Click to browse
-        uploadZone.addEventListener('click', () => {
-            if (fileInput) fileInput.click();
-        });
+        uploadZone.addEventListener('click', () => { if (fileInput) fileInput.click(); });
     }
     
-    if (browseBtn) {
-        browseBtn.addEventListener('click', () => {
-            if (fileInput) fileInput.click();
-        });
-    }
+    if (browseBtn) browseBtn.addEventListener('click', (e) => { e.stopPropagation(); if (fileInput) fileInput.click(); });
     
     if (fileInput) {
         fileInput.addEventListener('change', () => {
-            if (fileInput.files.length > 0) {
-                handleFileUpload(fileInput.files[0]);
-            }
+            if (fileInput.files.length > 0) handleFileUpload(fileInput.files[0]);
         });
     }
     
     if (removeUpload) {
-        removeUpload.addEventListener('click', () => {
-            uploadPreview.style.display = 'none';
-            uploadedImage.src = '';
+        removeUpload.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (uploadPreview) uploadPreview.style.display = 'none';
             state.currentRecipe.ingredients = '';
         });
     }
@@ -1381,11 +1266,10 @@ function initUpload() {
             showToast('Please upload an image file', 'warning');
             return;
         }
-        
         const reader = new FileReader();
         reader.onload = (e) => {
-            uploadedImage.src = e.target.result;
-            uploadPreview.style.display = 'block';
+            if (uploadedImage) uploadedImage.src = e.target.result;
+            if (uploadPreview) uploadPreview.style.display = 'block';
             state.currentRecipe.ingredients = e.target.result;
             showToast('Image uploaded', 'success', '📁');
         };
@@ -1393,15 +1277,24 @@ function initUpload() {
     }
 }
 
-// Smart Input
+// ============================================
+// SMART INPUT
+// ============================================
+
 function initSmartInput() {
     const smartInput = document.getElementById('smartInput');
     const smartSuggestBtn = document.getElementById('smartSuggestBtn');
     const smartSuggestions = document.getElementById('smartSuggestions');
     
+    if (smartInput) {
+        smartInput.addEventListener('input', () => {
+            state.currentRecipe.ingredients = smartInput.value.trim();
+        });
+    }
+    
     if (smartSuggestBtn) {
         smartSuggestBtn.addEventListener('click', async () => {
-            const input = smartInput.value.trim();
+            const input = smartInput ? smartInput.value.trim() : '';
             if (input.length < 2) {
                 showToast('Please enter at least 2 characters', 'warning');
                 return;
@@ -1415,47 +1308,52 @@ function initSmartInput() {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        message: input,
-                        action: 'smart-detect',
-                        userName: state.user.name,
-                        sessionId: generateId()
+                        message: input, action: 'smart-detect',
+                        userName: state.user.name, sessionId: generateId()
                     })
                 });
                 
                 const data = await response.json();
                 
-                if (data.suggestions) {
+                if (data.suggestions && smartSuggestions) {
                     smartSuggestions.innerHTML = `
-                        <h4>Suggested Ingredients:</h4>
-                        <p style="font-size: var(--font-size-sm); color: var(--text-secondary); margin-bottom: var(--space-sm);">
-                            ${data.suggestions}
-                        </p>
-                        <button class="btn btn-primary" id="useSmartSuggestion">
-                            <span>Use These Ingredients</span>
-                        </button>
+                        <h4 style="margin-bottom:8px;color:var(--ink)">Suggested Ingredients:</h4>
+                        <p style="font-size:0.85rem;color:var(--ink-soft);margin-bottom:12px">${data.suggestions}</p>
+                        <button class="btn-primary" id="useSmartSuggestion">Use These Ingredients</button>
                     `;
                     
                     const useBtn = document.getElementById('useSmartSuggestion');
                     if (useBtn) {
                         useBtn.addEventListener('click', () => {
-                            smartInput.value = data.suggestions;
-                            state.currentRecipe.ingredients = data.suggestions;
+                            if (smartInput) {
+                                smartInput.value = data.suggestions;
+                                smartInput.dispatchEvent(new Event('input'));
+                            }
                             smartSuggestions.innerHTML = '';
                         });
                     }
                 }
             } catch (err) {
                 console.error('Smart detect error:', err);
-                showToast('Could not get suggestions. Please try again.', 'error');
+                // Fallback: suggest from quick ingredients
+                const fallback = QUICK_INGREDIENTS.filter(ing => ing.toLowerCase().includes(input.toLowerCase())).slice(0, 5);
+                if (fallback.length > 0 && smartSuggestions) {
+                    smartSuggestions.innerHTML = `<p style="font-size:0.85rem;color:var(--ink-soft)">Try: ${fallback.join(', ')}</p>`;
+                } else {
+                    showToast('Could not get suggestions', 'error');
+                }
             } finally {
                 smartSuggestBtn.disabled = false;
-                smartSuggestBtn.innerHTML = '<span>🎯 Suggest Ingredients</span>';
+                smartSuggestBtn.innerHTML = '<span><i class="fas fa-bullseye"></i> Suggest Ingredients</span>';
             }
         });
     }
 }
 
-// Preferences
+// ============================================
+// PREFERENCES
+// ============================================
+
 function initPreferences() {
     const spiceSlider = document.getElementById('spiceSlider');
     const spiceValue = document.getElementById('spiceValue');
@@ -1464,7 +1362,6 @@ function initPreferences() {
     const languageSelect = document.getElementById('languageSelect');
     const depthSelect = document.getElementById('depthSelect');
     
-    // Spice slider
     if (spiceSlider && spiceValue) {
         const spiceLabels = [
             'Mild - No heat, beginner-friendly',
@@ -1480,11 +1377,9 @@ function initPreferences() {
             state.currentRecipe.options.spice = value;
         });
         
-        // Initialize
         spiceValue.textContent = spiceLabels[spiceSlider.value - 1];
     }
     
-    // Servings grid
     if (servingsGrid) {
         servingsGrid.querySelectorAll('.serving-btn').forEach(btn => {
             btn.addEventListener('click', () => {
@@ -1495,7 +1390,6 @@ function initPreferences() {
         });
     }
     
-    // Time buttons
     if (timeButtons) {
         timeButtons.querySelectorAll('.time-btn').forEach(btn => {
             btn.addEventListener('click', () => {
@@ -1506,14 +1400,12 @@ function initPreferences() {
         });
     }
     
-    // Language select
     if (languageSelect) {
         languageSelect.addEventListener('change', () => {
             state.currentRecipe.options.language = languageSelect.value;
         });
     }
     
-    // Depth select
     if (depthSelect) {
         depthSelect.addEventListener('change', () => {
             state.currentRecipe.options.depth = depthSelect.value;
@@ -1538,26 +1430,25 @@ async function generateRecipeFromWizard() {
     let ingredients = '';
     let imageData = null;
     
-    // Get ingredients based on panel
     if (panelId === 'camera') {
         const capturedImage = document.getElementById('capturedImage');
-        if (capturedImage && capturedImage.src && capturedImage.src !== '') {
+        if (capturedImage && capturedImage.src && !capturedImage.src.endsWith('recipe.html')) {
             imageData = capturedImage.src;
         }
     } else if (panelId === 'voice') {
         const transcript = document.getElementById('voiceTranscript');
-        ingredients = transcript.textContent.replace('Your voice input will appear here...', '').trim();
+        ingredients = transcript ? transcript.textContent.replace('Your voice input will appear here...', '').trim() : '';
     } else if (panelId === 'text') {
         const textInput = document.getElementById('textInput');
-        ingredients = textInput.value.trim();
+        ingredients = textInput ? textInput.value.trim() : '';
     } else if (panelId === 'upload') {
         const uploadedImage = document.getElementById('uploadedImage');
-        if (uploadedImage && uploadedImage.src && uploadedImage.src !== '') {
+        if (uploadedImage && uploadedImage.src && !uploadedImage.src.endsWith('recipe.html')) {
             imageData = uploadedImage.src;
         }
     } else if (panelId === 'smart') {
         const smartInput = document.getElementById('smartInput');
-        ingredients = smartInput.value.trim();
+        ingredients = smartInput ? smartInput.value.trim() : '';
     }
     
     if (!ingredients && !imageData) {
@@ -1565,7 +1456,6 @@ async function generateRecipeFromWizard() {
         return;
     }
     
-    // Get preferences
     const spiceSlider = document.getElementById('spiceSlider');
     const servingsGrid = document.getElementById('servingsGrid');
     const timeButtons = document.getElementById('timeButtons');
@@ -1573,27 +1463,27 @@ async function generateRecipeFromWizard() {
     const depthSelect = document.getElementById('depthSelect');
     
     const options = {
-        spice: parseInt(spiceSlider.value) || 3,
-        servings: parseInt(servingsGrid.querySelector('.serving-btn.active')?.dataset.servings || 4),
-        time: parseInt(timeButtons.querySelector('.time-btn.active')?.dataset.time || 2),
-        language: languageSelect.value || 'English',
-        depth: depthSelect.value || 'standard',
+        spice: parseInt(spiceSlider?.value || 3),
+        servings: parseInt(servingsGrid?.querySelector('.serving-btn.active')?.dataset.servings || 4),
+        time: parseInt(timeButtons?.querySelector('.time-btn.active')?.dataset.time || 2),
+        language: languageSelect?.value || 'English',
+        depth: depthSelect?.value || 'standard',
         stream: true
     };
     
-    // Disable button
-    generateBtn.disabled = true;
-    generateBtn.innerHTML = '<span>🔄 Generating...</span>';
+    if (generateBtn) {
+        generateBtn.disabled = true;
+        generateBtn.innerHTML = '<span>🔄 Generating...</span>';
+    }
     
-    // Close wizard
     closeModal('wizardModal');
     
-    // Start generation
     await generateRecipe(ingredients, imageData, options);
     
-    // Re-enable button
-    generateBtn.disabled = false;
-    generateBtn.innerHTML = '<span class="btn-icon">🚀</span><span>Generate Recipe</span>';
+    if (generateBtn) {
+        generateBtn.disabled = false;
+        generateBtn.innerHTML = '<span class="btn-icon">🚀</span><span>Generate Recipe</span>';
+    }
 }
 
 async function generateRecipe(ingredients, imageData = null, options = {}) {
@@ -1603,8 +1493,6 @@ async function generateRecipe(ingredients, imageData = null, options = {}) {
     const generationProgress = document.getElementById('generationProgress');
     const streamingOutput = document.getElementById('streamingOutput');
     const streamingContent = document.getElementById('streamingContent');
-    const progressFill = document.getElementById('progressFill');
-    const progressStages = document.getElementById('progressStages');
     const cancelGeneration = document.getElementById('cancelGeneration');
     
     // Show generation UI
@@ -1613,39 +1501,29 @@ async function generateRecipe(ingredients, imageData = null, options = {}) {
     if (inputMethods) inputMethods.style.display = 'none';
     if (generationProgress) generationProgress.style.display = 'block';
     if (streamingOutput) streamingOutput.style.display = 'block';
-    
-    // Reset streaming content
     if (streamingContent) streamingContent.textContent = '';
     
-    // Set state
     state.ui.isGenerating = true;
     state.ui.isStreaming = true;
     state.ui.currentStream = '';
     
-    // Create abort controller
     const abortController = new AbortController();
     state.ui.abortController = abortController;
     
-    // Show cancel button
-    if (cancelGeneration) cancelGeneration.style.display = 'flex';
-    
-    // Cancel handler
     if (cancelGeneration) {
+        cancelGeneration.style.display = 'inline-flex';
         cancelGeneration.onclick = () => {
             abortController.abort();
             state.ui.isGenerating = false;
             state.ui.isStreaming = false;
-            
             if (generationProgress) generationProgress.style.display = 'none';
             if (streamingOutput) streamingOutput.style.display = 'none';
-            if (cancelGeneration) cancelGeneration.style.display = 'none';
-            
+            cancelGeneration.style.display = 'none';
             showToast('Generation cancelled', 'warning');
         };
     }
     
     try {
-        // Prepare request
         const requestId = generateId();
         const sessionId = generateId();
         
@@ -1655,21 +1533,13 @@ async function generateRecipe(ingredients, imageData = null, options = {}) {
             userName: state.user.name,
             sessionId,
             options: {
-                spice: options.spice || 3,
-                servings: options.servings || 4,
-                time: options.time || 2,
-                language: options.language || 'English',
-                depth: options.depth || 'standard',
-                stream: true
+                spice: options.spice || 3, servings: options.servings || 4,
+                time: options.time || 2, language: options.language || 'English',
+                depth: options.depth || 'standard', stream: true
             },
-            userStats: {
-                xp: state.user.xp,
-                streak: state.user.streak,
-                totalRecipes: state.user.totalRecipes
-            }
+            userStats: { xp: state.user.xp, streak: state.user.streak, totalRecipes: state.user.totalRecipes }
         };
         
-        // Start SSE connection
         const response = await fetch(API_ENDPOINT, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -1677,13 +1547,8 @@ async function generateRecipe(ingredients, imageData = null, options = {}) {
             signal: abortController.signal
         });
         
-        if (!response.ok) {
-            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-        }
-        
-        if (!response.body) {
-            throw new Error('No response body');
-        }
+        if (!response.ok) throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        if (!response.body) throw new Error('No response body');
         
         const reader = response.body.getReader();
         const decoder = new TextDecoder();
@@ -1691,12 +1556,10 @@ async function generateRecipe(ingredients, imageData = null, options = {}) {
         
         while (true) {
             const { done, value } = await reader.read();
-            
             if (done) break;
             
             buffer += decoder.decode(value, { stream: true });
             
-            // Process complete messages
             while (buffer.includes('\n\n')) {
                 const endIndex = buffer.indexOf('\n\n');
                 const message = buffer.slice(0, endIndex);
@@ -1704,54 +1567,36 @@ async function generateRecipe(ingredients, imageData = null, options = {}) {
                 
                 if (!message) continue;
                 
-                // Parse SSE event
                 const lines = message.split('\n');
                 let event = 'message';
                 let data = '';
                 
                 lines.forEach(line => {
-                    if (line.startsWith('event: ')) {
-                        event = line.slice(7);
-                    } else if (line.startsWith('data: ')) {
-                        data = line.slice(6);
-                    }
+                    if (line.startsWith('event: ')) event = line.slice(7);
+                    else if (line.startsWith('data: ')) data = line.slice(6);
                 });
                 
-                // Handle different events
-                if (event === 'heartbeat') {
-                    // Keep connection alive
-                    continue;
-                }
+                if (event === 'heartbeat') continue;
                 
                 if (event === 'stage') {
                     try {
                         const stageData = JSON.parse(data);
-                        const stages = progressStages.querySelectorAll('.stage');
+                        const progressStages = document.getElementById('progressStages');
+                        const progressFill = document.getElementById('progressFill');
                         
-                        if (stages[stageData.idx]) {
+                        if (progressStages) {
+                            const stages = progressStages.querySelectorAll('.stage');
                             stages.forEach((s, i) => {
                                 s.classList.remove('active', 'completed');
-                                if (i === stageData.idx) {
-                                    s.classList.add('active');
-                                } else if (i < stageData.idx) {
-                                    s.classList.add('completed');
-                                }
+                                if (i === stageData.idx) s.classList.add('active');
+                                else if (i < stageData.idx) s.classList.add('completed');
                             });
                         }
                         
-                        // Update progress bar
                         if (progressFill) {
                             progressFill.style.width = `${((stageData.idx + 1) / 5) * 100}%`;
                         }
-                        
-                        if (stageData.done) {
-                            // Generation complete
-                            state.ui.isGenerating = false;
-                            state.ui.isStreaming = false;
-                        }
-                    } catch (e) {
-                        console.error('Stage parse error:', e);
-                    }
+                    } catch (e) { /* ignore parse errors */ }
                 }
                 
                 if (event === 'token') {
@@ -1760,56 +1605,38 @@ async function generateRecipe(ingredients, imageData = null, options = {}) {
                         if (tokenData.t && streamingContent) {
                             streamingContent.textContent += tokenData.t;
                             state.ui.currentStream += tokenData.t;
-                            
-                            // Auto-scroll
-                            streamingContent.scrollTop = streamingContent.scrollHeight;
                         }
-                    } catch (e) {
-                        console.error('Token parse error:', e);
-                    }
+                    } catch (e) { /* ignore */ }
                 }
                 
                 if (event === 'done') {
                     try {
                         const doneData = JSON.parse(data);
                         
-                        // Save recipe
                         const recipeData = {
-                            id: doneData.requestId || generateId(),
+                            id: doneData.requestId || requestId,
                             dish: doneData.dish || 'Untitled Recipe',
                             recipe: doneData.ultra_long_notes || doneData.recipe || state.ui.currentStream,
                             ingredients: doneData.topic || ingredients,
-                            options: {
-                                spice: doneData.spice || options.spice || 3,
-                                servings: doneData.servings || options.servings || 4,
-                                time: doneData.time || options.time || 2,
-                                language: doneData.language || options.language || 'English',
-                                depth: doneData.depth || options.depth || 'standard'
-                            },
-                            metadata: {
-                                tokens: doneData.tokens || 0,
-                                cost: doneData.cost || 0,
-                                responseTime: doneData.responseTime || 0,
-                                model: doneData.model || '',
-                                generatedAt: doneData.generated_at || new Date().toISOString(),
-                                requestId: doneData.requestId || requestId
-                            },
+                            spice: doneData.spice || options.spice || 3,
+                            servings: doneData.servings || options.servings || 4,
+                            time: doneData.time || options.time || 2,
+                            language: doneData.language || options.language || 'English',
+                            depth: doneData.depth || options.depth || 'standard',
+                            tokens: doneData.tokens || 0,
+                            cost: doneData.cost || 0,
+                            responseTime: doneData.responseTime || 0,
+                            model: doneData.model || '',
+                            generatedAt: doneData.generated_at || new Date().toISOString(),
+                            requestId: doneData.requestId || requestId,
                             status: doneData.status || 'Success'
                         };
                         
-                        // Add to history
                         addToHistory(recipeData);
-                        
-                        // Load recipe
                         loadRecipe(recipeData);
-                        
-                        // Add XP
                         addXP(15);
-                        
-                        // Update analytics
                         updateAnalytics();
                         
-                        // Hide generation UI
                         if (generationProgress) generationProgress.style.display = 'none';
                         if (streamingOutput) streamingOutput.style.display = 'none';
                         if (cancelGeneration) cancelGeneration.style.display = 'none';
@@ -1829,18 +1656,6 @@ async function generateRecipe(ingredients, imageData = null, options = {}) {
                         throw new Error('Generation error');
                     }
                 }
-                
-                if (event === 'fact') {
-                    try {
-                        const factData = JSON.parse(data);
-                        // Could show as toast or in UI
-                        if (factData.fact) {
-                            console.log('Fact:', factData.fact);
-                        }
-                    } catch (e) {
-                        // Ignore
-                    }
-                }
             }
         }
         
@@ -1851,7 +1666,6 @@ async function generateRecipe(ingredients, imageData = null, options = {}) {
             showToast(err.message || 'Generation failed. Please try again.', 'error');
         }
         
-        // Reset state
         state.ui.isGenerating = false;
         state.ui.isStreaming = false;
         
@@ -1875,45 +1689,26 @@ function initDirectInputs() {
     const directUpload = document.getElementById('directUpload');
     const directSmart = document.getElementById('directSmart');
     
-    if (directCamera) {
-        directCamera.addEventListener('click', () => {
-            state.ui.currentInputMethod = 'camera';
-            openModal('wizardModal');
-            document.querySelector('.input-tab[data-tab="camera"]').click();
-        });
-    }
-    
-    if (directVoice) {
-        directVoice.addEventListener('click', () => {
-            state.ui.currentInputMethod = 'voice';
-            openModal('wizardModal');
-            document.querySelector('.input-tab[data-tab="voice"]').click();
-        });
-    }
-    
-    if (directText) {
-        directText.addEventListener('click', () => {
-            state.ui.currentInputMethod = 'text';
-            openModal('wizardModal');
-            document.querySelector('.input-tab[data-tab="text"]').click();
-        });
-    }
-    
-    if (directUpload) {
-        directUpload.addEventListener('click', () => {
-            state.ui.currentInputMethod = 'upload';
-            openModal('wizardModal');
-            document.querySelector('.input-tab[data-tab="upload"]').click();
-        });
-    }
-    
-    if (directSmart) {
-        directSmart.addEventListener('click', () => {
-            state.ui.currentInputMethod = 'smart';
-            openModal('wizardModal');
-            document.querySelector('.input-tab[data-tab="smart"]').click();
-        });
-    }
+    if (directCamera) directCamera.addEventListener('click', () => {
+        openModal('wizardModal');
+        setTimeout(() => { const tab = document.querySelector('.input-tab[data-tab="camera"]'); if (tab) tab.click(); }, 100);
+    });
+    if (directVoice) directVoice.addEventListener('click', () => {
+        openModal('wizardModal');
+        setTimeout(() => { const tab = document.querySelector('.input-tab[data-tab="voice"]'); if (tab) tab.click(); }, 100);
+    });
+    if (directText) directText.addEventListener('click', () => {
+        openModal('wizardModal');
+        setTimeout(() => { const tab = document.querySelector('.input-tab[data-tab="text"]'); if (tab) tab.click(); }, 100);
+    });
+    if (directUpload) directUpload.addEventListener('click', () => {
+        openModal('wizardModal');
+        setTimeout(() => { const tab = document.querySelector('.input-tab[data-tab="upload"]'); if (tab) tab.click(); }, 100);
+    });
+    if (directSmart) directSmart.addEventListener('click', () => {
+        openModal('wizardModal');
+        setTimeout(() => { const tab = document.querySelector('.input-tab[data-tab="smart"]'); if (tab) tab.click(); }, 100);
+    });
 }
 
 // ============================================
@@ -1926,25 +1721,20 @@ function initRecipeActions() {
     const shareRecipeBtn = document.getElementById('shareRecipeBtn');
     const deleteRecipeBtn = document.getElementById('deleteRecipeBtn');
     
-    // Save
     if (saveRecipeBtn) {
         saveRecipeBtn.addEventListener('click', () => {
             if (state.currentRecipe.dish) {
-                saveRecipe(state.currentRecipe);
+                saveRecipeAction(state.currentRecipe);
             } else {
                 showToast('No recipe to save', 'warning');
             }
         });
     }
     
-    // PDF
     if (pdfRecipeBtn) {
-        pdfRecipeBtn.addEventListener('click', () => {
-            openModal('pdfModal');
-        });
+        pdfRecipeBtn.addEventListener('click', () => openModal('pdfModal'));
     }
     
-    // Share
     if (shareRecipeBtn) {
         shareRecipeBtn.addEventListener('click', () => {
             if (state.currentRecipe.recipe) {
@@ -1957,32 +1747,25 @@ function initRecipeActions() {
         });
     }
     
-    // Delete
     if (deleteRecipeBtn) {
         deleteRecipeBtn.addEventListener('click', () => {
-            showConfirmation(
-                'Delete Recipe',
-                'Are you sure you want to delete this recipe?',
-                () => {
-                    state.currentRecipe = {
-                        ingredients: '',
-                        dish: '',
-                        recipe: '',
-                        options: { spice: 3, servings: 4, time: 2, language: 'English', depth: 'standard' },
-                        metadata: { tokens: 0, cost: 0, responseTime: 0, model: '', generatedAt: null, requestId: null }
-                    };
-                    
-                    const recipeArea = document.getElementById('recipeArea');
-                    const welcomeSection = document.getElementById('welcomeSection');
-                    const inputMethods = document.getElementById('inputMethods');
-                    
-                    if (recipeArea) recipeArea.style.display = 'none';
-                    if (welcomeSection) welcomeSection.style.display = 'flex';
-                    if (inputMethods) inputMethods.style.display = 'flex';
-                    
-                    showToast('Recipe deleted', 'success');
-                }
-            );
+            showConfirmation('Delete Recipe', 'Are you sure you want to delete this recipe?', () => {
+                state.currentRecipe = {
+                    ingredients: '', dish: '', recipe: '',
+                    options: { spice: 3, servings: 4, time: 2, language: 'English', depth: 'standard' },
+                    metadata: { tokens: 0, cost: 0, responseTime: 0, model: '', generatedAt: null, requestId: null }
+                };
+                
+                const recipeArea = document.getElementById('recipeArea');
+                const welcomeSection = document.getElementById('welcomeSection');
+                const inputMethods = document.getElementById('inputMethods');
+                
+                if (recipeArea) recipeArea.style.display = 'none';
+                if (welcomeSection) welcomeSection.style.display = 'flex';
+                if (inputMethods) inputMethods.style.display = 'flex';
+                
+                showToast('Recipe deleted', 'success');
+            });
         });
     }
 }
@@ -1994,13 +1777,8 @@ function initRecipeActions() {
 function initPdfGeneration() {
     const downloadPdfBtn = document.getElementById('downloadPdfBtn');
     const pdfClose = document.getElementById('pdfClose');
-    const pdfTheme = document.getElementById('pdfTheme');
     
-    if (pdfClose) {
-        pdfClose.addEventListener('click', () => {
-            closeModal('pdfModal');
-        });
-    }
+    if (pdfClose) pdfClose.addEventListener('click', () => closeModal('pdfModal'));
     
     if (downloadPdfBtn) {
         downloadPdfBtn.addEventListener('click', async () => {
@@ -2010,16 +1788,12 @@ function initPdfGeneration() {
             }
             
             try {
-                // Check if jsPDF is loaded
-                if (typeof jsPDF !== 'undefined') {
-                    generatePdf();
-                } else {
-                    // Load jsPDF dynamically
+                if (typeof jsPDF === 'undefined') {
                     await loadScript('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js');
-                    generatePdf();
                 }
+                generatePdf();
             } catch (err) {
-                console.error('PDF generation error:', err);
+                console.error('PDF error:', err);
                 showToast('PDF generation failed', 'error');
             }
         });
@@ -2028,24 +1802,17 @@ function initPdfGeneration() {
     function generatePdf() {
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF();
+        const pdfTheme = document.getElementById('pdfTheme');
+        const isDark = pdfTheme ? pdfTheme.value === 'dark' : true;
         
-        const theme = pdfTheme.value;
-        const isDark = theme === 'dark';
+        const bgColor = isDark ? [3, 5, 12] : [255, 255, 255];
+        const textColor = isDark ? [238, 241, 248] : [13, 19, 48];
+        const primaryColor = [212, 175, 55];
         
-        // Set colors based on theme
-        const bgColor = isDark ? [10, 10, 18] : [255, 255, 255];
-        const textColor = isDark ? [232, 240, 248] : [26, 26, 37];
-        const primaryColor = [0, 212, 255];
-        const accentColor = [0, 255, 136];
-        
-        // Set background
         doc.setFillColor(bgColor[0], bgColor[1], bgColor[2]);
         doc.rect(0, 0, 210, 297, 'F');
-        
-        // Set text color
         doc.setTextColor(textColor[0], textColor[1], textColor[2]);
         
-        // Title
         doc.setFontSize(24);
         doc.setFont('helvetica', 'bold');
         doc.text('RouxMind', 105, 30, { align: 'center' });
@@ -2054,68 +1821,49 @@ function initPdfGeneration() {
         doc.setFont('helvetica', 'normal');
         doc.text('Where Every Plate Tells Your Story', 105, 38, { align: 'center' });
         
-        // Divider
         doc.setDrawColor(primaryColor[0], primaryColor[1], primaryColor[2]);
         doc.setLineWidth(0.5);
         doc.line(20, 45, 190, 45);
         
-        // Recipe title
         doc.setFontSize(18);
         doc.setFont('helvetica', 'bold');
         doc.text(state.currentRecipe.dish || 'Untitled Recipe', 105, 60, { align: 'center' });
         
-        // Metadata
         doc.setFontSize(10);
         doc.setFont('helvetica', 'normal');
         const spiceLabel = getSpiceLabel(state.currentRecipe.options.spice);
         const timeLabel = getTimeLabel(state.currentRecipe.options.time);
-        
         doc.text(`Spice: ${spiceLabel.label} | Servings: ${state.currentRecipe.options.servings} | Time: ${timeLabel.label}`, 105, 70, { align: 'center' });
         
-        // Divider
         doc.line(20, 75, 190, 75);
         
-        // Recipe content
         doc.setFontSize(11);
         let y = 85;
         const lineHeight = 7;
         const maxWidth = 170;
-        const margin = 20;
         
-        // Split recipe into lines
         const lines = doc.splitTextToSize(state.currentRecipe.recipe, maxWidth);
         lines.forEach(line => {
             if (y > 280) {
                 doc.addPage();
                 y = 20;
+                doc.setFillColor(bgColor[0], bgColor[1], bgColor[2]);
+                doc.rect(0, 0, 210, 297, 'F');
                 doc.setTextColor(textColor[0], textColor[1], textColor[2]);
                 doc.setFontSize(11);
             }
-            doc.text(line, margin, y);
+            doc.text(line, 20, y);
             y += lineHeight;
         });
         
-        // Footer
         doc.setFontSize(8);
         doc.setTextColor(100, 100, 100);
         doc.text(`Generated by ${ROUXMIND.BRAND} | Built by ${ROUXMIND.FOUNDER} | ${ROUXMIND.DEVSITE}`, 105, 290, { align: 'center' });
         
-        // Save PDF
-        doc.save(`${state.currentRecipe.dish || 'recipe'}.pdf`);
-        
+        doc.save(`${(state.currentRecipe.dish || 'recipe').replace(/[^a-zA-Z0-9]/g, '_')}.pdf`);
         closeModal('pdfModal');
         showToast('PDF downloaded!', 'success', '📄');
     }
-}
-
-function loadScript(url) {
-    return new Promise((resolve, reject) => {
-        const script = document.createElement('script');
-        script.src = url;
-        script.onload = resolve;
-        script.onerror = reject;
-        document.head.appendChild(script);
-    });
 }
 
 // ============================================
@@ -2123,7 +1871,6 @@ function loadScript(url) {
 // ============================================
 
 function showConfirmation(title, message, onConfirm) {
-    const confirmModal = document.getElementById('confirmModal');
     const confirmTitle = document.getElementById('confirmTitle');
     const confirmMessage = document.getElementById('confirmMessage');
     const confirmOk = document.getElementById('confirmOk');
@@ -2132,21 +1879,13 @@ function showConfirmation(title, message, onConfirm) {
     if (confirmTitle) confirmTitle.textContent = title;
     if (confirmMessage) confirmMessage.textContent = message;
     
-    // Remove old handlers
     const okClone = confirmOk.cloneNode(true);
     const cancelClone = confirmCancel.cloneNode(true);
     confirmOk.parentNode.replaceChild(okClone, confirmOk);
     confirmCancel.parentNode.replaceChild(cancelClone, confirmCancel);
     
-    // Add new handlers
-    okClone.addEventListener('click', () => {
-        closeModal('confirmModal');
-        onConfirm();
-    });
-    
-    cancelClone.addEventListener('click', () => {
-        closeModal('confirmModal');
-    });
+    okClone.addEventListener('click', () => { closeModal('confirmModal'); onConfirm(); });
+    cancelClone.addEventListener('click', () => closeModal('confirmModal'));
     
     openModal('confirmModal');
 }
@@ -2157,223 +1896,112 @@ function showConfirmation(title, message, onConfirm) {
 
 function initKeyboardShortcuts() {
     document.addEventListener('keydown', (e) => {
-        // Ignore if typing in input
         const tagName = document.activeElement.tagName.toLowerCase();
-        if (tagName === 'input' || tagName === 'textarea') {
-            // Allow some shortcuts
-            if (e.ctrlKey || e.metaKey) {
-                // Ctrl+S, Ctrl+P, etc.
-                if (e.key === 's') {
-                    e.preventDefault();
-                    document.getElementById('saveRecipeBtn')?.click();
-                }
-                if (e.key === 'p') {
-                    e.preventDefault();
-                    document.getElementById('pdfRecipeBtn')?.click();
-                }
-                if (e.key === 'n') {
-                    e.preventDefault();
-                    document.getElementById('newRecipeBtn')?.click();
-                }
-                if (e.key === 'k') {
-                    e.preventDefault();
-                    openModal('wizardModal');
-                }
-                if (e.key === 'h') {
-                    e.preventDefault();
-                    openModal('historyModal');
-                }
-            }
-            return;
-        }
+        const isInput = tagName === 'input' || tagName === 'textarea' || tagName === 'select';
         
-        // Ctrl+K or Cmd+K - Open Wizard
+        if (isInput && !(e.ctrlKey || e.metaKey)) return;
+        
         if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
             e.preventDefault();
             openModal('wizardModal');
-        }
-        
-        // Ctrl+H or Cmd+H - History
-        if ((e.ctrlKey || e.metaKey) && e.key === 'h') {
+        } else if ((e.ctrlKey || e.metaKey) && e.key === 'h') {
             e.preventDefault();
+            renderHistory();
             openModal('historyModal');
-        }
-        
-        // Ctrl+S or Cmd+S - Save
-        if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+        } else if ((e.ctrlKey || e.metaKey) && e.key === 's') {
             e.preventDefault();
             document.getElementById('saveRecipeBtn')?.click();
-        }
-        
-        // Ctrl+P or Cmd+P - PDF
-        if ((e.ctrlKey || e.metaKey) && e.key === 'p') {
+        } else if ((e.ctrlKey || e.metaKey) && e.key === 'p') {
             e.preventDefault();
             document.getElementById('pdfRecipeBtn')?.click();
         }
         
-        // Ctrl+N or Cmd+N - New Recipe
-        if ((e.ctrlKey || e.metaKey) && e.key === 'n') {
-            e.preventDefault();
-            document.getElementById('newRecipeBtn')?.click();
-        }
-        
-        // Enter - Generate (if wizard is open)
-        if (e.key === 'Enter' && document.getElementById('wizardModal')?.classList.contains('active')) {
-            e.preventDefault();
-            document.getElementById('generateBtn')?.click();
+        if (e.key === 'Escape') {
+            document.querySelectorAll('.modal-overlay.active').forEach(modal => {
+                closeModal(modal.id);
+            });
+            const analyticsPanel = document.getElementById('analyticsPanel');
+            if (analyticsPanel) analyticsPanel.classList.remove('active');
         }
     });
 }
 
 // ============================================
-// NAVIGATION ACTIONS
+// NAVIGATION ACTIONS (FIXED)
 // ============================================
 
 function initNavActions() {
-    const themeToggle = document.getElementById('themeToggle');
-    const newRecipeBtn = document.getElementById('newRecipeBtn');
-    const historyBtn = document.getElementById('historyBtn');
-    const analyticsBtn = document.getElementById('analyticsBtn');
-    const settingsBtn = document.getElementById('settingsBtn');
-    const userAvatar = document.getElementById('userAvatar');
+    // Sidebar toggle
+    document.getElementById('sbToggle')?.addEventListener('click', toggleSidebar);
     
-    // Theme toggle
-    if (themeToggle) {
-        themeToggle.addEventListener('click', toggleTheme);
-    }
+    // Header buttons
+    document.getElementById('themeToggle')?.addEventListener('click', toggleTheme);
+    document.getElementById('newRecipeBtn')?.addEventListener('click', () => openModal('wizardModal'));
+    document.getElementById('historyBtn')?.addEventListener('click', () => { renderHistory(); openModal('historyModal'); });
+    document.getElementById('settingsBtn')?.addEventListener('click', () => { initSettings(); openModal('settingsModal'); });
     
-    // New recipe
-    if (newRecipeBtn) {
-        newRecipeBtn.addEventListener('click', () => {
-            openModal('wizardModal');
-        });
-    }
+    document.getElementById('analyticsBtn')?.addEventListener('click', () => {
+        renderAnalytics();
+        const analyticsPanel = document.getElementById('analyticsPanel');
+        if (analyticsPanel) analyticsPanel.classList.toggle('active');
+    });
     
-    // History
-    if (historyBtn) {
-        historyBtn.addEventListener('click', () => {
-            renderHistory();
-            openModal('historyModal');
-        });
-    }
+    document.getElementById('closeAnalytics')?.addEventListener('click', () => {
+        document.getElementById('analyticsPanel')?.classList.remove('active');
+    });
     
-    // Analytics
-    if (analyticsBtn) {
-        analyticsBtn.addEventListener('click', () => {
-            renderAnalytics();
-            const analyticsPanel = document.getElementById('analyticsPanel');
-            if (analyticsPanel) {
-                analyticsPanel.style.display = analyticsPanel.style.display === 'block' ? 'none' : 'block';
-            }
-        });
-    }
-    
-    // Settings
-    if (settingsBtn) {
-        settingsBtn.addEventListener('click', () => {
-            initSettings();
-            openModal('settingsModal');
-        });
-    }
-    
-    // User avatar
-    if (userAvatar) {
-        userAvatar.addEventListener('click', () => {
-            initSettings();
-            openModal('settingsModal');
-        });
-    }
-    
-    // Close analytics panel
-    const closeAnalytics = document.getElementById('closeAnalytics');
-    if (closeAnalytics) {
-        closeAnalytics.addEventListener('click', () => {
-            const analyticsPanel = document.getElementById('analyticsPanel');
-            if (analyticsPanel) {
-                analyticsPanel.style.display = 'none';
-            }
-        });
-    }
-    
-    // History close
-    const historyClose = document.getElementById('historyClose');
-    if (historyClose) {
-        historyClose.addEventListener('click', () => {
-            closeModal('historyModal');
-        });
-    }
-    
-    // Settings close
-    const settingsClose = document.getElementById('settingsClose');
-    if (settingsClose) {
-        settingsClose.addEventListener('click', () => {
-            closeModal('settingsModal');
-        });
-    }
-    
-    // PDF close
-    const pdfClose = document.getElementById('pdfClose');
-    if (pdfClose) {
-        pdfClose.addEventListener('click', () => {
-            closeModal('pdfModal');
-        });
-    }
-    
-    // Confirm close
-    const confirmClose = document.getElementById('confirmClose');
-    if (confirmClose) {
-        confirmClose.addEventListener('click', () => {
-            closeModal('confirmModal');
-        });
-    }
-    
-    // Confirm cancel
-    const confirmCancel = document.getElementById('confirmCancel');
-    if (confirmCancel) {
-        confirmCancel.addEventListener('click', () => {
-            closeModal('confirmModal');
-        });
-    }
-    
-    // Welcome generate button
-    const welcomeGenerateBtn = document.getElementById('welcomeGenerateBtn');
-    if (welcomeGenerateBtn) {
-        welcomeGenerateBtn.addEventListener('click', () => {
-            openModal('wizardModal');
-        });
-    }
-    
-    // Quick generate
-    const quickGenerate = document.getElementById('quickGenerate');
-    if (quickGenerate) {
-        quickGenerate.addEventListener('click', () => {
-            openModal('wizardModal');
-        });
-    }
+    // Welcome generate
+    document.getElementById('welcomeGenerateBtn')?.addEventListener('click', () => openModal('wizardModal'));
+    document.getElementById('quickGenerate')?.addEventListener('click', () => openModal('wizardModal'));
     
     // Random recipe
-    const randomRecipe = document.getElementById('randomRecipe');
-    if (randomRecipe) {
-        randomRecipe.addEventListener('click', () => {
-            const randomIngredients = QUICK_INGREDIENTS.sort(() => 0.5 - Math.random()).slice(0, 3).join(', ');
-            generateRecipe(randomIngredients, null, {
-                spice: Math.floor(Math.random() * 5) + 1,
-                servings: [1, 2, 4, 6, 8, 10][Math.floor(Math.random() * 6)],
-                time: Math.floor(Math.random() * 4) + 1,
-                language: 'English',
-                depth: ['quick', 'standard', 'detailed', 'gourmet'][Math.floor(Math.random() * 4)]
-            });
+    document.getElementById('randomRecipe')?.addEventListener('click', () => {
+        const randomIngredients = QUICK_INGREDIENTS.sort(() => 0.5 - Math.random()).slice(0, 3).join(', ');
+        generateRecipe(randomIngredients, null, {
+            spice: Math.floor(Math.random() * 5) + 1,
+            servings: [1, 2, 4, 6, 8][Math.floor(Math.random() * 5)],
+            time: Math.floor(Math.random() * 4) + 1,
+            language: 'English',
+            depth: ['quick', 'standard', 'detailed', 'gourmet'][Math.floor(Math.random() * 4)]
         });
-    }
+    });
     
-    // Saved recipes button
-    const savedRecipesBtn = document.getElementById('savedRecipes');
-    if (savedRecipesBtn) {
-        savedRecipesBtn.addEventListener('click', () => {
-            renderSavedRecipes();
-            // Could open a saved recipes modal or show in sidebar
-        });
-    }
+    // Sidebar nav buttons
+    document.getElementById('navGenerateBtn')?.addEventListener('click', () => { openModal('wizardModal'); if (window.innerWidth <= 1024) closeSidebar(); });
+    document.getElementById('navSurpriseBtn')?.addEventListener('click', () => { document.getElementById('randomRecipe')?.click(); if (window.innerWidth <= 1024) closeSidebar(); });
+    document.getElementById('navHistoryBtn')?.addEventListener('click', () => { renderHistory(); openModal('historyModal'); if (window.innerWidth <= 1024) closeSidebar(); });
+    document.getElementById('navSavedBtn')?.addEventListener('click', () => { renderSavedRecipes(); if (window.innerWidth <= 1024) closeSidebar(); });
+    document.getElementById('navAnalyticsBtn')?.addEventListener('click', () => { renderAnalytics(); document.getElementById('analyticsPanel')?.classList.add('active'); if (window.innerWidth <= 1024) closeSidebar(); });
+    document.getElementById('navSettingsBtn')?.addEventListener('click', () => { initSettings(); openModal('settingsModal'); if (window.innerWidth <= 1024) closeSidebar(); });
+    
+    // User profile click -> settings
+    document.getElementById('userAvatar')?.addEventListener('click', () => { initSettings(); openModal('settingsModal'); });
+    
+    // Modal close buttons
+    document.getElementById('wizardCloseBtn')?.addEventListener('click', () => closeModal('wizardModal'));
+    document.getElementById('historyClose')?.addEventListener('click', () => closeModal('historyModal'));
+    document.getElementById('settingsClose')?.addEventListener('click', () => closeModal('settingsModal'));
+    document.getElementById('pdfClose')?.addEventListener('click', () => closeModal('pdfModal'));
+    document.getElementById('confirmClose')?.addEventListener('click', () => closeModal('confirmModal'));
+    document.getElementById('confirmCancel')?.addEventListener('click', () => closeModal('confirmModal'));
+    
+    // Header search -> wizard
+    document.getElementById('headerSearchInput')?.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+            const val = e.target.value.trim();
+            if (val) {
+                openModal('wizardModal');
+                setTimeout(() => {
+                    const textInput = document.getElementById('textInput');
+                    if (textInput) {
+                        textInput.value = val;
+                        textInput.dispatchEvent(new Event('input'));
+                    }
+                }, 100);
+                e.target.value = '';
+            }
+        }
+    });
 }
 
 // ============================================
@@ -2391,13 +2019,11 @@ function initSettings() {
     const importData = document.getElementById('importData');
     const resetData = document.getElementById('resetData');
     
-    // Initialize form values
     if (usernameSetting) usernameSetting.value = state.user.name;
     if (themeSetting) themeSetting.value = state.settings.theme;
     if (defaultLanguageSetting) defaultLanguageSetting.value = state.settings.defaultLanguage;
     if (defaultServingsSetting) defaultServingsSetting.value = state.settings.defaultServings.toString();
     
-    // Avatar options
     if (avatarOptions) {
         avatarOptions.querySelectorAll('.avatar-option').forEach(opt => {
             opt.classList.toggle('active', opt.dataset.avatar === state.user.avatar);
@@ -2411,7 +2037,6 @@ function initSettings() {
         });
     }
     
-    // Username
     if (usernameSetting) {
         usernameSetting.addEventListener('change', () => {
             state.user.name = usernameSetting.value || 'Guest';
@@ -2420,7 +2045,6 @@ function initSettings() {
         });
     }
     
-    // Theme
     if (themeSetting) {
         themeSetting.addEventListener('change', () => {
             state.settings.theme = themeSetting.value;
@@ -2429,7 +2053,6 @@ function initSettings() {
         });
     }
     
-    // Default language
     if (defaultLanguageSetting) {
         defaultLanguageSetting.addEventListener('change', () => {
             state.settings.defaultLanguage = defaultLanguageSetting.value;
@@ -2437,7 +2060,6 @@ function initSettings() {
         });
     }
     
-    // Default servings
     if (defaultServingsSetting) {
         defaultServingsSetting.addEventListener('change', () => {
             state.settings.defaultServings = parseInt(defaultServingsSetting.value);
@@ -2445,19 +2067,9 @@ function initSettings() {
         });
     }
     
-    // Export data
     if (exportData) {
         exportData.addEventListener('click', () => {
-            const data = {
-                user: state.user,
-                settings: state.settings,
-                history: state.history,
-                savedRecipes: state.savedRecipes,
-                analytics: state.analytics,
-                exportedAt: new Date().toISOString(),
-                version: ROUXMIND.VERSION
-            };
-            
+            const data = { user: state.user, settings: state.settings, history: state.history, savedRecipes: state.savedRecipes, exportedAt: new Date().toISOString(), version: ROUXMIND.VERSION };
             const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
@@ -2467,81 +2079,48 @@ function initSettings() {
             a.click();
             document.body.removeChild(a);
             URL.revokeObjectURL(url);
-            
             showToast('Data exported!', 'success', '📥');
         });
     }
     
-    // Import data
     if (importDataBtn && importData) {
-        importDataBtn.addEventListener('click', () => {
-            importData.click();
-        });
-        
+        importDataBtn.addEventListener('click', () => importData.click());
         importData.addEventListener('change', (e) => {
             const file = e.target.files[0];
             if (!file) return;
-            
             const reader = new FileReader();
             reader.onload = (event) => {
                 try {
                     const data = JSON.parse(event.target.result);
-                    
-                    // Validate
                     if (data.version && data.user && data.history) {
-                        // Import user data
                         state.user = { ...state.user, ...data.user };
                         state.settings = { ...state.settings, ...data.settings };
                         state.history = data.history || [];
                         state.savedRecipes = data.savedRecipes || [];
-                        
                         saveState();
                         updateUserStats();
                         updateAnalytics();
                         renderHistory();
                         renderSavedRecipes();
-                        
                         showToast('Data imported!', 'success', '📤');
                     } else {
                         showToast('Invalid data file', 'error');
                     }
                 } catch (err) {
-                    console.error('Import error:', err);
                     showToast('Could not import data', 'error');
                 }
             };
             reader.readAsText(file);
-            
-            // Reset input
             importData.value = '';
         });
     }
     
-    // Reset data
     if (resetData) {
         resetData.addEventListener('click', () => {
-            showConfirmation(
-                'Reset All Data',
-                'This will delete all your recipes, history, settings, and XP. This cannot be undone.',
-                () => {
-                    // Reset to defaults
-                    localStorage.removeItem('rouxmind_user_name');
-                    localStorage.removeItem('rouxmind_user_avatar');
-                    localStorage.removeItem('rouxmind_user_xp');
-                    localStorage.removeItem('rouxmind_user_streak');
-                    localStorage.removeItem('rouxmind_user_totalRecipes');
-                    localStorage.removeItem('rouxmind_user_lastActive');
-                    localStorage.removeItem('rouxmind_user_sessions');
-                    localStorage.removeItem('rouxmind_theme');
-                    localStorage.removeItem('rouxmind_defaultLanguage');
-                    localStorage.removeItem('rouxmind_defaultServings');
-                    localStorage.removeItem('rouxmind_history');
-                    localStorage.removeItem('rouxmind_savedRecipes');
-                    
-                    // Reload page
-                    window.location.reload();
-                }
-            );
+            showConfirmation('Reset All Data', 'This will delete all your recipes, history, settings, and XP. This cannot be undone.', () => {
+                Object.keys(localStorage).filter(k => k.startsWith('rouxmind_')).forEach(k => localStorage.removeItem(k));
+                window.location.reload();
+            });
         });
     }
 }
@@ -2557,25 +2136,36 @@ function initHistoryFilters() {
     
     if (historySearch) {
         historySearch.addEventListener('input', () => {
-            renderHistory(historyFilter.value, historySearch.value);
+            renderHistory(historyFilter?.value || 'all', historySearch.value);
         });
     }
     
     if (historyFilter) {
         historyFilter.addEventListener('change', () => {
-            renderHistory(historyFilter.value, historySearch.value);
+            renderHistory(historyFilter.value, historySearch?.value || '');
         });
     }
     
     if (clearHistoryBtn) {
         clearHistoryBtn.addEventListener('click', () => {
-            showConfirmation(
-                'Clear History',
-                'Are you sure you want to clear all recipe history?',
-                clearHistory
-            );
+            showConfirmation('Clear History', 'Are you sure you want to clear all recipe history?', clearHistory);
         });
     }
+}
+
+// ============================================
+// MODAL OVERLAY CLICK-TO-CLOSE (FIXED)
+// ============================================
+
+function initModalOverlays() {
+    document.querySelectorAll('.modal-overlay').forEach(overlay => {
+        overlay.addEventListener('click', (e) => {
+            // Only close if clicking directly on the overlay, not the modal itself
+            if (e.target === overlay) {
+                closeModal(overlay.id);
+            }
+        });
+    });
 }
 
 // ============================================
@@ -2584,10 +2174,11 @@ function initHistoryFilters() {
 
 function initBackToTop() {
     const backToTop = document.getElementById('backToTop');
+    const outArea = document.getElementById('outArea');
     
-    if (backToTop) {
-        window.addEventListener('scroll', throttle(() => {
-            if (window.pageYOffset > 300) {
+    if (backToTop && outArea) {
+        outArea.addEventListener('scroll', throttle(() => {
+            if (outArea.scrollTop > 300) {
                 backToTop.classList.add('show');
             } else {
                 backToTop.classList.remove('show');
@@ -2595,48 +2186,9 @@ function initBackToTop() {
         }, 100));
         
         backToTop.addEventListener('click', () => {
-            window.scrollTo({ top: 0, behavior: 'smooth' });
+            outArea.scrollTo({ top: 0, behavior: 'smooth' });
         });
     }
-}
-
-// ============================================
-// SMOOTH SCROLL
-// ============================================
-
-function initSmoothScroll() {
-    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-        anchor.addEventListener('click', function(e) {
-            e.preventDefault();
-            const target = document.querySelector(this.getAttribute('href'));
-            if (target) {
-                target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            }
-        });
-    });
-}
-
-// ============================================
-// AOS-LIKE ANIMATIONS
-// ============================================
-
-function initScrollAnimations() {
-    const observerOptions = {
-        threshold: 0.1,
-        rootMargin: '0px 0px -50px 0px'
-    };
-    
-    const observer = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-            if (entry.isIntersecting) {
-                entry.target.classList.add('aos-animate');
-            }
-        });
-    }, observerOptions);
-    
-    document.querySelectorAll('[data-aos]').forEach(el => {
-        observer.observe(el);
-    });
 }
 
 // ============================================
@@ -2647,7 +2199,7 @@ function initParticles() {
     const particles = document.getElementById('particles');
     if (!particles) return;
     
-    for (let i = 0; i < 30; i++) {
+    for (let i = 0; i < 25; i++) {
         const particle = document.createElement('div');
         particle.className = 'particle';
         particle.style.cssText = `
@@ -2675,13 +2227,14 @@ function init() {
     
     // Update user stats
     updateUserStats();
-    
-    // Update analytics
     updateAnalytics();
     
-    // Render history and saved recipes
+    // Render history & saved recipes
     renderHistory();
     renderSavedRecipes();
+    
+    // Initialize sidebar (FIXED)
+    initSidebar();
     
     // Initialize all features
     initWizard();
@@ -2698,24 +2251,23 @@ function init() {
     initNavActions();
     initSettings();
     initHistoryFilters();
+    initModalOverlays();
     initBackToTop();
-    initSmoothScroll();
-    initScrollAnimations();
     initParticles();
     
     // Hide loading
     setTimeout(() => {
         const loading = document.getElementById('dashboardLoading');
         if (loading) loading.classList.add('hidden');
-    }, 500);
+    }, 600);
     
-    console.log(`%c✨ ${ROUXMIND.BRAND} v${ROUXMIND.VERSION}`, 'color: #00d4ff; font-size: 20px; font-weight: bold;');
+    console.log(`%c✨ ${ROUXMIND.BRAND} v${ROUXMIND.VERSION}`, 'color: #d4af37; font-size: 20px; font-weight: bold;');
     console.log(`%c👨‍💻 Developer: ${ROUXMIND.DEVELOPER}`, 'color: #8899aa; font-size: 12px;');
     console.log(`%c🌐 Website: ${ROUXMIND.DEVSITE}`, 'color: #8899aa; font-size: 12px;');
     console.log(`%c⚡ Powered by: Mesh API (${ROUXMIND.HACKATHON_URL})`, 'color: #00ff88; font-size: 12px;');
 }
 
-// Run initialization when DOM is ready
+// Run initialization
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', init);
 } else {
@@ -2723,12 +2275,4 @@ if (document.readyState === 'loading') {
 }
 
 // Export for debugging
-window.RouxMind = {
-    state,
-    generateRecipe,
-    addXP,
-    saveRecipe,
-    showToast,
-    openModal,
-    closeModal
-};
+window.RouxMind = { state, generateRecipe, addXP, saveRecipe: saveRecipeAction, showToast, openModal, closeModal };

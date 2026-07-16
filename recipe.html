@@ -4,44 +4,59 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="description" content="RouxMind — World's Most Advanced AI Recipe Generator. Where Every Plate Tells Your Story.">
-<meta name="theme-color" content="#0a0a08">
+<meta name="theme-color" content="#03050c">
 <title>RouxMind — AI Recipe Studio</title>
 <link rel="icon" type="image/png" href="logo.png">
 
+<!-- Fonts -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Playfair+Display:wght@500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-<link rel="stylesheet" href="style.css">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&family=Orbitron:wght@600;700;800;900&display=swap" rel="stylesheet">
 
+<!-- Icons -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+<!-- Markdown -->
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
+
+<!-- Styles -->
+<link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-<!-- LOADING OVERLAY -->
+<!-- ═══ LOADING OVERLAY ═══ -->
 <div class="dashboard-loading" id="dashboardLoading">
   <div class="dl-inner">
     <img src="logo.png" alt="RouxMind" class="dl-logo">
     <div class="dl-ring"></div>
+    <div class="dl-ring-2"></div>
     <div class="dl-text">Preheating the kitchen…</div>
+    <div class="dl-bar"><div class="dl-bar-fill"></div></div>
   </div>
 </div>
 
+<!-- ═══ PARTICLES ═══ -->
 <div class="particles" id="particles"></div>
+
+<!-- ═══ TOASTS ═══ -->
 <div class="toast-container" id="toastContainer"></div>
 
-<div class="dash-body">
+<!-- ═══ SIDEBAR OVERLAY (mobile) ═══ -->
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
 
-  <!-- LEFT SIDEBAR -->
+<!-- ═══ MAIN DASHBOARD ═══ -->
+<div class="dash-body" id="dashBody">
+
+  <!-- ═══════ LEFT SIDEBAR ═══════ -->
   <aside class="left-panel" id="leftPanel">
 
     <div class="lp-brand">
       <img src="logo.png" alt="RouxMind — Where Every Plate Tells Your Story" class="lp-brand-img">
     </div>
 
-    <div class="lp-profile">
-      <div class="lp-avatar" id="userAvatar" title="Open Settings">
+    <div class="lp-profile" id="userAvatar" title="Open Settings">
+      <div class="lp-avatar">
         <span class="avatar-icon">🥄</span>
       </div>
       <div class="lp-profile-info">
@@ -62,29 +77,29 @@
     </div>
 
     <nav class="lp-nav">
-      <button class="lp-nav-item lp-nav-cta" onclick="openModal('wizardModal')">
+      <button class="lp-nav-item lp-nav-cta" id="navGenerateBtn">
         <i class="fas fa-wand-magic-sparkles lp-nav-icon"></i>
         <span>Generate Recipe</span>
         <span class="lp-nav-badge">New</span>
       </button>
-      <button class="lp-nav-item" onclick="document.getElementById('randomRecipe').click()">
+      <button class="lp-nav-item" id="navSurpriseBtn">
         <i class="fas fa-dice lp-nav-icon"></i>
         <span>Surprise Me</span>
       </button>
       <div class="lp-nav-divider"></div>
-      <button class="lp-nav-item" onclick="renderHistory(); openModal('historyModal')">
+      <button class="lp-nav-item" id="navHistoryBtn">
         <i class="fas fa-clock-rotate-left lp-nav-icon"></i>
         <span>Recipe History</span>
       </button>
-      <button class="lp-nav-item" onclick="renderSavedRecipes(); document.getElementById('savedRecipesList').scrollIntoView({behavior:'smooth',block:'center'}); document.getElementById('savedRecipesList').classList.add('flash'); setTimeout(()=>document.getElementById('savedRecipesList').classList.remove('flash'),900)">
+      <button class="lp-nav-item" id="navSavedBtn">
         <i class="fas fa-star lp-nav-icon"></i>
         <span>Saved Recipes</span>
       </button>
-      <button class="lp-nav-item" onclick="renderAnalytics(); document.getElementById('analyticsPanel').classList.add('active')">
+      <button class="lp-nav-item" id="navAnalyticsBtn">
         <i class="fas fa-chart-simple lp-nav-icon"></i>
         <span>Analytics</span>
       </button>
-      <button class="lp-nav-item" onclick="initSettings(); openModal('settingsModal')">
+      <button class="lp-nav-item" id="navSettingsBtn">
         <i class="fas fa-gear lp-nav-icon"></i>
         <span>Settings</span>
       </button>
@@ -98,21 +113,24 @@
     </div>
 
     <div class="lp-about">
-      <p><strong>RouxMind</strong> v3.0 — Where Every Plate Tells Your Story.</p>
+      <p><strong>RouxMind</strong> v4.0 — Where Every Plate Tells Your Story.</p>
       <p>Built by <a href="https://soobantalhatech.xyz" target="_blank" rel="noopener">Sooban Talha Tech</a></p>
     </div>
 
   </aside>
 
-  <!-- RIGHT / MAIN -->
+  <!-- ═══════ RIGHT / MAIN ═══════ -->
   <main class="right-panel">
 
+    <!-- ═══ HEADER ═══ -->
     <header class="dash-hdr">
-      <button class="hdr-icon-btn" id="sbToggle" aria-label="Toggle sidebar"><i class="fas fa-bars"></i></button>
+      <button class="hdr-icon-btn" id="sbToggle" aria-label="Toggle sidebar">
+        <i class="fas fa-bars"></i>
+      </button>
 
       <div class="hdr-search">
         <i class="fas fa-magnifying-glass"></i>
-        <input type="text" id="headerSearchInput" placeholder="Search recipes, ingredients…" onkeydown="if(event.key==='Enter'){var t=document.getElementById('textInput'); openModal('wizardModal'); if(t){t.value=this.value; t.dispatchEvent(new Event('input'));} this.value='';}">
+        <input type="text" id="headerSearchInput" placeholder="Search recipes, ingredients…">
         <kbd>⌘K</kbd>
       </div>
 
@@ -127,10 +145,11 @@
         <button class="hdr-icon-btn" id="analyticsBtn" title="Analytics"><i class="fas fa-chart-simple"></i></button>
         <button class="hdr-icon-btn" id="themeToggle" title="Toggle theme"><i class="fas fa-moon action-icon"></i></button>
         <button class="hdr-icon-btn" id="settingsBtn" title="Settings"><i class="fas fa-gear"></i></button>
-        <button class="hdr-btn-primary" id="newRecipeBtn"><i class="fas fa-wand-magic-sparkles"></i> New Recipe</button>
+        <button class="hdr-btn-primary" id="newRecipeBtn"><i class="fas fa-wand-magic-sparkles"></i> <span>New Recipe</span></button>
       </div>
     </header>
 
+    <!-- ═══ ANALYTICS PANEL ═══ -->
     <div class="analytics-panel" id="analyticsPanel">
       <div class="ap-hdr">
         <span><i class="fas fa-chart-simple"></i> Analytics</span>
@@ -152,22 +171,24 @@
       </div>
     </div>
 
+    <!-- ═══ OUTPUT AREA ═══ -->
     <div class="out-area" id="outArea">
 
+      <!-- Welcome -->
       <section class="welcome-section" id="welcomeSection">
-        <div class="ws-mark">👨‍🍳</div>
+        <span class="ws-mark">👨‍🍳</span>
         <h1 class="ws-title">What's cooking today?</h1>
         <p class="ws-sub">Give RouxMind your ingredients — by text, photo, voice, upload, or smart search — and get a full AI-crafted recipe in seconds.</p>
         <button class="ws-cta" id="welcomeGenerateBtn"><i class="fas fa-wand-magic-sparkles"></i> Generate a Recipe</button>
-
         <div class="ws-features">
           <span class="ws-feat"><i class="fas fa-book-open"></i> Full Instructions</span>
           <span class="ws-feat"><i class="fas fa-layer-group"></i> Ingredients List</span>
-          <span class="ws-feat"><i class="fas fa-clock"></i> Prep &amp; Cook Time</span>
+          <span class="ws-feat"><i class="fas fa-clock"></i> Prep & Cook Time</span>
           <span class="ws-feat"><i class="fas fa-file-pdf"></i> Export PDF</span>
         </div>
       </section>
 
+      <!-- Input Methods -->
       <section class="input-methods" id="inputMethods">
         <button class="im-tile" id="directText"><span class="im-icon"><i class="fas fa-keyboard"></i></span><span>Text</span></button>
         <button class="im-tile" id="directCamera"><span class="im-icon"><i class="fas fa-camera"></i></span><span>Camera</span></button>
@@ -178,6 +199,7 @@
         <button class="im-tile im-tile-accent" id="randomRecipe"><span class="im-icon"><i class="fas fa-dice"></i></span><span>Surprise Me</span></button>
       </section>
 
+      <!-- Generation Progress -->
       <section class="generation-progress" id="generationProgress">
         <div class="gp-stages" id="progressStages">
           <div class="stage" data-stage="0"><span class="stage-icon">🎯</span><span class="stage-label">Detecting</span></div>
@@ -190,11 +212,13 @@
         <button class="gp-cancel" id="cancelGeneration"><i class="fas fa-xmark"></i> Cancel</button>
       </section>
 
+      <!-- Streaming Output -->
       <section class="streaming-output" id="streamingOutput">
         <div class="so-hdr"><i class="fas fa-fire"></i> RouxMind is cooking up your recipe…</div>
         <pre class="so-content" id="streamingContent"></pre>
       </section>
 
+      <!-- Recipe Area -->
       <section class="recipe-area" id="recipeArea">
         <div class="recipe-card">
           <div class="recipe-card-hdr">
@@ -217,12 +241,16 @@
   </main>
 </div>
 
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     MODALS
+     ═══════════════════════════════════════════════════════════════════════════ -->
+
 <!-- WIZARD MODAL -->
-<div class="modal-overlay" id="wizardModal" onclick="if(event.target===this) closeModal('wizardModal')">
+<div class="modal-overlay" id="wizardModal">
   <div class="modal modal-lg" id="recipeWizard">
     <div class="modal-hdr">
       <h2><i class="fas fa-wand-magic-sparkles"></i> Generate Recipe</h2>
-      <button class="modal-x" onclick="closeModal('wizardModal')"><i class="fas fa-xmark"></i></button>
+      <button class="modal-x" id="wizardCloseBtn"><i class="fas fa-xmark"></i></button>
     </div>
 
     <div class="wizard-progress">
@@ -235,6 +263,7 @@
 
     <div class="modal-body wizard-body">
 
+      <!-- Step 1: Ingredients -->
       <div class="wizard-step active" data-step="0">
         <div class="input-tabs">
           <button class="input-tab active" data-tab="text"><i class="fas fa-keyboard"></i> Text</button>
@@ -292,7 +321,7 @@
         <div class="input-panel" data-panel="upload">
           <div class="upload-zone" id="uploadZone">
             <i class="fas fa-cloud-arrow-up"></i>
-            <h4>Drag &amp; Drop an Image</h4>
+            <h4>Drag & Drop an Image</h4>
             <p>or</p>
             <button class="btn-primary" id="browseBtn" type="button">Browse Files</button>
             <input type="file" id="fileInput" accept="image/*" style="display:none">
@@ -310,6 +339,7 @@
         </div>
       </div>
 
+      <!-- Step 2: Preferences -->
       <div class="wizard-step" data-step="1">
         <div class="pref-block">
           <h4><i class="fas fa-pepper-hot"></i> Spice Level</h4>
@@ -349,6 +379,8 @@
               <option value="French">French</option>
               <option value="Arabic">Arabic</option>
               <option value="Urdu">Urdu</option>
+              <option value="Bengali">Bengali</option>
+              <option value="Punjabi">Punjabi</option>
             </select>
           </div>
           <div class="pref-block pref-half">
@@ -363,6 +395,7 @@
         </div>
       </div>
 
+      <!-- Step 3: Review -->
       <div class="wizard-step" data-step="2">
         <h4 class="review-title"><i class="fas fa-clipboard-check"></i> Review your recipe request</h4>
         <div class="review-grid">
@@ -386,7 +419,7 @@
 </div>
 
 <!-- HISTORY MODAL -->
-<div class="modal-overlay" id="historyModal" onclick="if(event.target===this) closeModal('historyModal')">
+<div class="modal-overlay" id="historyModal">
   <div class="modal modal-md">
     <div class="modal-hdr">
       <h2><i class="fas fa-clock-rotate-left"></i> Recipe History</h2>
@@ -394,11 +427,11 @@
     </div>
     <div class="modal-body">
       <div class="history-toolbar">
-        <div class="hdr-search hdr-search-modal">
+        <div class="hdr-search" style="flex:1;min-width:160px">
           <i class="fas fa-magnifying-glass"></i>
           <input type="text" id="historySearch" placeholder="Search history…">
         </div>
-        <select id="historyFilter" class="pref-select">
+        <select id="historyFilter" class="pref-select" style="max-width:150px">
           <option value="all">All Time</option>
           <option value="today">Today</option>
           <option value="week">This Week</option>
@@ -414,7 +447,7 @@
 </div>
 
 <!-- SETTINGS MODAL -->
-<div class="modal-overlay" id="settingsModal" onclick="if(event.target===this) closeModal('settingsModal')">
+<div class="modal-overlay" id="settingsModal">
   <div class="modal modal-md">
     <div class="modal-hdr">
       <h2><i class="fas fa-gear"></i> Settings</h2>
@@ -473,7 +506,7 @@
           <button class="btn-secondary" id="exportData"><i class="fas fa-download"></i> Export</button>
           <button class="btn-secondary" id="importDataBtn"><i class="fas fa-upload"></i> Import</button>
           <input type="file" id="importData" accept="application/json" style="display:none">
-          <button class="btn-secondary ra-danger" id="resetData"><i class="fas fa-trash"></i> Reset All</button>
+          <button class="btn-secondary" style="color:var(--danger)" id="resetData"><i class="fas fa-trash"></i> Reset All</button>
         </div>
       </div>
     </div>
@@ -481,7 +514,7 @@
 </div>
 
 <!-- PDF MODAL -->
-<div class="modal-overlay" id="pdfModal" onclick="if(event.target===this) closeModal('pdfModal')">
+<div class="modal-overlay" id="pdfModal">
   <div class="modal modal-sm">
     <div class="modal-hdr">
       <h2><i class="fas fa-file-pdf"></i> Download PDF</h2>
@@ -519,16 +552,11 @@
   </div>
 </div>
 
+<!-- BACK TO TOP -->
 <button class="back-to-top" id="backToTop"><i class="fas fa-arrow-up"></i></button>
 
+<!-- ═══ SCRIPTS ═══ -->
 <script src="app.js"></script>
-<script>
-  document.getElementById('sbToggle').addEventListener('click', () => {
-    document.getElementById('leftPanel').classList.toggle('collapsed');
-  });
-  window.addEventListener('load', () => {
-    setTimeout(() => document.getElementById('dashboardLoading')?.classList.add('hidden'), 400);
-  });
-</script>
+
 </body>
 </html>
